@@ -205,7 +205,7 @@ class Tafsir(commands.Cog):
             await msg.add_reaction(emoji='➡')
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, ctx, reaction, user):
+    async def on_reaction_add(self, reaction, user):
         if reaction.message.author == self.bot.user and user != self.bot.user:
             msg = reaction.messagec
             embed = msg.embeds[0]

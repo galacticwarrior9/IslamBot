@@ -16,7 +16,7 @@ loop = asyncio.get_event_loop()
 
 async def create_connection():
     connection = await aiomysql.connect(host=host, user=user, password=password, db=database,
-                                        loop=loop)
+                                        loop=loop, autocommit=True)
     return connection
 
 
@@ -30,7 +30,12 @@ async def get_guild_translation(guild_id):
         await cursor.execute(f"SELECT translation FROM {server_translations_table_name}"
                              f" WHERE server = {guild_id}")
         result = await cursor.fetchone()
-        result = result[0]
+        try:
+            result = result[0]
+            connection.close()
+        except TypeError:
+            connection.close()
+            return 'haleem'
         return result
 
 
@@ -41,4 +46,5 @@ async def update_guild_translation(guild_id, translation):
         update_sql = f"UPDATE {server_translations_table_name} SET translation = %s WHERE server = %s"
         await cursor.execute(create_sql, (guild_id, translation))
         await cursor.execute(update_sql, (translation, guild_id))
+        connection.close()
 

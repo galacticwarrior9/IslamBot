@@ -32,7 +32,7 @@ class Mushaf(commands.Cog):
             data = await resp.json()
             page = data['data']['page']
 
-        formatted_page = page.zfill(3)
+        formatted_page = str(page).zfill(3)
 
         if tajweed is 'none':
             url = f'https://www.searchtruth.org/quran/images2/large/page-{formatted_page}.jpeg'
