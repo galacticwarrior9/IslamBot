@@ -107,6 +107,12 @@ class Help(commands.Cog):
                                                             "\n\n`-ahadith <collection> <book number>:<hadith number>`"
                                                             "\n\nExample: `-ahadith bukhari 97:6` for http://sunnah.com/bukhari/97/6")
 
+            em.add_field(name="-uhadith", inline=True, value="Gets a sunnah.com hadith in Urdu."
+                                                            "\n\n__Usage__"
+                                                            "\n\n`-uhadith <collection> <book number>:<hadith number>`"
+                                                            "\n\nExample: `-uhadith bukhari 1:1` for http://sunnah.com/bukhari/1/1"
+                                                            "\n\n*Only Sahih al-Bukhari and Sunan Abu Dawud are available in Urdu.*")
+
             await ctx.send(embed=em)
 
         elif section == "prayer times":

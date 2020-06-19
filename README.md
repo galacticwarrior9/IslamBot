@@ -1,11 +1,12 @@
 
+
 # IslamBot
 
 [![Discord Bots](https://top.gg/api/widget/status/352815253828141056.svg)](https://top.gg/bot/352815253828141056)
 [![Discord](https://img.shields.io/discord/610613297452023837?label=Support%20Server)](https://discord.gg/Ud3MHJR)
 [![Discord Bots](https://top.gg/api/widget/lib/352815253828141056.svg?noavatar=true)](https://top.gg/bot/352815253828141056)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/956ae763120b46bda59e552edfc0677d)](https://www.codacy.com/manual/galacticwarrior9/islambot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=galacticwarrior9/islambot&amp;utm_campaign=Badge_Grade)
-
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e41e4204a93a43f7821e3bdd55e6410b)](https://www.codacy.com/manual/galacticwarrior9/IslamBot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=galacticwarrior9/IslamBot&amp;utm_campaign=Badge_Grade)
+![GitHub contributors](https://img.shields.io/github/contributors/galacticwarrior9/IslamBot)
 
 An Islamic bot for Discord with the following features:
 
@@ -167,10 +168,10 @@ For example, to get duas for breaking fasts:
 **-hadith** allows you to quote hadith from sunnah.com in English.
 
 ```
--hadith <hadith book name> <chapter number>:<hadith number>
+-hadith <hadith collection name> <book number>:<hadith number>
 ```
 
-For example, to quote the second hadith in Chapter 1 of Sahih Bukhari:
+For example, to get the second hadith in Book 1 of Sahih Bukhari:
 ```
 -hadith bukhari 1:2
 ```
@@ -180,31 +181,31 @@ The above would fetch the hadith from https://sunnah.com/bukhari/1/2
 Alternatively, you can simply type the sunnah.com link in chat. The bot will then send it if it is able to. 
 
 
-#### Valid hadith book names 
+#### Hadith collection names 
 
-* ahmad = Musnad Imam Ahmad ibn Hanbal
-* bukhari = Sahih al-Bukhari
-* muslim = Sahih Muslim
-* tirmidhi = Jami` at-Tirmidhi
-* abudawud = Sunan Abi Dawud
-* nasai = Sunan an-Nasa'i
-* ibnmajah = Sunan Ibn Majah
-* malik = Muwatta Malik
-* riyadussaliheen = Riyad as-Salihin
-* adab = Al-Adab Al-Mufrad
-* bulugh = Bulugh al-Maram
-* qudsi = 40 Hadith Qudsi
-* nawawi = 40 Hadith Nawawi
+| **Hadith Collection** | **Name for Bot** | **Supported Languages** |
+|--|--|--|
+| Musnad Ahmad ibn Hanbal | `ahmad` | English, Arabic | 
+| Sahih al-Bukhari | `bukhari` | Urdu, English, Arabic
+| Sahih Muslim | `muslim` | English, Arabic
+|  Jami' at-Tirmidhi | `tirmidhi` | English, Arabic
+| Sunan Abi Dawud | `abudawud` | Urdu, English, Arabic
+| Sunan an-Nasa'i | `nasai` | English, Arabic
+| Muwatta Malik | `malik` | English, Arabic
+| Riyadh as-Saliheen | `riyadussaliheen ` | English, Arabic
+| Al-Adab al-Mufrad | `adab ` | English, Arabic
+| Bulugh al-Maram | `bulugh ` | English, Arabic
+| 40 Hadith Qudsi | `qudsi ` | English, Arabic
+| 40 Hadith Nawawi | `nawawi ` | English, Arabic
 
-40 Hadith Qudsi or Nawawi are both 40 hadith long respectively, and as such do not use a chapter number.
+40 Hadith Qudsi and Nawawi are only forty hadith long and therefore only need a hadith number. For example: `-hadith qudsi 32`
 
-For example:
-```
--hadith qudsi 32
-```
 
 ### -ahadith
-**-ahadith** is the same as -hadith, but allows you to quote hadith in Arabic. 
+**-ahadith** is the same as -hadith, but sends the hadith in Arabic.
+
+### -uhadith
+**-uhadith** is the same as -hadith, but sends the hadith in Urdu. Only Sahih al-Bukhari and Sunan Abu Dawud are available in Urdu.
 
 
 ## Prayer (Salaah) Times

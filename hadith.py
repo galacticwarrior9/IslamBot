@@ -8,7 +8,7 @@ from discord.ext import commands
 from aiohttp import ClientSession
 import textwrap
 
-HADITH_BOOK_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
+HADITH_COLLECTION_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
                     'ibnmajah', 'malik', 'riyadussaliheen', 'adab', 'bulugh',
                     'qudsi', 'nawawi', 'shamail', 'ahmad']
 
@@ -18,23 +18,26 @@ ERROR = 'The hadith could not be found on sunnah.com.'
 
 PREFIX = get_prefix()
 
-INVALID_INPUT = f'Invalid arguments! Please do `{PREFIX}hadith (book name)' \
-                f'[(book number):(hadith number)|(raw hadith number)]` \n' \
-                f'Valid book names are `{HADITH_BOOK_LIST}`'
+INVALID_INPUT = f'Invalid arguments! Please do `{PREFIX}hadith <collection name>' \
+                f'<book number>:<hadith number>` \n' \
+                f'Valid collection names are `{HADITH_COLLECTION_LIST}`'
 
 URL_FORMAT = "https://sunnah.com/ajax/{}/{}/{}"
+
+NOT_AVAILABLE_URDU = 'Only Sahih al-Bukhari and Sunan Abu Dawud are available in Urdu.'
 
 
 class HadithGrading:
     def __init__(self):
         self.narrator = None
         self.grading = None
+        self.sanad = None
 
         self.book_number = None
         self.hadith_number = None
 
         self.hadithText = None
-        self.chapter_name = None
+        self.bab_name = None
         self.book_name = None
 
 
@@ -78,8 +81,7 @@ class HadithSpecifics:
         if ':' in ref:
             self.hadith.book_number, self.hadith.hadith_number = \
                     [int(arg) for arg in ref.split(':')]
-            self.url = self.url.format(self.lang, self.collection_name, \
-                    self.hadith.book_number)
+            self.url = self.url.format(self.lang, self.collection_name, self.hadith.book_number)
         elif self.isQudsiNawawi():
             self.hadith.hadith_number = int(ref)
             self.collection_name = self.collection_name + '40'
@@ -107,14 +109,22 @@ class HadithSpecifics:
         # Format hadith text.
         self.hadith.hadithText = self.formatHadithText(self.raw_text)
 
-        # Get grading.
-        self.hadith.grading = json["grade1"]
+        # Get grading and Urdu-specific details if needed.
+        if self.lang == 'urdu':
+            self.hadith.grading = json["grade"]
+            self.hadith.hadithText = json['hadithSanad'] + self.hadith.hadithText
+        else:
+            self.hadith.grading = json["grade1"]
+
+        # Get bab name.
+        self.hadith.bab_name = json["babName"]
+        if self.hadith.bab_name is not None:
+            self.hadith.bab_name = self.hadith.bab_name.title()
 
         # Get hadith book name.
         self.hadith.book_name = json["bookName"]
 
-        self.readable_collection_name = self.formatBookName( \
-                self.collection_name)
+        self.readable_collection_name = self.formatBookName(self.collection_name)
 
         self.pages = textwrap.wrap(self.hadith.hadithText, 1024)
 
@@ -128,8 +138,7 @@ class HadithSpecifics:
         page = self.pages[self.page - 1]
         self.num_pages = len(self.pages)
 
-        em = discord.Embed(title=self.embedTitle, colour=0x467f05, \
-                description=page)
+        em = discord.Embed(title=self.hadith.bab_name, colour=0x467f05, description=page)
         em.set_author(name=authorName, icon_url=ICON)
 
         if self.num_pages > self.page:
@@ -210,22 +219,29 @@ class Hadith(commands.Cog):
         self.session = ClientSession(loop=bot.loop)
 
     @commands.command(name='hadith')
-    async def hadith(self, ctx, collection_name: str = None, ref: str = None, \
-            page: int = 1):
+    async def hadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
         await self.abstract_hadith(ctx, collection_name, ref, "english", page)
 
     @commands.command(name='ahadith')
-    async def ahadith(self, ctx, collection_name: str = None, ref: str = None, \
-            page: int = 1):
+    async def ahadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
         await self.abstract_hadith(ctx, collection_name, ref, "arabic", page)
 
-    async def abstract_hadith(self, channel, collection_name, ref, lang, page):
-        if collection_name in HADITH_BOOK_LIST:
-            spec = HadithSpecifics(collection_name, self.session, lang, ref,
-                    page)
+    @commands.command(name='uhadith')
+    async def uhadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
+        if self.isUrduAvailable(collection_name):
+            await self.abstract_hadith(ctx, collection_name, ref, "urdu", page)
         else:
-            await channel.send(INVALID_INPUT)
-            return
+            await ctx.send(NOT_AVAILABLE_URDU)
+
+    @staticmethod
+    def isUrduAvailable(collection_name):
+        return collection_name.lower() in ['bukhari', 'abudawud']
+
+    async def abstract_hadith(self, channel, collection_name, ref, lang, page):
+        if collection_name in HADITH_COLLECTION_LIST:
+            spec = HadithSpecifics(collection_name, self.session, lang, ref, page)
+        else:
+            return await channel.send(INVALID_INPUT)
 
         await spec.getHadith()
 
@@ -240,12 +256,12 @@ class Hadith(commands.Cog):
 
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", \
-                            timeout=120, check=lambda reaction, \
-                            user: (reaction.emoji == '➡' \
-                                    or reaction.emoji == '⬅') \
-                                    and user != self.bot.user \
-                                    and reaction.message.id == msg.id)
+                    reaction, user = await self.bot.wait_for("reaction_add",
+                            timeout=120, check=lambda reaction,
+                            user: (reaction.emoji == '➡'
+                                   or reaction.emoji == '⬅')
+                                   and user != self.bot.user
+                                   and reaction.message.id == msg.id)
 
                 except asyncio.TimeoutError:
                     await msg.remove_reaction(emoji='➡', member=self.bot.user)
@@ -283,8 +299,7 @@ class Hadith(commands.Cog):
                 book = meta[4]
                 hadith = meta[5]
                 ref = f"{book}:{hadith}"
-                await self.abstract_hadith(message.channel, name, ref, \
-                        "english", 1)
+                await self.abstract_hadith(message.channel, name, ref, "english", 1)
             except:
                 return
 
