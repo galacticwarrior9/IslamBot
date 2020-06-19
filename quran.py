@@ -278,8 +278,8 @@ class Quran(commands.Cog):
             await self.get_verses(spec)
 
             em = make_embed(fields=spec.ordered_dict, author=f"Surah {surah_name} ({translated_surah_name})",
-                            author_icon=ICON, colour=0x048c28, inline=False)
-            em.set_footer(text=f'Translation: {readable_edition} | {revelation_type}')
+                            author_icon=ICON, colour=0x048c28, inline=False, footer=f'Translation: {readable_edition} |'
+                                                                                    f' {revelation_type}')
 
             if len(em) > 6000:
                 return await ctx.send("This passage was too long to send.")
@@ -297,7 +297,7 @@ class Quran(commands.Cog):
         await self.get_verses(spec)
 
         em = make_embed(fields=spec.ordered_dict, author=f' سورة {surah_name}', author_icon=ICON, colour=0x048c28,
-                        inline=False)
+                        inline=False, footer="")
 
         if len(em) > 6000:
             return await ctx.send("This passage was too long to send.")
