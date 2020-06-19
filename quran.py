@@ -298,6 +298,10 @@ class Quran(commands.Cog):
 
         em = make_embed(fields=spec.ordered_dict, author=f' سورة {surah_name}', author_icon=ICON, colour=0x048c28,
                         inline=False)
+
+        if len(em) > 6000:
+            return await ctx.send("This passage was too long to send.")
+
         await ctx.send(embed=em)
 
     @staticmethod
