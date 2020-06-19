@@ -1,14 +1,16 @@
+import aiohttp
 import asyncio
 import re
 import discord
-from utils import get_prefix, get_site_source
+import html2text
+from utils import get_prefix
 from discord.ext import commands
 from aiohttp import ClientSession
 import textwrap
 
 HADITH_BOOK_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
-                    'ibnmajah', 'malik', 'riyadussaliheen', 'adab', 'bulugh', 'qudsi',
-                    'nawawi', 'shamail', 'ahmad']
+                    'ibnmajah', 'malik', 'riyadussaliheen', 'adab', 'bulugh',
+                    'qudsi', 'nawawi', 'shamail', 'ahmad']
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
@@ -20,124 +22,93 @@ INVALID_INPUT = f'Invalid arguments! Please do `{PREFIX}hadith (book name)' \
                 f'[(book number):(hadith number)|(raw hadith number)]` \n' \
                 f'Valid book names are `{HADITH_BOOK_LIST}`'
 
-URL_FORMAT = "https://sunnah.com/{}/{}"
+URL_FORMAT = "https://sunnah.com/ajax/{}/{}/{}"
 
 
 class HadithGrading:
     def __init__(self):
         self.narrator = None
         self.grading = None
-        self.arabicGrading = None
 
         self.book_number = None
         self.hadith_number = None
 
         self.hadithText = None
-        self.arabic_chapter_name = None
-        self.english_chapter_name = None
         self.chapter_name = None
         self.book_name = None
 
 
 class HadithSpecifics:
-    def __init__(self, collection_name, session, isEng, ref, page):
+    def __init__(self, collection_name, session, lang, ref, page):
         self.page = page
         self.pages = None
         self.num_pages = None
         self.session = session
         self.collection_name = collection_name.lower()
         self.url = URL_FORMAT
+        self.lang = lang
 
         self.raw_text = None
         self.embedTitle = None
         self.readable_collection_name = None
         self.hadith = HadithGrading()
 
-        if isEng:
-            self.hadithTextCSSClass = "text_details"
+        if lang == "english":
             self.formatBookName = self.formatEnglishCollectionName
 
             if ':' in ref:
                 self.embedAuthorName = '{readable_collection_name} {book_number}:{hadith_number} - {book_name}'
             else:
-                self.embedAuthorName = '{readable_collection_name}, Hadith {hadith_number}'
+                self.embedAuthorName = \
+                        '{readable_collection_name}, Hadith {hadith_number}'
 
         else:
-            self.hadithTextCSSClass = "arabic_hadith_full arabic"
             self.formatBookName = self.formatArabicCollectionName
-            self.embedTitle = self.hadith.arabic_chapter_name
 
             if not self.isQudsiNawawi():
-                self.embedAuthorName = '{readable_collection_name} - {book_name}'
+                self.embedAuthorName = \
+                        '{readable_collection_name} - {book_name}'
             else:
-                self.embedAuthorName = '{hadith_number} {readable_collection_name} , حديث'
+                self.embedAuthorName = \
+                        '{hadith_number} {readable_collection_name} , حديث'
 
         self.processRef(ref)
 
     def processRef(self, ref):
         if ':' in ref:
-            (self.hadith.book_number, self.hadith.hadith_number) = ref.split(":")
-            self.url = self.url.format(self.collection_name, self.hadith.book_number) + f'/{self.hadith.hadith_number}'
-        else:
-            self.hadith.hadith_number = ref
-            if self.isQudsiNawawi():
-                self.collection_name = self.collection_name + '40'
-            self.url = self.url.format(self.collection_name, self.hadith.hadith_number)
+            self.hadith.book_number, self.hadith.hadith_number = \
+                    [int(arg) for arg in ref.split(':')]
+            self.url = self.url.format(self.lang, self.collection_name, \
+                    self.hadith.book_number)
+        elif self.isQudsiNawawi():
+            self.hadith.hadith_number = int(ref)
+            self.collection_name = self.collection_name + '40'
+            self.url = self.url.format(self.lang, self.collection_name, 1)
 
-    async def getHadith(self, isEng = False, depth=0):
+    async def getHadith(self):
 
-        scanner = await get_site_source(self.url)
+        json_lst = await self.get_json()
+
+        if not json_lst or len(json_lst) < self.hadith.hadith_number \
+                or self.hadith.hadith_number <= 0:
+            return
+
+        json = json_lst[self.hadith.hadith_number - 1]
 
         # Get hadith text.
-        for hadith in scanner.findAll("div", {"class": self.hadithTextCSSClass}, limit=1):
-            self.raw_text = hadith.text
-
-        # If the above fails, restart this process using the 'urn' URL format in case we need to use raw hadith numbers.
-        if (self.raw_text is None or self.raw_text == "None") and depth < 1:
-            self.url = URL_FORMAT.format("urn", self.hadith.hadith_number)
-            if isEng:
-                await self.getHadith(isEng=True, depth=1)
-            else:
-                await self.getHadith(isEng=False, depth=1)
-            return
+        self.raw_text = json["hadithText"]
 
         # Format hadith text.
         self.hadith.hadithText = self.formatHadithText(self.raw_text)
 
-        # Get isnad.
-        if isEng:
-            for tag in scanner.findAll("div", {"class": "hadith_narrated"}, limit=1):
-                self.hadith.narrator = tag.text
-                self.hadith.hadithText = '**' + self.hadith.narrator.replace('`', "'") + '**' + self.hadith.hadithText
-
         # Get grading.
-        if isEng:
-            for tag in scanner.findAll("td", {"class": "english_grade"}, limit=2):
-                self.hadith.grading = tag.text
-
-        else:
-            for tag in scanner.findAll("td", {"class": "arabic_grade arabic"}, limit=1):
-                self.hadith.arabicGrading = tag.text.replace(')', '').replace('(', '')
-
-        # Get chapter name.
-        if not isEng:
-            for tag in scanner.findAll("div", {"class": "arabicchapter arabic"}, limit=2):
-                self.hadith.arabic_chapter_name = tag.text
-                self.embedTitle = self.hadith.arabic_chapter_name
-        else:
-            for tag in scanner.findAll("div", {"class": "englishchapter"}, limit=2):
-                self.hadith.english_chapter_name = tag.text
-                self.embedTitle = self.hadith.english_chapter_name
+        self.hadith.grading = json["grade1"]
 
         # Get hadith book name.
-        if isEng:
-            for hadith in scanner.findAll("div", {"class": "book_page_english_name"}, limit=1):
-                self.hadith.book_name = hadith.text.strip()
-        else:
-            for hadith in scanner.findAll("div", {"class": "book_page_arabic_name arabic"}, limit=1):
-                self.hadith.book_name = hadith.text.strip()
+        self.hadith.book_name = json["bookName"]
 
-        self.readable_collection_name = self.formatBookName(self.collection_name)
+        self.readable_collection_name = self.formatBookName( \
+                self.collection_name)
 
         self.pages = textwrap.wrap(self.hadith.hadithText, 1024)
 
@@ -151,7 +122,8 @@ class HadithSpecifics:
         page = self.pages[self.page - 1]
         self.num_pages = len(self.pages)
 
-        em = discord.Embed(title=self.embedTitle, colour=0x467f05, description=page)
+        em = discord.Embed(title=self.embedTitle, colour=0x467f05, \
+                description=page)
         em.set_author(name=authorName, icon_url=ICON)
 
         if self.num_pages > self.page:
@@ -160,22 +132,25 @@ class HadithSpecifics:
             footer = ''
 
         if self.hadith.grading:
-            em.set_footer(text=footer + f'\nGrading{self.hadith.grading}')
-
-        elif self.hadith.arabicGrading:
-            em.set_footer(text=footer + f'\n{self.hadith.arabicGrading}')
+            em.set_footer(text=footer + "\n" \
+                    + ("Grading: " if self.lang == "english" else "") \
+                    + f'{self.hadith.grading}')
 
         elif self.num_pages > self.page:
             em.set_footer(text=f'{footer}')
 
         return em
 
+    async def get_json(self) -> dict:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.url) as resp:
+                return await resp.json(content_type=None)
+
     @staticmethod
-    def formatHadithText(text):
-        txt = str(text)\
-            .replace('`', 'ʿ') \
-            .replace('\n', '')
-        return re.sub('\s+', ' ', txt)
+    def formatHadithText(html):
+        h = html2text.HTML2Text()
+        h.baseurl = "https://sunnah.com/"
+        return h.handle(html.replace('`', 'ʿ').replace("</b>", ''))
 
     @staticmethod
     def formatEnglishCollectionName(collection_name):
@@ -220,7 +195,7 @@ class HadithSpecifics:
         return arabic_hadith_collections[collection_name]
 
     def isQudsiNawawi(self):
-        return self.collection_name in ['qudsi', 'nawawi', 'qudsi40', 'nawawi40']
+        return self.collection_name in ['qudsi', 'nawawi']
 
 
 class Hadith(commands.Cog):
@@ -229,25 +204,26 @@ class Hadith(commands.Cog):
         self.session = ClientSession(loop=bot.loop)
 
     @commands.command(name='hadith')
-    async def hadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
-        await self.abstract_hadith(ctx.channel, collection_name, ref, True, page)
+    async def hadith(self, ctx, collection_name: str = None, ref: str = None, \
+            page: int = 1):
+        await self.abstract_hadith(ctx, collection_name, ref, "english", page)
 
     @commands.command(name='ahadith')
-    async def ahadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
-        await self.abstract_hadith(ctx, collection_name, ref, False, page)
+    async def ahadith(self, ctx, collection_name: str = None, ref: str = None, \
+            page: int = 1):
+        await self.abstract_hadith(ctx, collection_name, ref, "arabic", page)
 
-    async def abstract_hadith(self, channel, collection_name, ref, isEng, page):
+    async def abstract_hadith(self, channel, collection_name, ref, lang, page):
         if collection_name in HADITH_BOOK_LIST:
-            spec = HadithSpecifics(collection_name, self.session, isEng, ref, page)
+            spec = HadithSpecifics(collection_name, self.session, lang, ref,
+                    page)
         else:
             await channel.send(INVALID_INPUT)
             return
-        if isEng:
-            await spec.getHadith(isEng=True)
-        else:
-            await spec.getHadith(isEng=False)
 
-        if spec.hadith.hadithText is not None and spec.hadith.hadithText != "None":
+        await spec.getHadith()
+
+        if spec.hadith.hadithText:
 
             em = spec.makeEmbed()
             msg = await channel.send(embed=em)
@@ -258,9 +234,13 @@ class Hadith(commands.Cog):
 
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout=120,
-                                                            check=lambda reaction, user: (reaction.emoji == '➡' or reaction.emoji == '⬅')
-                                                            and user != self.bot.user and reaction.message.id == msg.id)
+                    reaction, user = await self.bot.wait_for("reaction_add", \
+                            timeout=120, check=lambda reaction, \
+                            user: (reaction.emoji == '➡' \
+                                    or reaction.emoji == '⬅') \
+                                    and user != self.bot.user \
+                                    and reaction.message.id == msg.id)
+
                 except asyncio.TimeoutError:
                     await msg.remove_reaction(emoji='➡', member=self.bot.user)
                     await msg.remove_reaction(emoji='⬅', member=self.bot.user)
@@ -290,14 +270,15 @@ class Hadith(commands.Cog):
     async def on_message(self, message):
         content = message.content
         url = self.findURL(content)
-        if url is not None:
+        if url:
             try:
                 meta = url.split("/")
                 name = meta[3]
                 book = meta[4]
                 hadith = meta[5]
                 ref = f"{book}:{hadith}"
-                await self.abstract_hadith(message.channel, name, ref, True, 1)
+                await self.abstract_hadith(message.channel, name, ref, \
+                        "english", 1)
             except:
                 return
 
