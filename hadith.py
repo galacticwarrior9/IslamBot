@@ -89,11 +89,17 @@ class HadithSpecifics:
 
         json_lst = await self.get_json()
 
-        if not json_lst or len(json_lst) < self.hadith.hadith_number \
-                or self.hadith.hadith_number <= 0:
+        if not json_lst:
             return
 
-        json = json_lst[self.hadith.hadith_number - 1]
+        lst = [obj for obj in json_lst if \
+                obj["hadithNumber"] == self.hadith.hadith_number \
+                or obj["ourHadithNumber"] == self.hadith.hadith_number]
+
+        if not lst:
+            return
+
+        json = lst[0]
 
         # Get hadith text.
         self.raw_text = json["hadithText"]
