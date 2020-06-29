@@ -1,5 +1,7 @@
 import aiohttp
 from discord.ext import commands
+from discord.ext.commands import CheckFailure
+
 from utils import get_prefix, convert_to_arabic_number, make_embed
 from collections import OrderedDict
 from dbhandler import create_connection, update_guild_translation, get_guild_translation
@@ -16,6 +18,8 @@ INVALID_ARGUMENTS_ARABIC = "Invalid arguments! Do `{0}aquran [surah]:[ayah]`. Ex
 INVALID_ARGUMENTS_ENGLISH = "Invalid arguments! Do `{0}aquran [surah]:[ayah]`. Example: `{0}aquran 1:1`" \
                                "\nTo fetch multiple verses, do `{0}quran [surah]:[first ayah]-[last ayah]`" \
                                "\nExample: `{0}aquran 1:1-7`".format(prefix)
+
+DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
 SQL_ERROR = "There was an error connecting to the database."
 
@@ -224,7 +228,7 @@ class Quran(commands.Cog):
         return language_codes[edition]
 
     @commands.command(name="settranslation")
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_permissions(administrator=True)
     async def settranslation(self, ctx, translation: str):
 
         if translation is None:
@@ -239,10 +243,15 @@ class Quran(commands.Cog):
             await create_connection()
         except Exception as e:
             print(e)
-            return await ctx.send("Could not contact the database. Please try again later.")
+            return await ctx.send(DATABASE_UNREACHABLE)
 
         await update_guild_translation(ctx.guild.id, translation)
         await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
+
+    @settranslation.error
+    async def settranslation_error(self, ctx, error):
+        if isinstance(error, CheckFailure):
+            await ctx.send("You need the **Administrator** permission to use this command.")
 
     @commands.command(name="quran", aliases=["Quran"])
     async def quran(self, ctx, ref: str, edition: str = None):
@@ -272,8 +281,10 @@ class Quran(commands.Cog):
             surah_name, readable_edition, revelation_type = await self.get_metadata(spec, edition)
             translated_surah_name = await self.get_translated_surah_name(spec, edition)
 
-            if revelation_type == "makkah": revelation_type = "Meccan"
-            elif revelation_type == "madinah": revelation_type = "Medinan"
+            if revelation_type == "makkah":
+                revelation_type = "Meccan"
+            else:
+                revelation_type = "Medinan"
 
             await self.get_verses(spec)
 
@@ -308,19 +319,20 @@ class Quran(commands.Cog):
     def get_spec(ref, edition='ar'):
         return QuranSpecifics(ref, edition)
 
-    # Fetches the verses' text.
-    # We use the quran.com API or alquran.cloud API depending on the translation used.
     async def get_verses(self, spec):
+        """Fetches the verses' text. We use the quran.com API or alquran.cloud API depending on the translation used."""
         if spec.quran_com:
             async with self.session.get(self.quran_com_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
                 data = data['verses']
             verses = [(verse['verse_number'], verse['translations'][0]['text']) for verse in data]
+
         elif spec.edition == 'ar':
             async with self.session.get(self.arabic_url.format(spec.surah, spec.offset, spec.limit)) as r:
                 data = await r.json()
                 data = data['data']['ayahs']
             verses = [(verse['numberInSurah'], verse['text']) for verse in data]
+
         else:
             async with self.session.get(self.alquran_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
@@ -329,11 +341,9 @@ class Quran(commands.Cog):
 
         await self.make_ordered_dict(spec, verses)
 
-    # Make an ordered dict from the verse text.
-    # The verse text is truncated if it is too long for the embed field.
-
     @staticmethod
     async def make_ordered_dict(spec, verses):
+        """Make an ordered dict from the verse text. The verse text is truncated if it's too long for the embed field"""
         for verse in verses:
             key, text = verse
             if spec.edition == 'ar':
@@ -342,9 +352,8 @@ class Quran(commands.Cog):
                 key = f'{spec.surah}:{key}'
             spec.ordered_dict[key] = text
 
-    # Get the surah name in Arabic along with the revelation location.
-
     async def get_metadata(self, spec, edition):
+        """Get the surah name in Arabic along with the revelation location."""
         if spec.edition == 'ar':
             async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}') as r:
                 data = await r.json()

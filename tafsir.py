@@ -207,12 +207,16 @@ class Tafsir(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if reaction.message.author == self.bot.user and user != self.bot.user:
-            msg = reaction.messagec
+            msg = reaction.message
             embed = msg.embeds[0]
 
             # Get the tafsir ID to use in the URL from its Arabic name in the embed's author:
             arabic_name = embed.author.name
-            tafsir_name = dictNameReverse[arabic_name]
+            try:
+                tafsir_name = dictNameReverse[arabic_name]
+            except KeyError:
+                return
+
             tafsir_id = dictID[tafsir_name]
 
             # Get the surah and ayah from the embed's title:

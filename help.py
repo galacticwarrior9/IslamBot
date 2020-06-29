@@ -57,7 +57,7 @@ class Help(commands.Cog):
                                               "\n\n__Usage__"
                                               "\n\n`-settranslation <translation>`"
                                               "\n\nExample: `-settranslation khattab`"
-                                              "\n\nYou must have the **Manage Server** permission to use this command.")
+                                              "\n\nYou must have the **Administrator** permission to use this command.")
 
             await ctx.send(embed=em)
 

@@ -256,19 +256,15 @@ class Hadith(commands.Cog):
 
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add",
-                            timeout=120, check=lambda reaction,
-                            user: (reaction.emoji == '➡'
-                                   or reaction.emoji == '⬅')
-                                   and user != self.bot.user
-                                   and reaction.message.id == msg.id)
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout=120, check=lambda reaction, user:
+                    (reaction.emoji == '➡' or reaction.emoji == '⬅')
+                     and user != self.bot.user
+                     and reaction.message.id == msg.id)
 
                 except asyncio.TimeoutError:
                     await msg.remove_reaction(emoji='➡', member=self.bot.user)
                     await msg.remove_reaction(emoji='⬅', member=self.bot.user)
                     break
-
-                await msg.remove_reaction(reaction.emoji, user)
 
                 if reaction.emoji == '➡' and spec.page < spec.num_pages:
                     spec.page += 1
@@ -278,6 +274,13 @@ class Hadith(commands.Cog):
 
                 em = spec.makeEmbed()
                 await msg.edit(embed=em)
+
+                try:
+                    await msg.remove_reaction(reaction.emoji, user)
+                # The above fails if the bot doesn't have the "Manage Messages" permission, but it can be safely ignored
+                # as it is not essential functionality.
+                except discord.ext.commands.errors.CommandInvokeError:
+                    pass
 
         else:
             await channel.send(ERROR)

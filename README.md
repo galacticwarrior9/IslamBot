@@ -52,7 +52,7 @@ The above command would quote Surah 1, Verses 1-7 (Surah al-Fatihah) using the t
 
 #### -settranslation
 
-**-settranslation** allows you to change the default translation of `-quran` on your server. You must have the `Manage Server` or `Administrator` permission to use this command. 
+**-settranslation** allows you to change the default translation of `-quran` on your server. You must have the `Administrator` permission to use this command. 
 
 ```
 -settranslation <translation>
