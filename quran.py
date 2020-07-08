@@ -15,9 +15,9 @@ INVALID_ARGUMENTS_ARABIC = "Invalid arguments! Do `{0}aquran [surah]:[ayah]`. Ex
                                "\nTo fetch multiple verses, do `{0}quran [surah]:[first ayah]-[last ayah]`" \
                                "\nExample: `{0}aquran 1:1-7`".format(prefix)
 
-INVALID_ARGUMENTS_ENGLISH = "Invalid arguments! Do `{0}aquran [surah]:[ayah]`. Example: `{0}aquran 1:1`" \
+INVALID_ARGUMENTS_ENGLISH = "Invalid arguments! Do `{0}quran [surah]:[ayah]`. Example: `{0}quran 1:1`" \
                                "\nTo fetch multiple verses, do `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                               "\nExample: `{0}aquran 1:1-7`".format(prefix)
+                               "\nExample: `{0}quran 1:1-7`".format(prefix)
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 

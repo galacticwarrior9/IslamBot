@@ -139,8 +139,9 @@ class Tafsir(commands.Cog):
 
         # Paginate the text, set the embed text to the current page and calculate how many pages were made:
         try:
-            pages = textwrap.wrap(text, 2040, break_long_words=False)
+            pages = textwrap.wrap(text, 2034, break_long_words=False)
             text = pages[page - 1]
+            text = '***' + text + '***'
             num_pages = len(pages)
         except IndexError:
             return
@@ -153,7 +154,7 @@ class Tafsir(commands.Cog):
         for footnote in footnotes:
             text = text.replace(footnote, '')
             footnote_number_arabic = convert_to_arabic_number(str(footnote_number))
-            footer.append(f'\n\n({footnote_number_arabic}) {footnote}')
+            footer.append(f'\n({footnote_number_arabic}) {footnote}')
             footnote_number = footnote_number + 1
         footer = ''.join(footer)
 
