@@ -10,6 +10,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 
+
 def get_prefix():
     prefix = config['IslamBot']['prefix']
     return prefix
@@ -201,4 +202,5 @@ class PrefixHandler:
 
     @classmethod
     def has_custom_prefix(cls, guild_id: int) -> bool:
+
         return guild_id in cls.df.guildID.values
