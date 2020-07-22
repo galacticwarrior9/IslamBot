@@ -129,7 +129,7 @@ class Help(commands.Cog):
             em = discord.Embed(title="Settings",colour=0x0a519c)
             em.add_field(name=f"{pre}prefix set", inline=True, value="Sets a new prefix for the server"
                                                         "\n\n__Usage__"
-                                                        f"\n\n`{pre}set <new_prefix>"
+                                                        f"\n\n`{pre}set <new_prefix>`"
                                                         "\n\nExample: `{prefix}set +`")
             em.add_field(name=f"{pre}prefix remove", inline=True, value="Removes any custom prefix that was set"
                                                          "\n\n__Usage__"
