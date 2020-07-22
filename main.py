@@ -12,6 +12,9 @@
 
 import configparser
 from discord.ext import commands
+from utils import PrefixHandler
+
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -19,12 +22,23 @@ config.read('config.ini')
 token = config['IslamBot']['token']
 prefix = config['IslamBot']['prefix']
 
+prefix_list = (prefix)
+
+async def get_prefix(_, message):
+    guild_id = message.guild.id
+    if PrefixHandler.has_custom_prefix(guild_id):
+        guild_prefix = PrefixHandler.get_prefix(guild_id)
+        if guild_prefix:
+            return (*prefix_list, guild_prefix)
+    else:
+        return prefix_list
+
 description = "A Discord bot with Islamic utilities."
 
 cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
             'mushaf', 'dua', 'help', 'TopGG']
 
-bot = commands.AutoShardedBot(command_prefix=prefix, description=description)
+bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description)
 
 
 @bot.event
