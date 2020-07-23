@@ -15,14 +15,14 @@ from discord.ext import commands
 from utils import PrefixHandler
 
 
-
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 token = config['IslamBot']['token']
-prefix = config['IslamBot']['prefix']
+default_prefix = config['IslamBot']['default_prefix']
 
-prefix_list = (prefix)
+prefix_list = default_prefix
+
 
 async def get_prefix(_, message):
     guild_id = message.guild.id
@@ -36,7 +36,7 @@ async def get_prefix(_, message):
 description = "A Discord bot with Islamic utilities."
 
 cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
-            'mushaf', 'dua', 'help', 'TopGG','settings']
+            'mushaf', 'dua', 'help', 'TopGG', 'settings']
 
 bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description)
 
@@ -45,11 +45,11 @@ bot.remove_command('help')
 for cog in cog_list:
     bot.load_extension(cog)
 
+
 @bot.event
 async def on_ready():
 
     print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
-
 
 
 bot.run(token)

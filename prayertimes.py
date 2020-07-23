@@ -19,11 +19,9 @@ class PrayerTimes(commands.Cog):
     async def prayertimes(self, ctx, *, location):
 
         try:
-            # Open URL and parse JSON
             async with self.session.get(self.default_url.format(location, '0'), headers=headers) as resp:
                 data = await resp.json()
 
-            # Assign variables from JSON
             fajr = data['data']['timings']['Fajr']
             sunrise = data['data']['timings']['Sunrise']
             dhuhr = data['data']['timings']['Dhuhr']
@@ -39,7 +37,6 @@ class PrayerTimes(commands.Cog):
 
             hanafi_asr = data['data']['timings']['Asr']
 
-            # Construct and send embed
             em = discord.Embed(colour=0x2186d3, title=date)
             em.set_author(name=f'Prayer Times for {location.title()}', icon_url=icon)
             em.add_field(name=f'**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)
@@ -55,10 +52,8 @@ class PrayerTimes(commands.Cog):
             await ctx.send(embed=em)
 
         except:
-            await ctx.send('**Invalid arguments!** Usage: `-prayertimes [location]`.\n'
-                           'Example: `-prayertimes London`\n')
+            await ctx.send('**Location not found**.')
 
 
-# Register as cog
 def setup(bot):
     bot.add_cog(PrayerTimes(bot))

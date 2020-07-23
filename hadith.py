@@ -3,7 +3,6 @@ import asyncio
 import re
 import discord
 import html2text
-from utils import get_prefix
 from discord.ext import commands
 from aiohttp import ClientSession
 import textwrap
@@ -16,11 +15,9 @@ ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 ERROR = 'The hadith could not be found on sunnah.com.'
 
-PREFIX = get_prefix()
-
-INVALID_INPUT = f'Invalid arguments! Please do `{PREFIX}hadith <collection name>' \
-                f'<book number>:<hadith number>` \n' \
-                f'Valid collection names are `{HADITH_COLLECTION_LIST}`'
+INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
+                '\n\nExample: `{0}hadith bukhari 1:1`' \
+                f'\n\nValid collection names are `{HADITH_COLLECTION_LIST}`'
 
 URL_FORMAT = "https://sunnah.com/ajax/{}/{}/{}"
 
@@ -220,11 +217,17 @@ class Hadith(commands.Cog):
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
-        await self.abstract_hadith(ctx, collection_name, ref, "english", page)
+        try:
+            await self.abstract_hadith(ctx, collection_name, ref, "english", page)
+        except:
+            await ctx.send(INVALID_INPUT.format(ctx.prefix))
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
-        await self.abstract_hadith(ctx, collection_name, ref, "arabic", page)
+        try:
+            await self.abstract_hadith(ctx, collection_name, ref, "arabic", page)
+        except:
+            await ctx.send(INVALID_INPUT.format(f'{ctx.prefix}a'))
 
     @commands.command(name='uhadith')
     async def uhadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
@@ -238,10 +241,7 @@ class Hadith(commands.Cog):
         return collection_name.lower() in ['bukhari', 'abudawud']
 
     async def abstract_hadith(self, channel, collection_name, ref, lang, page):
-        if collection_name in HADITH_COLLECTION_LIST:
-            spec = HadithSpecifics(collection_name, self.session, lang, ref, page)
-        else:
-            return await channel.send(INVALID_INPUT)
+        spec = HadithSpecifics(collection_name, self.session, lang, ref, page)
 
         await spec.getHadith()
 

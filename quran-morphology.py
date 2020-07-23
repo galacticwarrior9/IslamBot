@@ -4,9 +4,9 @@ from utils import get_site_source
 import discord
 import re
 
-icon = 'https://www.stickpng.com/assets/images/580b585b2edbce24c47b2abb.png'
-INVALID_ARGUMENTS = "**Invalid arguments!**\nUsage: `-quranmorphology surah:verse:word\nExample: `-quranmorphology 1:1:2`" \
-                    "(for the second word of the first verse of Surah al-Fatiha)"
+ICON = 'https://www.stickpng.com/assets/images/580b585b2edbce24c47b2abb.png'
+INVALID_ARGUMENTS = "**Invalid arguments!**\n\n**Type**: `{0}quranmorphology <surah>:<verse>:<word number>`" \
+                    "\n\n**Example**: `{0}quranmorphology 1:1:2`"
 
 
 class QuranMorphology(commands.Cog):
@@ -21,14 +21,14 @@ class QuranMorphology(commands.Cog):
     async def morphology(self, ctx, ref: str):
 
         if not self.isInCorrectFormat(ref):
-            await ctx.send(INVALID_ARGUMENTS)
+            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
             return
 
         try:
             surah, verse, word = ref.split(':')
 
         except:
-            await ctx.send(INVALID_ARGUMENTS)
+            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
             return
 
         wordSource = await get_site_source(self.morphologyURL.format(surah, verse, word))
@@ -46,7 +46,7 @@ class QuranMorphology(commands.Cog):
             syntaxImage = self.getSyntaxImage(syntaxSource, word)
 
         em = discord.Embed(colour=0x006400)
-        em.set_author(name=f"Qurʾān {surah}:{verse}, Word {word}", icon_url=icon)
+        em.set_author(name=f"Qurʾān {surah}:{verse}, Word {word}", icon_url=ICON)
         em.add_field(name='Morphology', value=f'From right to left: \n {morphology} ({grammar.text})', inline=False)
         em.add_field(name='Information', value=f'{paragraph.text}', inline=False)
 

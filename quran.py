@@ -2,26 +2,22 @@ import aiohttp
 from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
-from utils import get_prefix, convert_to_arabic_number, make_embed
+from utils import convert_to_arabic_number, make_embed
 from collections import OrderedDict
 from dbhandler import create_connection, update_guild_translation, get_guild_translation
-
-prefix = get_prefix()
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
                       "lambot/blob/master/Translations.md>"
 
-INVALID_ARGUMENTS_ARABIC = "Invalid arguments! Do `{0}aquran [surah]:[ayah]`. Example: `{0}aquran 1:1`" \
-                               "\nTo fetch multiple verses, do `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                               "\nExample: `{0}aquran 1:1-7`".format(prefix)
+INVALID_ARGUMENTS_ARABIC = "**Invalid arguments!** Type `{0}aquran [surah]:[ayah]`. \n\nExample: `{0}aquran 1:1`" \
+                               "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
+                               "\n\nExample: `{0}aquran 1:1-7`"
 
-INVALID_ARGUMENTS_ENGLISH = "Invalid arguments! Do `{0}quran [surah]:[ayah]`. Example: `{0}quran 1:1`" \
-                               "\nTo fetch multiple verses, do `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                               "\nExample: `{0}quran 1:1-7`".format(prefix)
+INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah]`. \n\nExample: `{0}quran 1:1`" \
+                               "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
+                               "\n\nExample: `{0}quran 1:1-7`"
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
-
-SQL_ERROR = "There was an error connecting to the database."
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
@@ -251,7 +247,7 @@ class Quran(commands.Cog):
     @settranslation.error
     async def settranslation_error(self, ctx, error):
         if isinstance(error, CheckFailure):
-            await ctx.send("You need the **Administrator** permission to use this command.")
+            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
 
     @commands.command(name="quran", aliases=["Quran"])
     async def quran(self, ctx, ref: str, edition: str = None):
@@ -276,7 +272,7 @@ class Quran(commands.Cog):
             try:
                 spec = self.get_spec(ref, edition)
             except:
-                return await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(prefix))
+                return await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
 
             surah_name, readable_edition, revelation_type = await self.get_metadata(spec, edition)
             translated_surah_name = await self.get_translated_surah_name(spec, edition)
@@ -302,7 +298,7 @@ class Quran(commands.Cog):
         try:
             spec = self.get_spec(ref)
         except:
-            return await ctx.send(INVALID_ARGUMENTS_ARABIC.format(prefix))
+            return await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
         surah_name = await self.get_metadata(spec, edition='ar')
         await self.get_verses(spec)

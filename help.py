@@ -10,7 +10,7 @@ class Help(commands.Cog):
     @commands.command(name="ihelp")
     async def ihelp(self, ctx, *, section: str = "main"):
 
-        pre= ctx.prefix
+        pre = ctx.prefix
 
         section = section.lower()
 
@@ -21,7 +21,7 @@ class Help(commands.Cog):
             em.add_field(name="Links", value="• [Vote](https://top.gg/bot/352815253828141056/vote)\n"
                                              "• [Support Server](https://discord.gg/Ud3MHJR)\n"
                                              "• [Documentation](https://github.com/galacticwarrior9/islambot/blob/master/README.md)\n"
-                                             "• [Contributors](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)"
+                                             "• [Contributors](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)\n"
                                              "• [GitHub](https://github.com/galacticwarrior9/islambot)\n"
                                              "• [Iqra](https://top.gg/bot/706134327200841870)"
                          , inline=False)
@@ -125,20 +125,18 @@ class Help(commands.Cog):
                                                          "\n\nSee `-dualist` for a list of topics.")
             await ctx.send(embed=em)
 
-        elif section == "settings" or section == "settings".upper():
-            em = discord.Embed(title="Settings",colour=0x0a519c)
-            em.add_field(name=f"{pre}prefix set", inline=True, value="Sets a new prefix for the server"
+        elif section == "settings":
+            em = discord.Embed(title="Settings", colour=0x0a519c, description='🔒 You need the **Administrator** '
+                                                                              'permission to use these commands.')
+            em.add_field(name=f"{pre}prefix set", inline=True, value="Sets a custom prefix for the server."
                                                         "\n\n__Usage__"
-                                                        f"\n\n`{pre}set <new_prefix>`"
-                                                        "\n\nExample: `{prefix}set +`")
-            em.add_field(name=f"{pre}prefix remove", inline=True, value="Removes any custom prefix that was set"
+                                                        f"\n\n`{pre}prefix set <new_prefix>`"
+                                                        f"\n\nExample: `{pre}prefix set +`")
+            em.add_field(name=f"{pre}prefix remove", inline=True, value="Removes any custom prefix that was set."
                                                          "\n\n__Usage__"
-                                                         f"\n\n`{pre}prefix remove`"
-                         )
+                                                         f"\n\n`{pre}prefix remove`")
             await ctx.send(embed=em)
 
 
-
-# Register as cog
 def setup(bot):
     bot.add_cog(Help(bot))

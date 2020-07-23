@@ -24,8 +24,8 @@ dictID = {
     'kashf': 109,
 }
 
-invalid_verse = '**Invalid verse.** Please type the command in this format: `-tafsir surah:ayah tafsirname`.' \
-                '\n\ne.g. `-tafsir 1:1 ibnkathir`'
+invalid_verse = '**Invalid arguments.** Type the command in this format: `{0}tafsir <surah>:<ayah> <tafsir name>`.' \
+                '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
 
 invalid_tafsir = "**Couldn't find tafsir!** Please choose from the following: `ibnkathir`, `jalalayn`, `qushayri`, " \
                  "`wahidi`, `tustari`, `kashf`."
@@ -175,8 +175,9 @@ class TafsirEnglish(commands.Cog):
         try:
             spec = TafsirSpecifics(tafsir, ref, page)
         except KeyError:
-            return await ctx.send("**Invalid tafsir**.\nTafsirs: `ibnkathir`, `jalalayn`, `tustari`, `kashani`, "
-                                  "`wahidi`, `qushayri`")
+            return await ctx.send(invalid_tafsir)
+        except ValueError:
+            return await ctx.send(invalid_verse.format(ctx.prefix))
 
         await spec.get_text(spec.tafsir)
 

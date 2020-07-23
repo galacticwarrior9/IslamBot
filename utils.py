@@ -10,16 +10,10 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 
-
-def get_prefix():
-    prefix = config['IslamBot']['prefix']
-    return prefix
-
-
 def make_embed(**kwargs):
 
     """
-    Creates an embed messasge with specified inputs.
+    Creates an embed message with specified inputs.
     Parameters
     ----------
         author
@@ -76,8 +70,10 @@ def make_embed(**kwargs):
     embedObj.set_footer(text=footer, icon_url=footer_icon)
     embedObj.description = description
     # Set the attributes that have no default
-    if image: embedObj.set_image(url=image)
-    if thumbnail: embedObj.set_thumbnail(url=thumbnail)
+    if image:
+        embedObj.set_image(url=image)
+    if thumbnail:
+        embedObj.set_thumbnail(url=thumbnail)
 
     # Set the fields
     for i, o in fields.items():
@@ -133,9 +129,8 @@ def convert_from_arabic_number(number_string):
     return "".join([dic[char] for char in number_string])
 
 
-
-
 path = "prefixes.csv"
+
 
 def make_csv():
     df = pd.DataFrame(columns=['guildID', 'prefix', 'authorID'])
@@ -186,8 +181,6 @@ class PrefixHandler:
             cls.df = cls.df[cls.df.guildID != guild_id]
             cls.save()
 
-
-
     @classmethod
     def get_prefix(cls, guild_id: int) -> Union[str, None]:
         prefix = None
@@ -198,6 +191,11 @@ class PrefixHandler:
         except:
             pass
 
+        return prefix
+
+    @classmethod
+    def get_default_prefix(cls):
+        prefix = config['IslamBot']['default_prefix']
         return prefix
 
     @classmethod

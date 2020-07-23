@@ -1,26 +1,26 @@
 from discord.ext import commands
-from utils import PrefixHandler, get_prefix
+from discord.ext.commands import CheckFailure
+from utils import PrefixHandler
 import discord
 
 
 class Settings(commands.Cog):
 
-    def __init__(self,bot):
+    def __init__(self, bot):
         self.bot = bot
 
-
-
     @commands.group()
-    async def prefix(self,ctx):
+    async def prefix(self, ctx):
         if ctx.invoked_subcommand is None:
             prefix = PrefixHandler.get_prefix(ctx.guild.id)
-            embed = discord.Embed(title="Setting a custom prefix",color=0x467f05)
+            embed = discord.Embed(title="Setting a custom prefix", color=0x467f05)
             if not prefix:
-                prefix = get_prefix()
+                prefix = PrefixHandler.get_default_prefix()
                 embed.description = f"`{prefix}set <prefix>`"
+
     @prefix.command()
     @commands.has_permissions(administrator=True)
-    async def set(self,ctx,new_prefix):
+    async def set(self, ctx, new_prefix):
         """
         This command is used to set a custom prefix for your server
         It takes one argument and that is the prefix that you want to set
@@ -49,7 +49,10 @@ class Settings(commands.Cog):
         else:
             await ctx.send("Your server does not have a custom prefix to remove")
 
-
+    @prefix.error
+    async def prefix_error(self, ctx, error):
+        if isinstance(error, CheckFailure):
+            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
 
 
 def setup(bot):
