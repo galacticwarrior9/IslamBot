@@ -81,12 +81,12 @@ class Dua(commands.Cog):
 
     @commands.command(name='dualist')
     async def dualist(self, ctx):
-        list = ['**Type -dua <topic>**. Example: `-dua breaking fast`\n']
+        dua_list_message = ['**Type {0}dua <topic>**. Example: `{0}dua breaking fast`\n'.format(ctx.prefix)]
 
         for dua in self.duas:
-            list.append('\n' + dua.title())
+            dua_list_message.append('\n' + dua.title())
 
-        em = discord.Embed(title=f'Dua List', colour=0x467f05, description=''.join(list))
+        em = discord.Embed(title=f'Dua List', colour=0x467f05, description=''.join(dua_list_message))
         em.set_footer(text="Source: Fortress of the Muslim (Hisnul Muslim)")
 
         await ctx.send(embed=em)

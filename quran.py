@@ -1,7 +1,6 @@
 import aiohttp
 from discord.ext import commands
 from discord.ext.commands import CheckFailure
-
 from utils import convert_to_arabic_number, make_embed
 from collections import OrderedDict
 from dbhandler import create_connection, update_guild_translation, get_guild_translation
