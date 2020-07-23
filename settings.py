@@ -1,7 +1,12 @@
 from discord.ext import commands
-from discord.ext.commands import CheckFailure
+from discord.ext.commands import CheckFailure, MissingRequiredArgument
 from utils import PrefixHandler
 import discord
+
+help_message_set = "Type `{0}prefix set <prefix>` to set a custom prefix. \n\n**Example**: To set the prefix to" \
+                " `+`, type `{0}prefix set +`."
+
+help_message_remove = "Type `{0}prefix remove` to remove the custom prefix."
 
 
 class Settings(commands.Cog):
@@ -16,8 +21,7 @@ class Settings(commands.Cog):
             embed = discord.Embed(title="Setting a custom prefix", color=0x467f05)
             if not prefix:
                 prefix = PrefixHandler.get_default_prefix()
-            embed.description = f"Type `{prefix}prefix set <prefix>` to set a custom prefix." \
-            "\n\n**Example**: To set the prefix to `+`, type `-prefix set +`."
+            embed.description = f'{help_message_set.format(prefix)}\n\n{help_message_remove.format(prefix)}'
             await ctx.send(embed=embed)
 
     @prefix.command()
@@ -51,8 +55,17 @@ class Settings(commands.Cog):
         else:
             await ctx.send("Your server does not have a custom prefix to remove.")
 
-    @prefix.error
-    async def prefix_error(self, ctx, error):
+    @set.error
+    async def set_error(self, ctx, error):
+        if isinstance(error, CheckFailure):
+            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
+        elif isinstance(error, MissingRequiredArgument):
+            embed = discord.Embed(title="Setting a custom prefix", color=0x467f05)
+            embed.description = help_message_set.format(ctx.prefix)
+            await ctx.send(embed=embed)
+
+    @remove_.error
+    async def remove_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 You need the **Administrator** permission to use this command.")
 
