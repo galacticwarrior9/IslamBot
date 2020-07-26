@@ -9,7 +9,7 @@ import textwrap
 
 HADITH_COLLECTION_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
                     'ibnmajah', 'malik', 'riyadussaliheen', 'adab', 'bulugh',
-                    'qudsi', 'nawawi', 'shamail', 'ahmad']
+                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat']
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
@@ -179,6 +179,7 @@ class HadithSpecifics:
             'adab': "Al-Adab al-Mufrad",
             'bulugh': 'Bulugh al-Maram',
             'shamail': "Shamā'il Muhammadiyyah",
+            'mishkat': 'Mishkat al-Masabih',
             'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
             'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah'
         }
@@ -200,8 +201,9 @@ class HadithSpecifics:
             'adab': "الأدب المفرد",
             'bulugh': 'بلوغ المرام',
             'shamail': 'الشمائل المحمدية',
+            'mishkat': 'مشكاة المصابيح',
             'qudsi40': 'الأربعون القدسية',
-            'nawawi40': 'الأربعون النووية'
+            'nawawi40': 'الأربعون النووية',
         }
 
         return arabic_hadith_collections[collection_name]

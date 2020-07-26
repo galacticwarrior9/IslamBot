@@ -227,41 +227,40 @@ class Tafsir(commands.Cog):
             # Get the page number from the embed footer. First we split to get the word, then again to get the current
             # page.
             page = int(embed.footer.text.split(' ')[1].split('/')[0])
+            num_pages = int(embed.footer.text.split(' ')[1].split('/')[1])
 
-            # If the reaction is the forward arrow, attempt to get the next page:
+            # If the reaction is the forward arrow, attempt to get the last page:
             if reaction.emoji == '➡':
                 await msg.remove_reaction(emoji="➡", member=user)
-                new_page = page + 1
+
+                new_page = page - 1
+                if new_page < 1:
+                    new_page = num_pages
+
                 formatted_url = self.make_url(tafsir_id, surah, ayah)
                 content = str(await get_site_source(formatted_url))
-                try:
-                    text, num_pages, footer = self.process_text(content, new_page)
-                except TypeError:
-                    return
+                text, _, footer = self.process_text(content, new_page)
 
-                # Only proceed if the requested page is less than or equal to the total number of pages:
-                if new_page <= num_pages:
-                    em = self.make_embed(text, new_page, arabic_name, surah, ayah, footer, formatted_url, num_pages)
-                    await msg.edit(embed=em)
-                    await msg.add_reaction(emoji='⬅')
-                    if new_page == num_pages:
-                        await msg.remove_reaction(emoji="➡", member=self.bot.user)
+                em = self.make_embed(text, new_page, arabic_name, surah, ayah, footer, formatted_url, num_pages)
+                await msg.edit(embed=em)
+                await msg.add_reaction(emoji='⬅')
 
-            # If the reaction is the backwards arrow, attempt to get the previous page.
+            # If the reaction is the backwards arrow, attempt to get the next page.
             elif reaction.emoji == '⬅':
                 await reaction.message.remove_reaction(emoji="⬅", member=user)
-                new_page = page - 1
-                if new_page > 0:
-                    formatted_url = self.make_url(tafsir_id, surah, ayah)
-                    content = str(await get_site_source(formatted_url))
-                    text, num_pages, footer = self.process_text(content, new_page)
-                    em = self.make_embed(text, new_page, arabic_name, surah, ayah, footer, formatted_url, num_pages)
-                    await msg.edit(embed=em)
-                    await msg.add_reaction(emoji='➡')
-                    if new_page == 1:
-                        await msg.remove_reaction(emoji='⬅', member=self.bot.user)
+
+                new_page = page + 1
+                if new_page > num_pages:
+                    new_page = 1
+
+                formatted_url = self.make_url(tafsir_id, surah, ayah)
+                content = str(await get_site_source(formatted_url))
+                text, _, footer = self.process_text(content, new_page)
+
+                em = self.make_embed(text, new_page, arabic_name, surah, ayah, footer, formatted_url, num_pages)
+                await msg.edit(embed=em)
+                await msg.add_reaction(emoji='➡')
 
 
-# Register as cog
 def setup(bot):
     bot.add_cog(Tafsir(bot))
