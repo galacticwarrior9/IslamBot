@@ -1,5 +1,6 @@
 
 
+
 # IslamBot
 
 [![Discord Bots](https://top.gg/api/widget/status/352815253828141056.svg)](https://top.gg/bot/352815253828141056)
@@ -17,10 +18,16 @@ An Islamic bot for Discord with the following features:
 * The ability to view the morphology of every word in the Qur'an. 
 * Conversions between the Hijri and Gregorian calendars.
 * Visualisation of Qur'anic verses on a *mushaf*. 
-* Fetching duas from *Fortress of the Muslim* (Hisn al-Muslim)
+* Duas from *Fortress of the Muslim* (Hisn al-Muslim)
 
-IslamBot is licensed under the [GNU GPL v3.0](https://github.com/galacticwarrior9/islambot/blob/master/LICENSE). You are welcome to use the code for your own purposes, on the condition it is made open source and credit is given.
+### Contributors
+Thank you to all those who have [contributed](https://github.com/galacticwarrior9/IslamBot/graphs/contributors) to the project.
 
+Also, thank you to following people who are not listed in the above link:
+
+* Caleb, on whose code most of this project was originally based on.
+* ala/Burhan from the Durkastan server, who rewrote most of the Qur'an code.
+* Mew, who graciously translated much of the documentation into Arabic. 
 
 ## Qur'an
 
@@ -186,6 +193,7 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
 | **Hadith Collection** | **Name for Bot** | **Supported Languages** |
 |--|--|--|
 | Musnad Ahmad ibn Hanbal | `ahmad` | English, Arabic | 
+| Mishkat al-Masabih | `mishkat` | English, Arabic | 
 | Sahih al-Bukhari | `bukhari` | Urdu, English, Arabic
 | Sahih Muslim | `muslim` | English, Arabic
 |  Jami' at-Tirmidhi | `tirmidhi` | English, Arabic
@@ -210,7 +218,7 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
 
 ## Prayer (Salaah) Times
 
-The bot can also fetch the prayer times for any location. More precise locations will yield more accurate prayer times. 
+The bot can also send the prayer times for any location. More precise locations will yield more accurate prayer times. 
 
 ```
 -prayertimes <location>
@@ -221,7 +229,7 @@ For example:
 -prayertimes Burj Khalifa, Dubai
 ```
 
-..would fetch prayer times in the general area of the Burj Khalifa in Dubai. 
+..would send prayer times in the general area of the Burj Khalifa in Dubai. 
 
 
 ## Hijri Calendar
@@ -249,3 +257,19 @@ For example, to convert 17 Muharram 1407:
 ```
 -convertfromhijri 17-01-1407
 ```
+
+## Settings
+
+🔒 You must have the **Administrator** permission to use these commands.
+
+### -prefix set
+
+Sets a custom prefix for the bot on your server.
+
+For example, to change the prefix to `+`, type:
+```
+-prefix set +
+```
+
+### -prefix remove
+Removes the bot's custom prefix on your server.
