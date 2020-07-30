@@ -77,7 +77,10 @@ class HijriCalendar(commands.Cog):
         game = discord.Game(f"-ihelp | {hijri}")
         await self.bot.change_presence(activity=game)
 
+    @update_hijri_date.before_loop
+    async def before_hijri_update(self):
+        await self.bot.wait_until_ready()
 
-# Register as cog
+
 def setup(bot):
     bot.add_cog(HijriCalendar(bot))

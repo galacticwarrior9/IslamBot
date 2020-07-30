@@ -22,5 +22,6 @@ class TopGG(commands.Cog):
     async def on_guild_remove(self, guild): # when the bot leaves a server
         await self.dblpy.post_guild_count() # post server count
 
+
 def setup(bot):
     bot.add_cog(TopGG(bot))

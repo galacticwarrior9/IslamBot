@@ -1,6 +1,4 @@
 
-
-
 # IslamBot
 
 [![Discord Bots](https://top.gg/api/widget/status/352815253828141056.svg)](https://top.gg/bot/352815253828141056)
@@ -14,7 +12,7 @@ An Islamic bot for Discord with the following features:
 * *Qur'an*, with support for 75+ translations.
 * *Tafsir*, with 7 available in English and 37 in Arabic.
 * *Hadith* in English and Arabic, from [sunnah.com](https://sunnah.com).
-* Prayer times for any location in the world. 
+* Prayer times for any location in the world, with the ability to set reminders and change the calculation method.
 * The ability to view the morphology of every word in the Qur'an. 
 * Conversions between the Hijri and Gregorian calendars.
 * Visualisation of Qur'anic verses on a *mushaf*. 
@@ -217,6 +215,7 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
 
 
 ## Prayer (Salaah) Times
+### -prayertimes
 
 The bot can also send the prayer times for any location. More precise locations will yield more accurate prayer times. 
 
@@ -231,7 +230,14 @@ For example:
 
 ..would send prayer times in the general area of the Burj Khalifa in Dubai. 
 
+### -setcalculationmethod
+Allows you to change the calculation method for `-prayertimes`.
 
+### -addprayerreminder
+Allows you to set a channel where the bot will send prayer time reminders.
+
+### -removeprayerreminder
+Allows you to remove prayer time reminders from a channel.
 ## Hijri Calendar
 
 ### -hijridate
