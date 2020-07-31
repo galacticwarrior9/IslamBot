@@ -238,6 +238,10 @@ Allows you to set a channel where the bot will send prayer time reminders.
 
 ### -removeprayerreminder
 Allows you to remove prayer time reminders from a channel.
+
+### -removepersonalprayerreminder
+Ends personal prayer time reminders.
+
 ## Hijri Calendar
 
 ### -hijridate

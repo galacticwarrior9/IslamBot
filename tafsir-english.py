@@ -71,12 +71,9 @@ class TafsirSpecifics:
             self.text = ''.join(tags)
 
         elif tafsir == 'ibnkathir':
-            p_tags = source.find_all('p')
-            x = 0
-            for tag in range(len(p_tags)):
-                tags.append(p_tags[x].get_text())
-                x += 1
-            self.text = ''.join(tags)
+            body = source.find('note')
+            text = body.text
+            self.text = text
             self.clean_text()
 
         elif tafsir == 'jalalayn':
@@ -85,8 +82,8 @@ class TafsirSpecifics:
             self.surah = int(self.surah)
             try:
                 char1 = f'[{self.surah}:{self.ayah}]'
-                self.ayah += 1
-                char2 = f'[{self.surah}:{self.ayah}]'
+                next_ayah = self.ayah + 1
+                char2 = f'[{self.surah}:{next_ayah}]'
 
                 text = source[(source.index(char1) + len(char1)):source.index(char2)]
                 self.text = f"{text}".replace('`', '\\`').replace('(s)', '(ﷺ)').rstrip()
@@ -99,31 +96,25 @@ class TafsirSpecifics:
                 text = source[(source.index(char1) + len(char1)):source.index(char2)]
                 self.text = u"{}".format(text).replace('`', '\\`').rstrip()
 
-        self.pages = textwrap.wrap(self.text, 2048, break_long_words=False)
+        self.pages = textwrap.wrap(self.text, 2000, break_long_words=False)
         self.num_pages = len(self.pages)
 
     def clean_text(self):
-        self.text = self.text.replace("Thanks for visiting Alim.org, The Alim Foundation's flagship site that provides the w"
-                            "orld's only social network built around Qur'an, Hadith, and other classical sources of"
-                            " Islamic knowledge.", '') \
-            .replace("We are a free service run by many volunteers and we need your help to stay that way. Please"
-                     " consider a small donation(tax-deductible in the USA) to help us improve Alim.org by adding"
-                     " more content and getting faster servers.", '') \
-            .replace("Share your thoughts about this with others by posting a comment.  "
-                     "Visit our FAQ for some ideas.", '') \
-            .replace('`', 'ʿ') \
-            .replace('﴾', '##') \
-            .replace('﴿', '##') \
-            .replace('»', '»##') \
-            .replace('«', ' ##«') \
+        self.text = self.text.replace('`', "'") \
             .replace('bin', 'b. ') \
             .replace('Hadith', 'hadith') \
-            .replace('No Comments', '') \
             .replace('Messenger of Allah', 'Messenger of Allah ﷺ') \
-            .replace(' )', ')')
+            .replace('«', '#«') \
+            .replace('»', '»#') \
+            .replace(' "', ' #"') \
+            .replace('." ', '."#') \
+            .replace('﴿', '#') \
+            .replace('﴾', '#') \
+
 
     async def make_embed(self):
         em = discord.Embed(title=f'{self.surah}:{self.ayah}', colour=0x467f05, description=self.pages[self.page - 1])
+        em.description = em.description.replace('#', '\n\n')
         em.set_author(name=f'{self.tafsir_name}', icon_url=icon)
         if self.num_pages > 1:
             em.set_footer(text=f'Page: {self.page}/{self.num_pages}')
@@ -145,7 +136,7 @@ class TafsirEnglish(commands.Cog):
 
         while True:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=120, check=lambda reaction, user:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=lambda reaction, user:
                 (reaction.emoji == '➡' or reaction.emoji == '⬅')
                  and user != self.bot.user
                  and reaction.message.id == msg.id)
@@ -155,11 +146,15 @@ class TafsirEnglish(commands.Cog):
                 await msg.remove_reaction(emoji='⬅', member=self.bot.user)
                 break
 
-            if reaction.emoji == '➡' and spec.page < spec.num_pages:
+            if reaction.emoji == '➡' and spec.page:
                 spec.page += 1
+                if spec.page > spec.num_pages:
+                    spec.page = 1
 
-            if reaction.emoji == '⬅' and spec.page > 1:
+            if reaction.emoji == '⬅':
                 spec.page -= 1
+                if spec.page < 1:
+                    spec.page = spec.num_pages
 
             await spec.make_embed()
             await msg.edit(embed=spec.embed)
