@@ -115,9 +115,11 @@ class Help(commands.Cog):
 
             em.add_field(name=f"{pre}setcalculationmethod", inline=True, value=f"Changes your personal calculation method for `{pre}prayertimes`")
 
-            em.add_field(name=f"{pre}addprayerreminder", inline=True, value=f"Sets a prayer times reminder channel.")
+            em.add_field(name=f"{pre}addprayerreminder", inline=True, value=f"Starts the prayer time reminders setup.")
 
             em.add_field(name=f"{pre}removeprayerreminder", inline=True, value=f"Removes prayer time reminders from a channel.")
+
+            em.add_field(name=f"{pre}removepersonalprayerreminder", inline=True, value=f"Ends personal prayer time reminders.")
 
             await ctx.send(embed=em)
 

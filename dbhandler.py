@@ -78,6 +78,36 @@ async def get_server_prayer_times_details():
         return results
 
 
+async def update_user_prayer_times_details(user_id, location, timezone, method):
+    connection = await create_connection()
+    async with connection.cursor() as cursor:
+        create_sql = f"INSERT INTO {user_prayer_times_table_name} (user, location, timezone, calculation_method) " \
+                     f"VALUES (%s, %s, %s, %s) " \
+                     f"ON DUPLICATE KEY UPDATE user=%s, location=%s, timezone=%s, calculation_method=%s"
+        await cursor.execute(create_sql, (user_id, location, timezone, method, user_id, location, timezone, method))
+        connection.close()
+
+
+async def delete_user_prayer_times_details(user_id):
+    connection = await create_connection()
+    async with connection.cursor() as cursor:
+        delete_mysql = f"DELETE FROM {user_prayer_times_table_name} WHERE user = %s"
+        await cursor.execute(delete_mysql, (user_id,))
+        connection.close()
+
+
+async def get_user_prayer_times_details():
+    connection = await create_connection()
+
+    async with connection.cursor() as cursor:
+        await cursor.execute(f"SELECT * "
+                             f"FROM {user_prayer_times_table_name}")
+
+        # This is not ideal since it loads the entire table into memory (PRs for alternatives would be appreciated)
+        results = await cursor.fetchall()
+        return results
+
+
 async def update_user_calculation_method(user, method):
     connection = await create_connection()
     async with connection.cursor() as cursor:

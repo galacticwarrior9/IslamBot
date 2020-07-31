@@ -4,7 +4,8 @@ import pytz
 from aiohttp import ClientSession
 from datetime import datetime
 from dbhandler import update_server_prayer_times_details, delete_server_prayer_times_details, \
-    get_server_prayer_times_details, get_user_calculation_method, update_user_calculation_method
+    get_server_prayer_times_details, get_user_calculation_method, update_user_calculation_method, \
+    get_user_prayer_times_details, update_user_prayer_times_details, delete_user_prayer_times_details
 from discord.ext import commands, tasks
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 from pytz import timezone
@@ -12,7 +13,6 @@ from pytz import timezone
 icon = 'https://www.muslimpro.com/img/muslimpro-logo-2016-250.png'
 
 headers = {'content-type': 'application/json'}
-
 
 class PrayerTimes(commands.Cog):
 
@@ -112,30 +112,48 @@ class PrayerTimes(commands.Cog):
             await ctx.send("❌ **Timed out**. Please try again.")
 
     @commands.command(name="addprayerreminder")
-    @commands.has_permissions(administrator=True)
     async def addprayerreminder(self, ctx):
 
         def is_user(msg):
             return msg.author == ctx.author
 
-        em = discord.Embed(colour=0x467f05, title='Prayer Times Reminder Setup (1/4)')
+        em = discord.Embed(colour=0x467f05, title='Prayer Times Reminder Setup')
         em.set_author(name=ctx.guild, icon_url=icon)
 
         try:
-            # Ask for channel.
-            em.description = "Please mention the **channel** to send prayer time reminders in."
+            # Ask whether we want to send personal reminders (DMs) or public reminders (in a channel).
+            em.description = "Do you want to receive reminders through your **server**, or **DMs**?" \
+                             "\n\n__**Please type either `server` or `DMs`.**__" \
+                             "\n\nYou __must__ have the **🔒 Administrator** permission to create server reminders." \
+                             "\n\nYou __must__ share a mutual server with the bot and allow it to send you DMs to " \
+                             "receive DM reminders."
             help_msg = await ctx.send(embed=em)
-            message = await self.bot.wait_for('message', timeout=60.0, check=is_user)
-            if message.channel_mentions:
-                channel = message.channel_mentions[0]
-                channel_id = channel.id
-            else:
-                return await ctx.send("❌ **Invalid channel**. Aborting.")
 
+            message = await self.bot.wait_for('message', timeout=60.0, check=is_user)
+            if message.content.lower() == 'server':
+                server = True
+            elif message.content.lower() == 'dms':
+                server = False
+            else:
+                return await ctx.send("❌ **Invalid response**. Aborting.")
+
+            # Ask for a reminder channel for server reminders.
+            if server is True:
+                em.description = "Please mention the **channel** to send prayer time reminders in."
+                await help_msg.edit(embed=em)
+
+                message = await self.bot.wait_for('message', timeout=60.0, check=is_user)
+                if message.channel_mentions:
+                    channel = message.channel_mentions[0]
+                    if ctx.author.guild_permissions.administrator:
+                        channel_id = channel.id
+                    else:
+                        return await ctx.send("❌ **You do not have the Administrator permission**. Aborting.")
+                else:
+                    return await ctx.send("❌ **Invalid channel**. Aborting.")
             # Ask for location.
             em.description = "Please set the **location** to send prayer times for. " \
                              "\n\n**Example**: Burj Khalifa, Dubai, UAE"
-            em.title = 'Prayer Times Reminder Setup (2/4)'
             await help_msg.edit(embed=em)
 
             message = await self.bot.wait_for('message', timeout=60.0, check=is_user)
@@ -145,7 +163,6 @@ class PrayerTimes(commands.Cog):
             em.description = "Please select the **__timezone__ of the location**. " \
                              "**[Click here](https://timezonedb.com/time-zones)** for a list of timezones." \
                              "\n\n**Examples**: `Asia/Dubai`, `Europe/London`, `America/Toronto`"
-            em.title = 'Prayer Times Reminder Setup (3/4)'
             await help_msg.edit(embed=em)
 
             message = await self.bot.wait_for('message', timeout=180.0, check=is_user)
@@ -155,9 +172,8 @@ class PrayerTimes(commands.Cog):
                 return await ctx.send("❌ **Invalid timezone**. Aborting.")
 
             # Ask for calculation method.
-            em.title = 'Prayer Times Reminder Setup (4/4)'
-            calculation_methods = await self.get_calculation_methods()
             em.description = "Please select the prayer times **calculation method number**.\n\n"
+            calculation_methods = await self.get_calculation_methods()
             for method, name in calculation_methods.items():
                 em.description = f'{em.description}**{method}** - {name}\n'
             await help_msg.edit(embed=em)
@@ -173,29 +189,40 @@ class PrayerTimes(commands.Cog):
 
             # Update database.
             try:
-                await update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
+                if server is True:
+                    await update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
+                else:
+                    await update_user_prayer_times_details(ctx.author.id, location, timezone, method)
             except Exception as e:
                 print(e)
                 return await ctx.send("❌ **An error occurred**. You may already have a reminder channel on the server.")
 
             # Send success message.
             em.description = f":white_check_mark: **Setup complete!**" \
-                             f"\n\n**Channel**: <#{channel.id}>\n**Location**: {location}\n**Timezone**: {timezone}" \
+                             f"\n\n**Location**: {location}\n**Timezone**: {timezone}" \
                              f"\n**Calculation Method**: {method}" \
-                             f"\n\nIf you would like to change these details, use `.deletereminderchannel` and run" \
-                             f" this command again."
+                             f"\n\nIf you would like to change these details, use `.removeprayerreminder` " \
+                             f"or `.removepersonalprayerreminder` and run this command again."
             await help_msg.edit(embed=em)
 
         except asyncio.TimeoutError:
             await ctx.send("**Timed out.** Please try again.")
 
-    @commands.command(name="removereminder")
+    @commands.command(name="removeprayerreminder")
     @commands.has_permissions(administrator=True)
     async def removeprayerreminder(self, ctx, channel: discord.TextChannel):
         try:
             await delete_server_prayer_times_details(ctx.guild.id, channel.id)
             await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders in <#{channel.id}>.**")
-        except Exception as e:
+        except:
+            await ctx.send("❌ **An error occurred**.")
+
+    @commands.command(name="removepersonalprayerreminder")
+    async def removepersonalprayerreminder(self, ctx):
+        try:
+            await delete_user_prayer_times_details(ctx.author.id)
+            await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders.**")
+        except:
             await ctx.send("❌ **An error occurred**.")
 
     @addprayerreminder.error
@@ -211,7 +238,7 @@ class PrayerTimes(commands.Cog):
         em = discord.Embed(colour=0x467f05)
         em.set_author(name='Prayer Times Reminder', icon_url=icon)
 
-        # To be honest, this is a very crude implementation - but it works. I would appreciate PRs for improvement.
+        # To be honest, this is a very crude implementation. I would appreciate PRs for improvement.
         servers = await get_server_prayer_times_details()
         for server in servers:
             channel_id = server[2]
@@ -219,46 +246,54 @@ class PrayerTimes(commands.Cog):
             calculation_method = server[3]
             location = server[4]
             time_zone = server[5]
+            await self.evaluate_times(channel, em, time_zone, location, calculation_method)
 
-            # Get the time at the timezone and convert it into a string.
-            tz = timezone(time_zone)
-            tz_time = datetime.now(tz).strftime('%H:%M')
+        users = await get_user_prayer_times_details()
+        for user in users:
+            user_id = user[0]
+            channel = self.bot.get_user(int(user_id))
+            location = user[1]
+            time_zone = user[2]
+            calculation_method = user[3]
+            await self.evaluate_times(channel, em, time_zone, location, calculation_method)
 
-            # Get the prayer times for the location.
-            fajr, _, dhuhr, asr, hanafi_asr, maghrib, isha, _, _, date = await self.get_prayertimes(
-                location, calculation_method)
+    async def evaluate_times(self, channel, em, time_zone, location, calculation_method):
 
-            maghrib = '21:10'
+        # Get the time at the timezone and convert it into a string.
+        tz = timezone(time_zone)
+        tz_time = datetime.now(tz).strftime('%H:%M')
 
-            em.title = location
+        # Get the prayer times for the location.
+        fajr, _, dhuhr, asr, hanafi_asr, maghrib, isha, _, _, date = await self.get_prayertimes(
+            location, calculation_method)
+        em.title = location
 
-            # If the time at the timezone matches the prayer times for the location, we send a reminder:
-            try:
-                if tz_time == fajr:
-                    em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
-                                     f"\n\n**Dhuhr** will be at __{dhuhr}__."
-                    await channel.send(embed=em)
+        try:
+            if tz_time == fajr:
+                em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
+                                 f"\n\n**Dhuhr** will be at __{dhuhr}__."
+                await channel.send(embed=em)
 
-                elif tz_time == dhuhr:
-                    em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
-                                     f"\n\n**Asr** will be at __{asr}__."
-                    await channel.send(embed=em)
+            elif tz_time == dhuhr:
+                em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
+                                 f"\n\n**Asr** will be at __{asr}__."
+                await channel.send(embed=em)
 
-                elif tz_time == asr:
-                    await channel.send(f"It is **Asr** time in **{location}**! (__{asr}__)."
-                                       f"\n\nFor Hanafis, the Asr will be at __{hanafi_asr}__."
-                                       f"\n\n**Maghrib** will be at __{maghrib}__.")
+            elif tz_time == asr:
+                await channel.send(f"It is **Asr** time in **{location}**! (__{asr}__)."
+                                   f"\n\nFor Hanafis, the Asr will be at __{hanafi_asr}__."
+                                   f"\n\n**Maghrib** will be at __{maghrib}__.")
 
-                elif tz_time == maghrib:
-                    em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
-                                     f"\n\n**Isha** will be at __{isha}__."
-                    await channel.send(embed=em)
+            elif tz_time == maghrib:
+                em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
+                                 f"\n\n**Isha** will be at __{isha}__."
+                await channel.send(embed=em)
 
-                elif tz_time == isha:
-                    em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
-                    await channel.send(embed=em)
-            except:
-                pass
+            elif tz_time == isha:
+                em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
+                await channel.send(embed=em)
+        except:
+            pass
 
 
 def setup(bot):
