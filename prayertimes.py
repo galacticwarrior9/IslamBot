@@ -281,7 +281,7 @@ class PrayerTimes(commands.Cog):
 
             elif tz_time == asr:
                 await channel.send(f"It is **Asr** time in **{location}**! (__{asr}__)."
-                                   f"\n\nFor Hanafis, the Asr will be at __{hanafi_asr}__."
+                                   f"\n\nFor Hanafis, Asr will be at __{hanafi_asr}__."
                                    f"\n\n**Maghrib** will be at __{maghrib}__.")
 
             elif tz_time == maghrib:

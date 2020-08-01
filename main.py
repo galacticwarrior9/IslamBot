@@ -25,7 +25,10 @@ prefix_list = default_prefix
 
 
 async def get_prefix(_, message):
-    guild_id = message.guild.id
+    try:
+        guild_id = message.guild.id
+    except AttributeError:
+        return prefix_list
     if PrefixHandler.has_custom_prefix(guild_id):
         guild_prefix = PrefixHandler.get_prefix(guild_id)
         if guild_prefix:
