@@ -14,6 +14,7 @@ icon = 'https://www.muslimpro.com/img/muslimpro-logo-2016-250.png'
 
 headers = {'content-type': 'application/json'}
 
+
 class PrayerTimes(commands.Cog):
 
     def __init__(self, bot):
@@ -59,6 +60,7 @@ class PrayerTimes(commands.Cog):
     async def prayertimes(self, ctx, *, location):
 
         calculation_method = await get_user_calculation_method(ctx.author.id)
+        calculation_method = int(calculation_method)
 
         try:
             fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await \
