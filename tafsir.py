@@ -3,6 +3,7 @@ import textwrap
 import re
 from bs4 import BeautifulSoup
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 from utils import get_site_source, convert_to_arabic_number, convert_from_arabic_number
 
 
@@ -260,6 +261,11 @@ class Tafsir(commands.Cog):
                 em = self.make_embed(text, new_page, arabic_name, surah, ayah, footer, formatted_url, num_pages)
                 await msg.edit(embed=em)
                 await msg.add_reaction(emoji='➡')
+
+    @atafsir.error
+    async def on_atafsir_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f"**لقد أدخلت الأمر خطأ**. اكتب `{ctx.prefix}atafsir <رقم السورة>:<رقم الآية> <اسم تفسير اختياري>`")
 
 
 def setup(bot):

@@ -4,6 +4,7 @@ import re
 import discord
 import html2text
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 from aiohttp import ClientSession
 import textwrap
 
@@ -237,6 +238,21 @@ class Hadith(commands.Cog):
             await self.abstract_hadith(ctx, collection_name, ref, "urdu", page)
         else:
             await ctx.send(NOT_AVAILABLE_URDU)
+
+    @hadith.error
+    async def on_hadith_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_INPUT.format(ctx.prefix))
+
+    @ahadith.error
+    async def on_ahadith_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_INPUT.format(f'{ctx.prefix}a'))
+
+    @uhadith.error
+    async def on_uhadith_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_INPUT.format(f'{ctx.prefix}u'))
 
     @staticmethod
     def isUrduAvailable(collection_name):

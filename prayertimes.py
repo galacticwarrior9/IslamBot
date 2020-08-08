@@ -84,6 +84,11 @@ class PrayerTimes(commands.Cog):
         em.set_footer(text=f'Calculation Method: {method_names[calculation_method]}')
         await ctx.send(embed=em)
 
+    @prayertimes.error
+    async def on_prayertimes_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f"**Please provide a location**. \n\nExample: `{ctx.prefix}prayertimes Dubai, UAE`")
+
     @commands.command(name="setcalculationmethod")
     async def setcalculationmethod(self, ctx):
 
@@ -203,8 +208,8 @@ class PrayerTimes(commands.Cog):
             em.description = f":white_check_mark: **Setup complete!**" \
                              f"\n\n**Location**: {location}\n**Timezone**: {timezone}" \
                              f"\n**Calculation Method**: {method}" \
-                             f"\n\nIf you would like to change these details, use `.removeprayerreminder` " \
-                             f"or `.removepersonalprayerreminder` and run this command again."
+                             f"\n\nIf you would like to change these details, use `{ctx.prefix}removeprayerreminder` " \
+                             f"or `{ctx.prefix}removepersonalprayerreminder` and run this command again."
             await help_msg.edit(embed=em)
 
         except asyncio.TimeoutError:
@@ -248,7 +253,10 @@ class PrayerTimes(commands.Cog):
             calculation_method = server[3]
             location = server[4]
             time_zone = server[5]
-            await self.evaluate_times(channel, em, time_zone, location, calculation_method)
+            try:
+                await self.evaluate_times(channel, em, time_zone, location, calculation_method)
+            except Exception as e:
+                print(e)
 
         users = await get_user_prayer_times_details()
         for user in users:
@@ -257,7 +265,10 @@ class PrayerTimes(commands.Cog):
             location = user[1]
             time_zone = user[2]
             calculation_method = user[3]
-            await self.evaluate_times(channel, em, time_zone, location, calculation_method)
+            try:
+                await self.evaluate_times(channel, em, time_zone, location, calculation_method)
+            except Exception as e:
+                print(e)
 
     async def evaluate_times(self, channel, em, time_zone, location, calculation_method):
 
@@ -270,32 +281,30 @@ class PrayerTimes(commands.Cog):
             location, calculation_method)
         em.title = location
 
-        try:
-            if tz_time == fajr:
-                em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
-                                 f"\n\n**Dhuhr** will be at __{dhuhr}__."
-                await channel.send(embed=em)
+        if tz_time == fajr:
+            em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
+                             f"\n\n**Dhuhr** will be at __{dhuhr}__."
+            await channel.send(embed=em)
 
-            elif tz_time == dhuhr:
-                em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
-                                 f"\n\n**Asr** will be at __{asr}__."
-                await channel.send(embed=em)
+        elif tz_time == dhuhr:
+            em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
+                             f"\n\n**Asr** will be at __{asr}__."
+            await channel.send(embed=em)
 
-            elif tz_time == asr:
-                await channel.send(f"It is **Asr** time in **{location}**! (__{asr}__)."
-                                   f"\n\nFor Hanafis, Asr will be at __{hanafi_asr}__."
-                                   f"\n\n**Maghrib** will be at __{maghrib}__.")
+        elif tz_time == asr:
+            em.description = f"It is **Asr** time in **{location}**! (__{asr}__)." \
+                             f"\n\nFor Hanafis, Asr will be at __{hanafi_asr}__." \
+                             f"\n\n**Maghrib** will be at __{maghrib}__."  
+            await channel.send(embed=em)
 
-            elif tz_time == maghrib:
-                em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
-                                 f"\n\n**Isha** will be at __{isha}__."
-                await channel.send(embed=em)
+        elif tz_time == maghrib:
+            em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
+                             f"\n\n**Isha** will be at __{isha}__."
+            await channel.send(embed=em)
 
-            elif tz_time == isha:
-                em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
-                await channel.send(embed=em)
-        except:
-            pass
+        elif tz_time == isha:
+            em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
+            await channel.send(embed=em)
 
 
 def setup(bot):

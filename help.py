@@ -15,15 +15,15 @@ class Help(commands.Cog):
         section = section.lower()
 
         if section == "main":
-            em = discord.Embed(title='Help', colour=0x0a519c, description="**Type -ihelp <category>**, e.g. `-ihelp quran`")
+            em = discord.Embed(title='IslamBot Help / أمر المساعدة', colour=0xdeb949, description="**Type -ihelp <category>**, e.g. `-ihelp quran`\n")
             em.add_field(name="Categories", value='\n» Quran\n» Hadith\n» Tafsir\n» Prayer Times\n» Dua\n» Calendar\n» Settings' ,
                          inline=False)
-            em.add_field(name="Links", value="• [Vote](https://top.gg/bot/352815253828141056/vote)\n"
-                                             "• [Support Server](https://discord.gg/Ud3MHJR)\n"
-                                             "• [Documentation](https://github.com/galacticwarrior9/islambot/blob/master/README.md)\n"
-                                             "• [Contributors](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)\n"
-                                             "• [GitHub](https://github.com/galacticwarrior9/islambot)\n"
-                                             "• [Iqra](https://top.gg/bot/706134327200841870)"
+            em.add_field(name="Links", value="• [Vote / تصويت](https://top.gg/bot/352815253828141056/vote)\n"
+                                             "• [Support Server / سيرفر المساعدة](https://discord.gg/Ud3MHJR)\n"
+                                             "• [Documentation / لتوثيق](https://github.com/galacticwarrior9/islambot/blob/master/README.md)\n"
+                                             "• [Contributors / المساعدين](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)\n"
+                                             "• [GitHub / غيت هاب](https://github.com/galacticwarrior9/islambot)\n"
+                                             "• [Iqra / اقرأ بوت](https://top.gg/bot/706134327200841870)"
                          , inline=False)
             em.set_thumbnail(url='https://images-na.ssl-images-amazon.com/images/I/71CYXRJdY4L.png')
             await ctx.send(embed=em)

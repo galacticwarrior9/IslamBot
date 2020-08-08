@@ -1,6 +1,7 @@
 import discord
 from datetime import datetime, date
 from discord.ext import commands, tasks
+from discord.ext.commands import MissingRequiredArgument
 from hijri_converter import convert
 from utils import convert_to_arabic_number, make_embed
 
@@ -22,7 +23,7 @@ class HijriCalendar(commands.Cog):
         return f'{hijri.day} {hijri.month_name()} {hijri.year} {hijri.notation(language="en")}'
 
     @staticmethod
-    def get_hijri(gregorian_date: date = None, status: bool = False):
+    def get_hijri(gregorian_date: date = None):
         hijri = convert.Gregorian.fromdate(gregorian_date).to_hijri()
         return f'{gregorian_date.strftime("%d %B %Y")} is **{hijri.month_name()} {hijri.day}, {hijri.year} AH**.' \
                       f'\n\nالتاريخ الهجري: __**' \
@@ -56,20 +57,30 @@ class HijriCalendar(commands.Cog):
         em = make_embed(colour=0x72bcd4, author="Gregorian → Hijri Conversion", description=hijri, author_icon=ICON)
         await ctx.send(embed=em)
 
-    @commands.command(name='convertfromhijri')
-    async def convertfromhijri(self, ctx, hijri_date: str):
+    @commands.command(name='converttogregorian, convertfromhijri')
+    async def converttogregorian(self, ctx, hijri_date: str):
         try:
             hijri_date = datetime.strptime(hijri_date, "%d-%m-%Y").date()
         except:
             return await ctx.send(DATE_INVALID)
 
         try:
-            hijri = self.get_gregorian(hijri_date=hijri_date)
+            gregorian = self.get_gregorian(hijri_date=hijri_date)
         except OverflowError:
             return await ctx.send(HIJRI_DATE_OUT_OF_RANGE)
 
-        em = make_embed(colour=0x72bcd4, author="Hijri → Gregorian Conversion", description=hijri, author_icon=ICON)
+        em = make_embed(colour=0x72bcd4, author="Hijri → Gregorian Conversion", description=gregorian, author_icon=ICON)
         await ctx.send(embed=em)
+
+    @converttohijri.error
+    async def on_converttohijri_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(DATE_INVALID)
+
+    @converttogregorian.error
+    async def on_converttogregorian_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(DATE_INVALID)
 
     @tasks.loop(hours=1)
     async def update_hijri_date(self):

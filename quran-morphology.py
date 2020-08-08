@@ -1,5 +1,6 @@
 from aiohttp import ClientSession
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 from utils import get_site_source
 import discord
 import re
@@ -56,6 +57,11 @@ class QuranMorphology(commands.Cog):
         else:
             em.set_image(url=wordImage)
         await ctx.send(embed=em)
+
+    @morphology.error
+    async def on_morphology_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
 
     def getWordImage(self, source):
         imageText = source.find("a", "tokenLink")

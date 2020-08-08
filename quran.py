@@ -24,7 +24,6 @@ ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_ico
 class QuranSpecifics:
     def __init__(self, ref, edition):
         self.edition = edition
-        self.ordered_dict = OrderedDict()
         self.surah, self.offset, self.limit = self.process_ref(ref)
         self.quran_com = self.is_quran_com(edition)
 
@@ -278,12 +277,12 @@ class Quran(commands.Cog):
 
             if revelation_type == "makkah":
                 revelation_type = "Meccan"
-            else:
+            elif revelation_type == 'madinah':
                 revelation_type = "Medinan"
 
-            await self.get_verses(spec)
+            verses = await self.get_verses(spec)
 
-            em = make_embed(fields=spec.ordered_dict, author=f"Surah {surah_name} ({translated_surah_name})",
+            em = make_embed(fields=verses, author=f"Surah {surah_name} ({translated_surah_name})",
                             author_icon=ICON, colour=0x048c28, inline=False, footer=f'Translation: {readable_edition} |'
                                                                                     f' {revelation_type}')
 
@@ -300,9 +299,9 @@ class Quran(commands.Cog):
             return await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
         surah_name = await self.get_metadata(spec, edition='ar')
-        await self.get_verses(spec)
+        verses = await self.get_verses(spec)
 
-        em = make_embed(fields=spec.ordered_dict, author=f' سورة {surah_name}', author_icon=ICON, colour=0x048c28,
+        em = make_embed(fields=verses, author=f' سورة {surah_name}', author_icon=ICON, colour=0x048c28,
                         inline=False, footer="")
 
         if len(em) > 6000:
@@ -320,32 +319,30 @@ class Quran(commands.Cog):
             async with self.session.get(self.quran_com_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
                 data = data['verses']
-            verses = [(verse['verse_number'], verse['translations'][0]['text']) for verse in data]
+            verses = {f"{spec.surah}:{verse['verse_number']}": verse['translations'][0]['text'] for verse in data}
 
         elif spec.edition == 'ar':
             async with self.session.get(self.arabic_url.format(spec.surah, spec.offset, spec.limit)) as r:
                 data = await r.json()
                 data = data['data']['ayahs']
-            verses = [(verse['numberInSurah'], verse['text']) for verse in data]
+            verses = {f"{spec.surah}:{verse['numberInSurah']}": verse['text'] for verse in data}
 
         else:
             async with self.session.get(self.alquran_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
                 data = data['data']['ayahs']
-            verses = [(verse['numberInSurah'], verse['text']) for verse in data]
+            verses = {f"{spec.surah}:{verse['numberInSurah']}": verse['text'] for verse in data}
 
-        await self.make_ordered_dict(spec, verses)
+        verses = self.truncate_verses(verses)
+        return verses
 
     @staticmethod
-    async def make_ordered_dict(spec, verses):
-        """Make an ordered dict from the verse text. The verse text is truncated if it's too long for the embed field"""
-        for verse in verses:
-            key, text = verse
-            if spec.edition == 'ar':
-                key = f'{convert_to_arabic_number(str(spec.surah))}:{convert_to_arabic_number(str(key))}'
-            else:
-                key = f'{spec.surah}:{key}'
-            spec.ordered_dict[key] = text
+    def truncate_verses(verses):
+        """Truncate verses longer than 1024 characters."""
+        for key, verse in verses.items():
+            if len(verse) > 1024:
+                verses.update({key: f"{verse[0:1021]}..."})
+        return verses
 
     async def get_metadata(self, spec, edition):
         """Get the surah name in Arabic along with the revelation location."""
@@ -353,7 +350,6 @@ class Quran(commands.Cog):
             async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}') as r:
                 data = await r.json()
                 return data['chapter']['name_arabic']
-
         elif spec.is_quran_com(edition):
             async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}') as r:
                 data = await r.json()

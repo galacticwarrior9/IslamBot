@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 from aiohttp import ClientSession
 from utils import convert_to_arabic_number
 import discord
@@ -45,6 +46,11 @@ class Mushaf(commands.Cog):
         em.set_author(name=f'Mushaf / مصحف', icon_url=ICON)
         em.set_image(url=url)
         await ctx.send(embed=em)
+
+    @mushaf.error
+    async def on_mushaf_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_INPUT.format(ctx.prefix))
 
 
 def setup(bot):

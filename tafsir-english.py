@@ -2,6 +2,7 @@ import asyncio
 import discord
 import textwrap
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
 from utils import get_site_source
 
 icon = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
@@ -29,6 +30,8 @@ invalid_verse = '**Invalid arguments.** Type the command in this format: `{0}taf
 
 invalid_tafsir = "**Couldn't find tafsir!** Please choose from the following: `ibnkathir`, `jalalayn`, `qushayri`, " \
                  "`wahidi`, `tustari`, `kashf`."
+
+no_tafsir = "**Could not find tafsir for this verse.** Please try another tafsir."
 
 altafsir_url = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSoraNo={}&tAyahNo={}&tDisplay=yes&Page={}&Size=1&LanguageId=2'
 
@@ -59,7 +62,7 @@ class TafsirSpecifics:
         elif tafsir == 'ibnkathir':
             self.url = ibnkathir_url.format(surah, ayah)
 
-    async def get_text(self, tafsir):
+    async def get_text(self, tafsir, ctx):
         source = await get_site_source(self.url)
         tags = []
 
@@ -174,16 +177,23 @@ class TafsirEnglish(commands.Cog):
         except ValueError:
             return await ctx.send(invalid_verse.format(ctx.prefix))
 
-        await spec.get_text(spec.tafsir)
+        try:
+            await spec.get_text(spec.tafsir, ctx)
+        except AttributeError:  # Occurs when no tafsir is found using Ibn Kathir
+            await ctx.send(no_tafsir)
 
         try:
             await spec.make_embed()
         except IndexError:
-            return await ctx.send("**Could not find tafsir for this verse.** Please try another tafsir.")
+            return await ctx.send(no_tafsir)
 
         await self.send_embed(ctx, spec)
 
+    @tafsir.error
+    async def on_tafsir_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(invalid_verse.format(ctx.prefix))
 
-# Register as cog
+
 def setup(bot):
     bot.add_cog(TafsirEnglish(bot))

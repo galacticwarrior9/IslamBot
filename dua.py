@@ -1,6 +1,7 @@
 import discord
-import re
 from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
+import re
 from utils import get_site_source
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
@@ -66,8 +67,7 @@ class Dua(commands.Cog):
         for dua in site_source.findAll("div", {"class": 'search-item'}):
             text = dua.get_text(separator=" ").strip()\
                 .replace("(saw)", "ﷺ") \
-                .replace("Indeed ", "Indeed, ") \
-                .replace("Abee", "Abi")
+                .replace("Indeed ", "Indeed, ")
             text = '\n' + text
             dua_text.append(text)
 
@@ -75,9 +75,14 @@ class Dua(commands.Cog):
         dua_text = re.sub(r'\d+', '', dua_text)
 
         em = discord.Embed(title=f'Duas for {subject.title()}', colour=0x467f05, description=dua_text)
-        em.set_author(name="Fortress of the Muslim (Hisnul Muslim)", icon_url=ICON)
+        em.set_author(name="Fortress of the Muslim (Hisn al-Muslim)", icon_url=ICON)
 
         await ctx.send(embed=em)
+
+    @dua.error
+    async def on_dua_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f"**You need to provide a dua topic**. Type `{ctx.prefix}dualist` for a list of dua topics.")
 
     @commands.command(name='dualist')
     async def dualist(self, ctx):
@@ -87,7 +92,7 @@ class Dua(commands.Cog):
             dua_list_message.append('\n' + dua.title())
 
         em = discord.Embed(title=f'Dua List', colour=0x467f05, description=''.join(dua_list_message))
-        em.set_footer(text="Source: Fortress of the Muslim (Hisnul Muslim)")
+        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
 
         await ctx.send(embed=em)
 
