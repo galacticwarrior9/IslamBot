@@ -57,7 +57,7 @@ class HijriCalendar(commands.Cog):
         em = make_embed(colour=0x72bcd4, author="Gregorian → Hijri Conversion", description=hijri, author_icon=ICON)
         await ctx.send(embed=em)
 
-    @commands.command(name='converttogregorian, convertfromhijri')
+    @commands.command(name="converttogregorian", aliases=["convertfromhijri"])
     async def converttogregorian(self, ctx, hijri_date: str):
         try:
             hijri_date = datetime.strptime(hijri_date, "%d-%m-%Y").date()
