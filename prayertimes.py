@@ -242,6 +242,7 @@ class PrayerTimes(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def send_reminders(self):
+        print("Starting loop.")
         em = discord.Embed(colour=0x467f05)
         em.set_author(name='Prayer Times Reminder', icon_url=icon)
 
@@ -267,8 +268,14 @@ class PrayerTimes(commands.Cog):
             calculation_method = user[3]
             try:
                 await self.evaluate_times(channel, em, time_zone, location, calculation_method)
-            except Exception as e:
-                print(e)
+            except:
+                await delete_user_prayer_times_details(int(user_id))
+
+    # If the task stops for whatever reason, restart it.
+    @send_reminders.after_loop
+    async def after_send_reminders(self):
+        print('Reminder task stopped! Restarting.')
+        self.send_reminders.start()
 
     async def evaluate_times(self, channel, em, time_zone, location, calculation_method):
 
@@ -280,30 +287,34 @@ class PrayerTimes(commands.Cog):
         fajr, _, dhuhr, asr, hanafi_asr, maghrib, isha, _, _, date = await self.get_prayertimes(
             location, calculation_method)
         em.title = location
+        success = False
 
         if tz_time == fajr:
             em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
                              f"\n\n**Dhuhr** will be at __{dhuhr}__."
-            await channel.send(embed=em)
+            success = True
 
         elif tz_time == dhuhr:
             em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
                              f"\n\n**Asr** will be at __{asr}__."
-            await channel.send(embed=em)
+            success = True
 
         elif tz_time == asr:
             em.description = f"It is **Asr** time in **{location}**! (__{asr}__)." \
                              f"\n\nFor Hanafis, Asr will be at __{hanafi_asr}__." \
-                             f"\n\n**Maghrib** will be at __{maghrib}__."  
-            await channel.send(embed=em)
+                             f"\n\n**Maghrib** will be at __{maghrib}__."
+            success = True
 
         elif tz_time == maghrib:
             em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
                              f"\n\n**Isha** will be at __{isha}__."
-            await channel.send(embed=em)
+            success = True
 
         elif tz_time == isha:
             em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
+            success = True
+
+        if success:
             await channel.send(embed=em)
 
 

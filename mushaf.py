@@ -35,7 +35,7 @@ class Mushaf(commands.Cog):
 
         formatted_page = str(page).zfill(3)
 
-        if tajweed is 'none':
+        if tajweed == 'none':
             url = f'https://www.searchtruth.org/quran/images2/large/page-{formatted_page}.jpeg'
         else:
             url = f'https://www.searchtruth.org/quran/images1/{formatted_page}.jpg'

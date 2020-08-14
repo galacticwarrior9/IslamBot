@@ -34,18 +34,19 @@ async def get_guild_translation(guild_id):
                              f"WHERE server = {guild_id}")
         result = await cursor.fetchone()
         if result is None:  # If no translation has been set
-            connection.close()
-            return 'haleem'
+            translation = 'haleem'
         else:
-            return result[0]
+            translation = result[0]
+        connection.close()
+        return translation
 
 
 async def update_guild_translation(guild_id, translation):
     connection = await create_connection()
     async with connection.cursor() as cursor:
         create_sql = f"INSERT INTO {server_translations_table_name} (server, translation) VALUES (%s, %s) " \
-                     f"ON DUPLICATE KEY UPDATE server={guild_id}, translation={translation}"
-        await cursor.execute(create_sql, (guild_id, translation))
+                     f"ON DUPLICATE KEY UPDATE server=%s, translation=%s"
+        await cursor.execute(create_sql, (guild_id, translation, guild_id, translation))
         connection.close()
 
 
@@ -75,6 +76,7 @@ async def get_server_prayer_times_details():
 
         # This is not ideal since it loads the entire table into memory (PRs for alternatives would be appreciated)
         results = await cursor.fetchall()
+        connection.close()
         return results
 
 
@@ -105,6 +107,7 @@ async def get_user_prayer_times_details():
 
         # This is not ideal since it loads the entire table into memory (PRs for alternatives would be appreciated)
         results = await cursor.fetchall()
+        connection.close()
         return results
 
 
@@ -130,7 +133,8 @@ async def get_user_calculation_method(user):
                              f"WHERE user = {user}")
         result = await cursor.fetchone()
         if result is None:  # If no calculation method has been set
-            connection.close()
-            return 4
+            method = 4
         else:
-            return result[0]
+            method = result[0]
+        connection.close()
+        return method

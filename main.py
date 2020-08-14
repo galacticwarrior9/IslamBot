@@ -12,6 +12,7 @@
 
 import configparser
 from discord.ext import commands
+from discord.ext.commands import CommandNotFound
 from utils import PrefixHandler
 
 
@@ -51,8 +52,14 @@ for cog in cog_list:
 
 @bot.event
 async def on_ready():
-
     print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+    raise error
 
 
 bot.run(token)
