@@ -52,6 +52,10 @@ class Help(commands.Cog):
                                               "\n\nAdd 'tajweed' to the end of the command for color-coded tajweed rules."
                                               f"\n\nExample: `{pre}mushaf 1:1 tajweed`")
 
+            em.add_field(name=f"{pre}surah", inline=True, value="Get information about a surah."
+                                              f"\n\n`{pre}surah <surah number>`"
+                                              f"\n\nExample: `{pre}surah 1`")
+
             em.add_field(name=f"{pre}settranslation", inline=True, value="Changes the default Qur'an translation."
                                               f"\n\n`{pre}settranslation <translation>`"
                                               f"\n\nExample: `{pre}settranslation khattab`"

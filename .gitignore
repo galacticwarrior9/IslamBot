@@ -2,3 +2,4 @@ config.ini
 prefixes.csv
 .idea
 __pycache__
+venv

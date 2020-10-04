@@ -257,7 +257,7 @@ class PrayerTimes(commands.Cog):
             try:
                 await self.evaluate_times(channel, em, time_zone, location, calculation_method)
             except Exception as e:
-                print(e)
+                print(f"Exception while sending server prayer times: {e} | Channel: {channel_id} | Location: {location}")
 
         users = await get_user_prayer_times_details()
         for user in users:
@@ -268,8 +268,8 @@ class PrayerTimes(commands.Cog):
             calculation_method = user[3]
             try:
                 await self.evaluate_times(channel, em, time_zone, location, calculation_method)
-            except:
-                await delete_user_prayer_times_details(int(user_id))
+            except Exception as e:
+                print(f"Exception while sending user prayer times: {e} | User: {user_id} | Location: {location}")
 
     # If the task stops for whatever reason, restart it.
     @send_reminders.after_loop

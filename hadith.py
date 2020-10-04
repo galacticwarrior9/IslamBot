@@ -9,8 +9,8 @@ from aiohttp import ClientSession
 import textwrap
 
 HADITH_COLLECTION_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
-                    'ibnmajah', 'malik', 'riyadussaliheen', 'adab', 'bulugh',
-                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat']
+                    'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
+                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn']
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
@@ -36,7 +36,7 @@ class HadithGrading:
 
         self.hadithText = None
         self.bab_name = None
-        self.book_name = None
+        self.book_name = ''
 
 
 class HadithSpecifics:
@@ -58,7 +58,7 @@ class HadithSpecifics:
             self.formatBookName = self.formatEnglishCollectionName
 
             if ':' in ref:
-                self.embedAuthorName = '{readable_collection_name} {book_number}:{hadith_number} - {book_name}'
+                self.embedAuthorName = '{readable_collection_name} {book_number}:{hadith_number} \n{book_name}'
             else:
                 self.embedAuthorName = \
                         '{readable_collection_name}, Hadith {hadith_number}'
@@ -66,7 +66,7 @@ class HadithSpecifics:
         else:
             self.formatBookName = self.formatArabicCollectionName
 
-            if not self.isQudsiNawawi():
+            if not self.isSingleBook():
                 self.embedAuthorName = \
                         '{readable_collection_name} - {book_name}'
             else:
@@ -80,9 +80,10 @@ class HadithSpecifics:
             self.hadith.book_number, self.hadith.hadith_number = \
                     [int(arg) for arg in ref.split(':')]
             self.url = self.url.format(self.lang, self.collection_name, self.hadith.book_number)
-        elif self.isQudsiNawawi():
+        elif self.isSingleBook():
             self.hadith.hadith_number = int(ref)
-            self.collection_name = self.collection_name + '40'
+            if self.collection_name == 'qudsi' or self.collection_name == 'nawawi':
+                self.collection_name = self.collection_name + '40'
             self.url = self.url.format(self.lang, self.collection_name, 1)
 
     async def getHadith(self):
@@ -120,7 +121,8 @@ class HadithSpecifics:
             self.hadith.bab_name = self.hadith.bab_name.title()
 
         # Get hadith book name.
-        self.hadith.book_name = json["bookName"]
+        if json["bookName"] is not None:
+            self.hadith.book_name = json["bookName"]
 
         self.readable_collection_name = self.formatBookName(self.collection_name)
 
@@ -176,13 +178,14 @@ class HadithSpecifics:
             'nasai': "Sunan an-Nāsaʿī",
             'ibnmajah': 'Sunan Ibn Mājah',
             'malik': 'Muwatta Mālik',
-            'riyadussaliheen': 'Riyadh as-Salihīn',
+            'riyadussalihin': 'Riyadh as-Salihīn',
             'adab': "Al-Adab al-Mufrad",
             'bulugh': 'Bulugh al-Maram',
             'shamail': "Shamā'il Muhammadiyyah",
             'mishkat': 'Mishkat al-Masabih',
             'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
-            'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah'
+            'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah',
+            'hisn': 'Fortress of the Muslim (Hisn al-Muslim)'
         }
 
         return english_hadith_collections[collection_name]
@@ -198,19 +201,20 @@ class HadithSpecifics:
             'nasai': "سنن النسائي",
             'ibnmajah': 'سنن ابن ماجه',
             'malik': 'موطأ مالك',
-            'riyadussaliheen': 'رياض الصالحين',
+            'riyadussalihin': 'رياض الصالحين',
             'adab': "الأدب المفرد",
             'bulugh': 'بلوغ المرام',
             'shamail': 'الشمائل المحمدية',
             'mishkat': 'مشكاة المصابيح',
             'qudsi40': 'الأربعون القدسية',
             'nawawi40': 'الأربعون النووية',
+            'hisn': 'حصن المسلم'
         }
 
         return arabic_hadith_collections[collection_name]
 
-    def isQudsiNawawi(self):
-        return self.collection_name in ['qudsi', 'nawawi']
+    def isSingleBook(self):
+        return self.collection_name in ['qudsi', 'nawawi', 'hisn']
 
 
 class Hadith(commands.Cog):

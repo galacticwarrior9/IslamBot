@@ -115,6 +115,16 @@ For example:
 ```
 
 
+### -surah
+**-surah** sends basic information about a surah.
+```
+-surah <surah number>
+```
+For example:
+```
+-surah 1
+```
+
 
 ## Tafsir (Commentaries on the Qur'an) 
 

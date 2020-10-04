@@ -1,8 +1,8 @@
 import aiohttp
+import discord
 from discord.ext import commands
 from discord.ext.commands import CheckFailure
 from utils import convert_to_arabic_number, make_embed
-from collections import OrderedDict
 from dbhandler import create_connection, update_guild_translation, get_guild_translation
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
@@ -292,7 +292,7 @@ class Quran(commands.Cog):
             await ctx.send(embed=em)
 
     @commands.command(name="aquran")
-    async def aquran(self, ctx, *, ref: str):
+    async def aquran(self, ctx, ref: str):
         try:
             spec = self.get_spec(ref)
         except:
@@ -306,6 +306,26 @@ class Quran(commands.Cog):
 
         if len(em) > 6000:
             return await ctx.send("This passage was too long to send.")
+
+        await ctx.send(embed=em)
+
+    @commands.command(name="surah")
+    async def surah(self, ctx, surah_number: int):
+
+        if 0 < surah_number < 115:
+            name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary, \
+            first_page, final_page = await self.get_surah_info(surah_number)
+
+        else:
+            return await ctx.send("**There only 114 surahs.** Please choose a surah between 1 and 114.")
+
+        em = discord.Embed(colour=0x048c28, title=f'Surah {name} ({translated_name}) | {arabic_name}سورة ')
+        em.set_author(name="Surah Information", icon_url=ICON)
+        em.description = f'{summary}' \
+                         f'\n\n• **Number of verses**: {verses_count}' \
+                         f'\n• **Revelation location**: {revelation_location}' \
+                         f'\n• **Revelation order**: {revelation_order} ' \
+                         f'\n• **Pages on mushaf** {first_page}—{final_page}'
 
         await ctx.send(embed=em)
 
@@ -368,6 +388,24 @@ class Quran(commands.Cog):
         async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}?language={language_code}') as r:
             data = await r.json()
             return data['chapter']['translated_name']['name']
+
+    async def get_surah_info(self, surah_number):
+        async with self.session.get(f'http://api.quran.com/api/v3/chapters/{surah_number}') as r:
+            data = await r.json()
+            name = data['chapter']['name_simple']
+            arabic_name = data['chapter']['name_arabic']
+            translated_name = data['chapter']['translated_name']['name']
+            revelation_location = data['chapter']['revelation_place'].title()
+            revelation_order = data['chapter']['revelation_order']
+            verses_count = data['chapter']['verses_count']
+            first_page, final_page = [page for page in data['chapter']['pages']]
+
+        async with self.session.get(f'http://api.quran.com/api/v3/chapters/{surah_number}/info') as r:
+            data = await r.json()
+            summary = data['chapter_info']['short_text']
+
+        return name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary,\
+               first_page, final_page
 
 
 def setup(bot):
