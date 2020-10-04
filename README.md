@@ -208,11 +208,12 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
 | Sunan Abi Dawud | `abudawud` | Urdu, English, Arabic
 | Sunan an-Nasa'i | `nasai` | English, Arabic
 | Muwatta Malik | `malik` | English, Arabic
-| Riyadh as-Saliheen | `riyadussaliheen ` | English, Arabic
+| Riyadh as-Saliheen | `riyadussalihin ` | English, Arabic
 | Al-Adab al-Mufrad | `adab ` | English, Arabic
 | Bulugh al-Maram | `bulugh ` | English, Arabic
 | 40 Hadith Qudsi | `qudsi ` | English, Arabic
 | 40 Hadith Nawawi | `nawawi ` | English, Arabic
+| Hisn al-Muslim (Fortress of the Muslim) | `hisn ` | English, Arabic
 
 40 Hadith Qudsi and Nawawi are only forty hadith long and therefore only need a hadith number. For example: `-hadith qudsi 32`
 
