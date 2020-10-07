@@ -1,7 +1,7 @@
 import aiohttp
 import discord
 from discord.ext import commands
-from discord.ext.commands import CheckFailure
+from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 from utils import convert_to_arabic_number, make_embed
 from dbhandler import create_connection, update_guild_translation, get_guild_translation
 
@@ -16,35 +16,62 @@ INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah
                                "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
                                "\n\nExample: `{0}quran 1:1-7`"
 
+INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
+
+INVALID_AYAH = "**There are only {0} verses in this surah**."
+
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 
+class InvalidSurah(commands.CommandError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class InvalidAyah(commands.CommandError):
+    def __init__(self, num_verses, *args, **kwargs):
+        self.num_verses = num_verses
+        super().__init__(*args, **kwargs)
+
+
 class QuranSpecifics:
     def __init__(self, ref, edition):
         self.edition = edition
+        self.edition_name = None
+        self.ref = ref
         self.surah, self.offset, self.limit = self.process_ref(ref)
         self.quran_com = self.is_quran_com(edition)
 
-    @staticmethod
-    def process_ref(ref):
+    def return_self(self):
+        return self
+
+    def process_ref(self, ref):
+
         surah = int(ref.split(':')[0])
-        min_ayah = int(ref.split(':')[1].split('-')[0])
+
+        if not 0 < surah < 115:
+            raise InvalidSurah
 
         try:
-            max_ayah = int(ref.split(':')[1].split('-')[1]) + 1
+            self.min_ayah = int(ref.split(':')[1].split('-')[0])
         except IndexError:
-            max_ayah = min_ayah + 1
+            raise BadArgument
+
+        try:
+            self.max_ayah = int(ref.split(':')[1].split('-')[1]) + 1
+        except IndexError:
+            self.max_ayah = self.min_ayah + 1
 
         # If the min ayah is larger than the max ayah, we assume this is a mistake and swap their values.
-        if min_ayah > max_ayah:
-            temp = min_ayah
-            min_ayah = max_ayah
-            max_ayah = temp
+        if self.min_ayah > self.max_ayah:
+            temp = self.min_ayah
+            self.min_ayah = self.max_ayah
+            self.max_ayah = temp
 
-        offset = min_ayah - 1
-        limit = max_ayah - min_ayah
+        offset = self.min_ayah - 1
+        limit = self.max_ayah - self.min_ayah
         if limit > 25:
             limit = 25
 
@@ -161,47 +188,6 @@ class Quran(commands.Cog):
         return edition_dict[edition]
 
     @staticmethod
-    def get_edition_name(edition):
-        edition_names = {
-            85: 'Abdel Haleem',
-            101: "Dr. Mustafa Khattab",
-            84: "Mufti Taqi Usmani",
-            17: "Dr. Ghali",
-            22: "Yusuf Ali",
-            30: "Finnish",
-            33: "Bahasa Indonesia (Kementerian Agama)",
-            74: "Tajik (Abdolmohammad Ayati)",
-            106: "Chechen (Magomed Magomedov)",
-            87: "አማርኛ (Sadiq & Sani)",
-            20: 'Sahih International',
-            31: 'Français (Muhammad Hamidullah)',
-            77: 'Türkçe (Diyanet İşleri)',
-            81: 'Kurdî (Burhan Muhammad-Amin)',
-            82: 'हिन्दी (Suhel Farooq Khan)',
-            95: 'Abul Ala Maududi (with tafsir)',
-            26: 'Čeština',
-            104: 'Українська мова (Mykhaylo Yakubovych)',
-            83: 'Español (Sheikh Isa García)',
-            37: 'മലയാളം (Abdul Hameed & Kunhi Mohammed)',
-            19: 'Pickthall',
-            18: 'Muhsin Khan & Hilali',
-            34: 'Italiano (Hamza Roberto Piccardo)',
-            39: 'Bahasa Melayu (Abdullah Muhammad Basmeih)',
-            97: 'اردو, (ابو الاعلی مودودی)',
-            54: 'اردو, (محمد جوناگڑھی)',
-            40: 'Nederlands (Salomo Keyzer)',
-            25: 'Bosanski',
-            45: 'Русский (Эльми́р Кули́ев)',
-            79: 'Русский (Абу Адель)',
-            78: 'Русский (Министерство вакуфов, Египта)',
-            48: 'Svenska (Knut Bernström)',
-            32: 'Hausa (Abubakar Mahmoud Gumi)',
-            38: 'Mëranaw',
-            46: 'Af-Soomaali (Mahmud Muhammad Abduh)'
-        }
-        return edition_names[edition]
-
-    @staticmethod
     def get_language_code(edition):
         language_codes = {
             31: 'fr',  # Hamidullah, French
@@ -218,19 +204,19 @@ class Quran(commands.Cog):
             78: 'ru',  # Ministry of Awqaf, Russian
             79: 'ru',  # Abu Adel, Russian
             48: 'sv',  # Knut Bernström, Swedish
+            'ar': 'ar'
         }
-        return language_codes[edition]
+        if edition in language_codes:
+            return language_codes[edition]
+        return None
 
     @commands.command(name="settranslation")
     @commands.has_permissions(administrator=True)
     async def settranslation(self, ctx, translation: str):
 
-        if translation is None:
-            return await ctx.send(INVALID_TRANSLATION)
-
         try:
             self.format_edition(translation)
-        except:
+        except KeyError:
             return await ctx.send(INVALID_TRANSLATION)
 
         try:
@@ -246,6 +232,8 @@ class Quran(commands.Cog):
     async def settranslation_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 You need the **Administrator** permission to use this command.")
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_TRANSLATION)
 
     @commands.command(name="quran", aliases=["Quran"])
     async def quran(self, ctx, ref: str, edition: str = None):
@@ -267,24 +255,22 @@ class Quran(commands.Cog):
                     return await ctx.send(INVALID_TRANSLATION)
 
             # Now fetch the verses:
-            try:
-                spec = self.get_spec(ref, edition)
-            except:
-                return await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
+            spec = self.get_spec(ref, edition)
 
-            surah_name, readable_edition, revelation_type = await self.get_metadata(spec, edition)
-            translated_surah_name = await self.get_translated_surah_name(spec, edition)
+            name, _, translated_name, revelation_location, _, num_verses, _, _, _ = await self.get_surah_info(spec)
 
-            if revelation_type == "makkah":
-                revelation_type = "Meccan"
-            elif revelation_type == 'madinah':
-                revelation_type = "Medinan"
+            if spec.max_ayah > num_verses or spec.min_ayah < 1:
+                raise InvalidAyah(num_verses)
+
+            if revelation_location == "Makkah":
+                revelation_location = "Meccan"
+            elif revelation_location == 'Madinah':
+                revelation_location = "Medinan"
 
             verses = await self.get_verses(spec)
 
-            em = make_embed(fields=verses, author=f"Surah {surah_name} ({translated_surah_name})",
-                            author_icon=ICON, colour=0x048c28, inline=False, footer=f'Translation: {readable_edition} |'
-                                                                                    f' {revelation_type}')
+            em = make_embed(fields=verses, author=f"Surah {name} ({translated_name})", author_icon=ICON, colour=0x048c28
+                            , inline=False, footer=f'Translation: {spec.edition_name} | {revelation_location}')
 
             if len(em) > 6000:
                 return await ctx.send("This passage was too long to send.")
@@ -293,39 +279,50 @@ class Quran(commands.Cog):
 
     @commands.command(name="aquran")
     async def aquran(self, ctx, ref: str):
-        try:
-            spec = self.get_spec(ref)
-        except:
-            return await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
-        surah_name = await self.get_metadata(spec, edition='ar')
+        spec = self.get_spec(ref)
+
+        _, name, _, _, _, _, _, _, _ = await self.get_surah_info(spec)
         verses = await self.get_verses(spec)
 
-        em = make_embed(fields=verses, author=f' سورة {surah_name}', author_icon=ICON, colour=0x048c28,
-                        inline=False, footer="")
+        em = make_embed(fields=verses, author=f' سورة {name}', author_icon=ICON, colour=0x048c28, inline=False,
+                        footer="")
 
         if len(em) > 6000:
             return await ctx.send("This passage was too long to send.")
 
         await ctx.send(embed=em)
 
+    @quran.error
+    @aquran.error
+    async def quran_error(self, ctx, error):
+        if isinstance(error, InvalidSurah):
+            await ctx.send(INVALID_SURAH)
+        if isinstance(error, InvalidAyah):
+            await ctx.send(INVALID_AYAH.format(error.num_verses))
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_TRANSLATION)
+        if isinstance(error, BadArgument):
+            await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
+
     @commands.command(name="surah")
     async def surah(self, ctx, surah_number: int):
 
-        if 0 < surah_number < 115:
-            name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary, \
-            first_page, final_page = await self.get_surah_info(surah_number)
+        if not 0 < surah_number < 115:
+            return await ctx.send(INVALID_SURAH)
 
-        else:
-            return await ctx.send("**There only 114 surahs.** Please choose a surah between 1 and 114.")
+        spec = self.get_spec(f'{surah_number}:1')
 
-        em = discord.Embed(colour=0x048c28, title=f'Surah {name} ({translated_name}) | {arabic_name}سورة ')
+        name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary, first_page, \
+        final_page = await self.get_surah_info(spec)
+
+        em = discord.Embed(colour=0x048c28, title=f'Surah {name} ({translated_name}) |  سورة {arabic_name}')
         em.set_author(name="Surah Information", icon_url=ICON)
         em.description = f'{summary}' \
                          f'\n\n• **Number of verses**: {verses_count}' \
                          f'\n• **Revelation location**: {revelation_location}' \
                          f'\n• **Revelation order**: {revelation_order} ' \
-                         f'\n• **Pages on mushaf** {first_page}—{final_page}'
+                         f'\n• **Pages on mushaf**: {first_page}—{final_page}'
 
         await ctx.send(embed=em)
 
@@ -338,20 +335,22 @@ class Quran(commands.Cog):
         if spec.quran_com:
             async with self.session.get(self.quran_com_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
-                data = data['verses']
-            verses = {f"{spec.surah}:{verse['verse_number']}": verse['translations'][0]['text'] for verse in data}
+                ayaat = data['verses']
+            verses = {f"{spec.surah}:{ayah['verse_number']}": ayah['translations'][0]['text'] for ayah in ayaat}
+            spec.edition_name = data['verses'][0]['translations'][0]['resource_name']
 
         elif spec.edition == 'ar':
             async with self.session.get(self.arabic_url.format(spec.surah, spec.offset, spec.limit)) as r:
                 data = await r.json()
-                data = data['data']['ayahs']
-            verses = {f"{spec.surah}:{verse['numberInSurah']}": verse['text'] for verse in data}
+                ayaat = data['data']['ayahs']
+            verses = {f"{convert_to_arabic_number(str(spec.surah))}:{convert_to_arabic_number(str(ayah['numberInSurah']))}": ayah['text'] for ayah in ayaat}
 
         else:
             async with self.session.get(self.alquran_url.format(spec.surah, spec.edition, spec.offset, spec.limit)) as r:
                 data = await r.json()
-                data = data['data']['ayahs']
-            verses = {f"{spec.surah}:{verse['numberInSurah']}": verse['text'] for verse in data}
+                ayaat = data['data']['ayahs']
+            verses = {f"{spec.surah}:{ayah['numberInSurah']}": ayah['text'] for ayah in ayaat}
+            spec.edition_name = data['data']['edition']['name']
 
         verses = self.truncate_verses(verses)
         return verses
@@ -364,33 +363,11 @@ class Quran(commands.Cog):
                 verses.update({key: f"{verse[0:1021]}..."})
         return verses
 
-    async def get_metadata(self, spec, edition):
-        """Get the surah name in Arabic along with the revelation location."""
-        if spec.edition == 'ar':
-            async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}') as r:
-                data = await r.json()
-                return data['chapter']['name_arabic']
-        elif spec.is_quran_com(edition):
-            async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}') as r:
-                data = await r.json()
-                return data['chapter']['name_simple'], self.get_edition_name(edition), data['chapter']['revelation_place']
-        else:
-            async with self.session.get(f'http://api.alquran.cloud/v1/surah/{spec.surah}/{spec.edition}') as r:
-                data = await r.json()
-                return data['data']['englishName'], data['data']['edition']['name'], data['data']['revelationType']
+    async def get_surah_info(self, spec):
 
-    async def get_translated_surah_name(self, spec, edition):
-        try:
-            language_code = self.get_language_code(edition)
-        except KeyError:
-            language_code = None
+        language_code = self.get_language_code(spec.edition)
 
         async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}?language={language_code}') as r:
-            data = await r.json()
-            return data['chapter']['translated_name']['name']
-
-    async def get_surah_info(self, surah_number):
-        async with self.session.get(f'http://api.quran.com/api/v3/chapters/{surah_number}') as r:
             data = await r.json()
             name = data['chapter']['name_simple']
             arabic_name = data['chapter']['name_arabic']
@@ -400,7 +377,7 @@ class Quran(commands.Cog):
             verses_count = data['chapter']['verses_count']
             first_page, final_page = [page for page in data['chapter']['pages']]
 
-        async with self.session.get(f'http://api.quran.com/api/v3/chapters/{surah_number}/info') as r:
+        async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}/info') as r:
             data = await r.json()
             summary = data['chapter_info']['short_text']
 
@@ -410,4 +387,3 @@ class Quran(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Quran(bot))
-
