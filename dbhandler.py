@@ -64,15 +64,18 @@ class DBHandler:
             connection.close()
 
 
+def create_df():
+    engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
+    connection = engine.connect()
+    user_df = pd.read_sql(f"SELECT * FROM {user_prayer_times_table_name}", connection)
+    server_df = pd.read_sql(f"SELECT * FROM {server_prayer_times_table_name}", connection)
+    connection.close()
+    return user_df, server_df
+
+
 class PrayerTimesHandler(DBHandler):
 
-    @classmethod
-    async def create_df(cls):
-        engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
-        connection = engine.connect()
-        cls.user_df = pd.read_sql(f"SELECT * FROM {user_prayer_times_table_name}", connection)
-        cls.server_df = pd.read_sql(f"SELECT * FROM {server_prayer_times_table_name}", connection)
-        connection.close()
+    user_df, server_df = create_df()
 
     @classmethod
     async def update_server_prayer_times_details(cls, guild_id, channel_id, location, timezone, method):

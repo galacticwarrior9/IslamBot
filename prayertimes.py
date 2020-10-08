@@ -20,17 +20,11 @@ class PrayerTimes(commands.Cog):
     def __init__(self, bot):
         self.session = ClientSession(loop = bot.loop)
         self.bot = bot
-        self.initialize.start()
         self.update_times.start()
         self.methods_url = 'https://api.aladhan.com/methods'
         self.prayertimes_url = 'http://api.aladhan.com/timingsByAddress?address={}&method={}&school={}'
-        self.PrayerTimesDB = PrayerTimesHandler()
         self.check_times.start()
         self.save_dataframes.start()
-
-    @tasks.loop(seconds=1, count=1)
-    async def initialize(self):
-        await self.PrayerTimesDB.create_df()
 
     async def get_calculation_methods(self):
         async with self.session.get(self.methods_url, headers=headers) as resp:
@@ -67,7 +61,7 @@ class PrayerTimes(commands.Cog):
     @commands.command(name="prayertimes")
     async def prayertimes(self, ctx, *, location):
 
-        calculation_method = await self.PrayerTimesDB.get_user_calculation_method(ctx.author.id)
+        calculation_method = await PrayerTimesHandler.get_user_calculation_method(ctx.author.id)
         calculation_method = int(calculation_method)
 
         try:
@@ -120,7 +114,7 @@ class PrayerTimes(commands.Cog):
             except:
                 return await ctx.send("❌ **Invalid calculation method number.** ")
 
-            await self.PrayerTimesDB.update_user_calculation_method(ctx.author.id, method)
+            await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
             await ctx.send(':white_check_mark: **Successfully updated!**')
 
         except asyncio.TimeoutError:
@@ -204,9 +198,9 @@ class PrayerTimes(commands.Cog):
 
             # Update database.
             if server is True:
-                await self.PrayerTimesDB.update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
+                await PrayerTimesHandler.update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
             else:
-                await self.PrayerTimesDB.update_user_prayer_times_details(ctx.author.id, location, timezone, method)
+                await PrayerTimesHandler.update_user_prayer_times_details(ctx.author.id, location, timezone, method)
 
             # Send success message.
             em.description = f":white_check_mark: **Setup complete!**" \
@@ -223,7 +217,7 @@ class PrayerTimes(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def removeprayerreminder(self, ctx, channel: discord.TextChannel):
         try:
-            await self.PrayerTimesDB.delete_server_prayer_times_details(channel.id)
+            await PrayerTimesHandler.delete_server_prayer_times_details(channel.id)
             await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders in <#{channel.id}>.**")
         except:
             await ctx.send("❌ **An error occurred**.")
@@ -231,7 +225,7 @@ class PrayerTimes(commands.Cog):
     @commands.command(name="removepersonalprayerreminder")
     async def removepersonalprayerreminder(self, ctx):
 
-        await self.PrayerTimesDB.delete_user_prayer_times_details(ctx.author.id)
+        await PrayerTimesHandler.delete_user_prayer_times_details(ctx.author.id)
         await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders.**")
 
     @addprayerreminder.error
@@ -245,10 +239,10 @@ class PrayerTimes(commands.Cog):
     @tasks.loop(hours=1)
     async def update_times(self):
         user_times = [await self.get_prayertimes(location, method) for location, method
-                 in zip(self.PrayerTimesDB.user_df['location'], self.PrayerTimesDB.user_df['calculation_method'])]
+                 in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method'])]
 
         server_times = [await self.get_prayertimes(location, method) for location, method
-                 in zip(self.PrayerTimesDB.user_df['location'], self.PrayerTimesDB.user_df['calculation_method'])]
+                 in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method'])]
 
         fajr = []
         dhuhr = []
@@ -266,12 +260,12 @@ class PrayerTimes(commands.Cog):
             maghrib.append(time[5])
             isha.append(time[6])
 
-        self.PrayerTimesDB.user_df['Fajr'] = fajr
-        self.PrayerTimesDB.user_df['Dhuhr'] = dhuhr
-        self.PrayerTimesDB.user_df['Asr'] = asr
-        self.PrayerTimesDB.user_df['Asr (Hanafi)'] = asr_hanafi
-        self.PrayerTimesDB.user_df['Maghrib'] = maghrib
-        self.PrayerTimesDB.user_df['Isha'] = isha
+        PrayerTimesHandler.user_df['Fajr'] = fajr
+        PrayerTimesHandler.user_df['Dhuhr'] = dhuhr
+        PrayerTimesHandler.user_df['Asr'] = asr
+        PrayerTimesHandler.user_df['Asr (Hanafi)'] = asr_hanafi
+        PrayerTimesHandler.user_df['Maghrib'] = maghrib
+        PrayerTimesHandler.user_df['Isha'] = isha
 
         fajr.clear()
         dhuhr.clear()
@@ -288,26 +282,35 @@ class PrayerTimes(commands.Cog):
             maghrib.append(time[5])
             isha.append(time[6])
 
-        self.PrayerTimesDB.server_df['Fajr'] = fajr
-        self.PrayerTimesDB.server_df['Dhuhr'] = dhuhr
-        self.PrayerTimesDB.server_df['Asr'] = asr
-        self.PrayerTimesDB.server_df['Asr (Hanafi)'] = asr_hanafi
-        self.PrayerTimesDB.server_df['Maghrib'] = maghrib
-        self.PrayerTimesDB.server_df['Isha'] = isha
+        PrayerTimesHandler.server_df['Fajr'] = fajr
+        PrayerTimesHandler.server_df['Dhuhr'] = dhuhr
+        PrayerTimesHandler.server_df['Asr'] = asr
+        PrayerTimesHandler.server_df['Asr (Hanafi)'] = asr_hanafi
+        PrayerTimesHandler.server_df['Maghrib'] = maghrib
+        PrayerTimesHandler.server_df['Isha'] = isha
 
-    @tasks.loop(minutes=1, reconnect=True)
+    @tasks.loop(minutes=1)
     async def check_times(self):
-        for row in self.PrayerTimesDB.user_df.iterrows():
-            data = row[1].to_dict()
-            await self.evaluate_times(data, is_user = True)
+        print('lol')
 
-        for row in self.PrayerTimesDB.server_df.iterrows():
+        for row in PrayerTimesHandler.user_df.iterrows():
             data = row[1].to_dict()
-            await self.evaluate_times(data, is_user = False)
 
-    @check_times.before_loop
-    async def before_checks(self):
-        await self.bot.wait_until_ready()
+            try:
+                await self.evaluate_times(data, is_user = True)
+            except:
+                pass
+
+        for row in PrayerTimesHandler.server_df.iterrows():
+            data = row[1].to_dict()
+            try:
+                await self.evaluate_times(data, is_user = False)
+            except:
+                pass
+
+    @check_times.after_loop
+    async def restart_checks(self):
+        await self.check_times.start()
 
     async def evaluate_times(self, data, is_user: bool):
 
@@ -316,7 +319,7 @@ class PrayerTimes(commands.Cog):
 
         if is_user:
             channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
-                self.bot.get_user(int(int(data['user']))), data['location'], data['timezone'], data['calculation_method'], \
+                self.bot.get_user(int(data['user'])), data['location'], data['timezone'], data['calculation_method'], \
                 data['Fajr'], data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
 
         else:
@@ -357,19 +360,16 @@ class PrayerTimes(commands.Cog):
             success = True
 
         if success:
-            try:
-                await channel.send(embed=em)
-            except:
-                pass
+            await channel.send(embed=em)
 
     @tasks.loop(minutes=5)
     async def save_dataframes(self):
         engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
         connection = engine.connect()
-        user_df_truncated = self.PrayerTimesDB.user_df[['user', 'location', 'timezone', 'calculation_method']].copy()
+        user_df_truncated = PrayerTimesHandler.user_df[['user', 'location', 'timezone', 'calculation_method']].copy()
         user_df_truncated.to_sql(f"{user_prayer_times_table_name}", engine, if_exists="replace", index=False)
 
-        server_df_truncated = self.PrayerTimesDB.server_df[['server', 'channel', 'location', 'timezone', 'calculation_method']].copy()
+        server_df_truncated = PrayerTimesHandler.server_df[['server', 'channel', 'location', 'timezone', 'calculation_method']].copy()
         server_df_truncated.to_sql(f"{server_prayer_times_table_name}", engine, if_exists="replace", index=False)
 
         connection.close()

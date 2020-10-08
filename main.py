@@ -42,7 +42,7 @@ description = "A Discord bot with Islamic utilities."
 cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
             'mushaf', 'dua', 'help', 'TopGG', 'settings']
 
-bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description)
+bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True)
 
 bot.remove_command('help')
 

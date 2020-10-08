@@ -183,7 +183,7 @@ class Tafsir(commands.Cog):
 
         return em
 
-    @commands.command(name="atafsir", aliases=["atafseer"])
+    @commands.command(name="atafsir")
     async def atafsir(self, ctx, ref: str, tafsir: str = "tabari", page: int = 1):
 
         surah, ayah = self.process_ref(ref)

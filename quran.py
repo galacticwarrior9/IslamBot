@@ -235,7 +235,7 @@ class Quran(commands.Cog):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_TRANSLATION)
 
-    @commands.command(name="quran", aliases=["Quran"])
+    @commands.command(name="quran")
     async def quran(self, ctx, ref: str, edition: str = None):
         async with ctx.channel.typing():
 
@@ -244,7 +244,7 @@ class Quran(commands.Cog):
                 try:
                     edition = await DBHandler.get_guild_translation(ctx.message.guild.id)
                     edition = self.format_edition(edition)
-                except AttributeError:
+                except:
                     edition = 85
 
             # If a translation was specified in the command, check whether it is valid:
