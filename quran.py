@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 from utils import convert_to_arabic_number, make_embed
-from dbhandler import create_connection, update_guild_translation, get_guild_translation
+from dbhandler import DBHandler
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
                       "lambot/blob/master/Translations.md>"
@@ -220,12 +220,12 @@ class Quran(commands.Cog):
             return await ctx.send(INVALID_TRANSLATION)
 
         try:
-            await create_connection()
+            await DBHandler.create_connection()
         except Exception as e:
             print(e)
             return await ctx.send(DATABASE_UNREACHABLE)
 
-        await update_guild_translation(ctx.guild.id, translation)
+        await DBHandler.update_guild_translation(ctx.guild.id, translation)
         await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
 
     @settranslation.error
@@ -242,7 +242,7 @@ class Quran(commands.Cog):
             # If no translation was specified, find a translation to use.
             if edition is None:
                 try:
-                    edition = await get_guild_translation(ctx.message.guild.id)
+                    edition = await DBHandler.get_guild_translation(ctx.message.guild.id)
                     edition = self.format_edition(edition)
                 except AttributeError:
                     edition = 85

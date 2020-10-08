@@ -1,11 +1,11 @@
 import asyncio
 import discord
 import pytz
+from aiomysql.sa import create_engine
+from sqlalchemy import create_engine
 from aiohttp import ClientSession
 from datetime import datetime
-from dbhandler import update_server_prayer_times_details, delete_server_prayer_times_details, \
-    get_server_prayer_times_details, get_user_calculation_method, update_user_calculation_method, \
-    get_user_prayer_times_details, update_user_prayer_times_details, delete_user_prayer_times_details
+from dbhandler import PrayerTimesHandler, user, password, host, database, user_prayer_times_table_name, server_prayer_times_table_name
 from discord.ext import commands, tasks
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 from pytz import timezone
@@ -20,9 +20,17 @@ class PrayerTimes(commands.Cog):
     def __init__(self, bot):
         self.session = ClientSession(loop = bot.loop)
         self.bot = bot
-        self.send_reminders.start()
+        self.initialize.start()
+        self.update_times.start()
         self.methods_url = 'https://api.aladhan.com/methods'
         self.prayertimes_url = 'http://api.aladhan.com/timingsByAddress?address={}&method={}&school={}'
+        self.PrayerTimesDB = PrayerTimesHandler()
+        self.check_times.start()
+        self.save_dataframes.start()
+
+    @tasks.loop(seconds=1, count=1)
+    async def initialize(self):
+        await self.PrayerTimesDB.create_df()
 
     async def get_calculation_methods(self):
         async with self.session.get(self.methods_url, headers=headers) as resp:
@@ -59,7 +67,7 @@ class PrayerTimes(commands.Cog):
     @commands.command(name="prayertimes")
     async def prayertimes(self, ctx, *, location):
 
-        calculation_method = await get_user_calculation_method(ctx.author.id)
+        calculation_method = await self.PrayerTimesDB.get_user_calculation_method(ctx.author.id)
         calculation_method = int(calculation_method)
 
         try:
@@ -112,7 +120,7 @@ class PrayerTimes(commands.Cog):
             except:
                 return await ctx.send("❌ **Invalid calculation method number.** ")
 
-            await update_user_calculation_method(ctx.author.id, method)
+            await self.PrayerTimesDB.update_user_calculation_method(ctx.author.id, method)
             await ctx.send(':white_check_mark: **Successfully updated!**')
 
         except asyncio.TimeoutError:
@@ -195,14 +203,10 @@ class PrayerTimes(commands.Cog):
                 return await ctx.send("❌ **Invalid calculation method number.** ")
 
             # Update database.
-            try:
-                if server is True:
-                    await update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
-                else:
-                    await update_user_prayer_times_details(ctx.author.id, location, timezone, method)
-            except Exception as e:
-                print(e)
-                return await ctx.send("❌ **An error occurred**. You may already have a reminder channel on the server.")
+            if server is True:
+                await self.PrayerTimesDB.update_server_prayer_times_details(ctx.guild.id, channel_id, location, timezone, method)
+            else:
+                await self.PrayerTimesDB.update_user_prayer_times_details(ctx.author.id, location, timezone, method)
 
             # Send success message.
             em.description = f":white_check_mark: **Setup complete!**" \
@@ -219,18 +223,16 @@ class PrayerTimes(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def removeprayerreminder(self, ctx, channel: discord.TextChannel):
         try:
-            await delete_server_prayer_times_details(ctx.guild.id, channel.id)
+            await self.PrayerTimesDB.delete_server_prayer_times_details(channel.id)
             await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders in <#{channel.id}>.**")
         except:
             await ctx.send("❌ **An error occurred**.")
 
     @commands.command(name="removepersonalprayerreminder")
     async def removepersonalprayerreminder(self, ctx):
-        try:
-            await delete_user_prayer_times_details(ctx.author.id)
-            await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders.**")
-        except:
-            await ctx.send("❌ **An error occurred**.")
+
+        await self.PrayerTimesDB.delete_user_prayer_times_details(ctx.author.id)
+        await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders.**")
 
     @addprayerreminder.error
     @removeprayerreminder.error
@@ -240,53 +242,93 @@ class PrayerTimes(commands.Cog):
         if isinstance(error, MissingRequiredArgument) or isinstance(error, BadArgument):
             await ctx.send("❌ **Please mention the channel to delete prayer time reminders for**.")
 
-    @tasks.loop(minutes=1)
-    async def send_reminders(self):
-        print("Starting loop.")
+    @tasks.loop(hours=1)
+    async def update_times(self):
+        user_times = [await self.get_prayertimes(location, method) for location, method
+                 in zip(self.PrayerTimesDB.user_df['location'], self.PrayerTimesDB.user_df['calculation_method'])]
+
+        server_times = [await self.get_prayertimes(location, method) for location, method
+                 in zip(self.PrayerTimesDB.user_df['location'], self.PrayerTimesDB.user_df['calculation_method'])]
+
+        fajr = []
+        dhuhr = []
+        asr = []
+        asr_hanafi = []
+        maghrib = []
+        isha = []
+
+        for time in user_times:
+
+            fajr.append(time[1])
+            dhuhr.append(time[2])
+            asr.append(time[3])
+            asr_hanafi.append(time[4])
+            maghrib.append(time[5])
+            isha.append(time[6])
+
+        self.PrayerTimesDB.user_df['Fajr'] = fajr
+        self.PrayerTimesDB.user_df['Dhuhr'] = dhuhr
+        self.PrayerTimesDB.user_df['Asr'] = asr
+        self.PrayerTimesDB.user_df['Asr (Hanafi)'] = asr_hanafi
+        self.PrayerTimesDB.user_df['Maghrib'] = maghrib
+        self.PrayerTimesDB.user_df['Isha'] = isha
+
+        fajr.clear()
+        dhuhr.clear()
+        asr.clear()
+        asr_hanafi.clear()
+        maghrib.clear()
+        isha.clear()
+
+        for time in server_times:
+            fajr.append(time[1])
+            dhuhr.append(time[2])
+            asr.append(time[3])
+            asr_hanafi.append(time[4])
+            maghrib.append(time[5])
+            isha.append(time[6])
+
+        self.PrayerTimesDB.server_df['Fajr'] = fajr
+        self.PrayerTimesDB.server_df['Dhuhr'] = dhuhr
+        self.PrayerTimesDB.server_df['Asr'] = asr
+        self.PrayerTimesDB.server_df['Asr (Hanafi)'] = asr_hanafi
+        self.PrayerTimesDB.server_df['Maghrib'] = maghrib
+        self.PrayerTimesDB.server_df['Isha'] = isha
+
+    @tasks.loop(minutes=1, reconnect=True)
+    async def check_times(self):
+        for row in self.PrayerTimesDB.user_df.iterrows():
+            data = row[1].to_dict()
+            await self.evaluate_times(data, is_user = True)
+
+        for row in self.PrayerTimesDB.server_df.iterrows():
+            data = row[1].to_dict()
+            await self.evaluate_times(data, is_user = False)
+
+    @check_times.before_loop
+    async def before_checks(self):
+        await self.bot.wait_until_ready()
+
+    async def evaluate_times(self, data, is_user: bool):
+
         em = discord.Embed(colour=0x467f05)
         em.set_author(name='Prayer Times Reminder', icon_url=icon)
 
-        # To be honest, this is a very crude implementation. I would appreciate PRs for improvement.
-        servers = await get_server_prayer_times_details()
-        for server in servers:
-            channel_id = server[2]
-            channel = self.bot.get_channel(int(channel_id))
-            calculation_method = server[3]
-            location = server[4]
-            time_zone = server[5]
-            try:
-                await self.evaluate_times(channel, em, time_zone, location, calculation_method)
-            except Exception as e:
-                print(f"Exception while sending server prayer times: {e} | Channel: {channel_id} | Location: {location}")
+        if is_user:
+            channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
+                self.bot.get_user(int(int(data['user']))), data['location'], data['timezone'], data['calculation_method'], \
+                data['Fajr'], data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
 
-        users = await get_user_prayer_times_details()
-        for user in users:
-            user_id = user[0]
-            channel = self.bot.get_user(int(user_id))
-            location = user[1]
-            time_zone = user[2]
-            calculation_method = user[3]
-            try:
-                await self.evaluate_times(channel, em, time_zone, location, calculation_method)
-            except Exception as e:
-                print(f"Exception while sending user prayer times: {e} | User: {user_id} | Location: {location}")
+        else:
+            channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
+                int(data['channel']), data['location'], data['timezone'], data['calculation_method'], data['Fajr'], \
+                data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
 
-    # If the task stops for whatever reason, restart it.
-    @send_reminders.after_loop
-    async def after_send_reminders(self):
-        print('Reminder task stopped! Restarting.')
-        self.send_reminders.start()
+        em.title = location
 
-    async def evaluate_times(self, channel, em, time_zone, location, calculation_method):
-
-        # Get the time at the timezone and convert it into a string.
         tz = timezone(time_zone)
         tz_time = datetime.now(tz).strftime('%H:%M')
 
-        # Get the prayer times for the location.
-        fajr, _, dhuhr, asr, hanafi_asr, maghrib, isha, _, _, date = await self.get_prayertimes(
-            location, calculation_method)
-        em.title = location
         success = False
 
         if tz_time == fajr:
@@ -301,7 +343,7 @@ class PrayerTimes(commands.Cog):
 
         elif tz_time == asr:
             em.description = f"It is **Asr** time in **{location}**! (__{asr}__)." \
-                             f"\n\nFor Hanafis, Asr will be at __{hanafi_asr}__." \
+                             f"\n\nFor Hanafis, Asr will be at __{asr_hanafi}__." \
                              f"\n\n**Maghrib** will be at __{maghrib}__."
             success = True
 
@@ -315,7 +357,22 @@ class PrayerTimes(commands.Cog):
             success = True
 
         if success:
-            await channel.send(embed=em)
+            try:
+                await channel.send(embed=em)
+            except:
+                pass
+
+    @tasks.loop(minutes=5)
+    async def save_dataframes(self):
+        engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
+        connection = engine.connect()
+        user_df_truncated = self.PrayerTimesDB.user_df[['user', 'location', 'timezone', 'calculation_method']].copy()
+        user_df_truncated.to_sql(f"{user_prayer_times_table_name}", engine, if_exists="replace", index=False)
+
+        server_df_truncated = self.PrayerTimesDB.server_df[['server', 'channel', 'location', 'timezone', 'calculation_method']].copy()
+        server_df_truncated.to_sql(f"{server_prayer_times_table_name}", engine, if_exists="replace", index=False)
+
+        connection.close()
 
 
 def setup(bot):
