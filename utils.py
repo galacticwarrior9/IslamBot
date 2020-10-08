@@ -177,7 +177,6 @@ class PrefixHandler:
         if guild_id not in cls.df.guildID.values:
             pass
         else:
-
             cls.df = cls.df[cls.df.guildID != guild_id]
             cls.save()
 
