@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import pytz
+from time import sleep
 from aiomysql.sa import create_engine
 from sqlalchemy import create_engine
 from aiohttp import ClientSession
@@ -238,11 +239,16 @@ class PrayerTimes(commands.Cog):
 
     @tasks.loop(hours=1)
     async def update_times(self):
-        user_times = [await self.get_prayertimes(location, method) for location, method
-                 in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method'])]
 
-        server_times = [await self.get_prayertimes(location, method) for location, method
-                 in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method'])]
+        user_times = []
+        for location, method in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method']):
+            sleep(160/250)  # Respect API rate limit
+            user_times.append(await self.get_prayertimes(location, int(method)))
+
+        server_times = []
+        for location, method in zip(PrayerTimesHandler.server_df['location'], PrayerTimesHandler.server_df['calculation_method']):
+            sleep(160/250)  # Respect API rate limit
+            server_times.append(await self.get_prayertimes(location, int(method)))
 
         fajr = []
         dhuhr = []
@@ -252,8 +258,7 @@ class PrayerTimes(commands.Cog):
         isha = []
 
         for time in user_times:
-
-            fajr.append(time[1])
+            fajr.append(time[0])
             dhuhr.append(time[2])
             asr.append(time[3])
             asr_hanafi.append(time[4])
@@ -267,15 +272,15 @@ class PrayerTimes(commands.Cog):
         PrayerTimesHandler.user_df['Maghrib'] = maghrib
         PrayerTimesHandler.user_df['Isha'] = isha
 
-        fajr.clear()
-        dhuhr.clear()
-        asr.clear()
-        asr_hanafi.clear()
-        maghrib.clear()
-        isha.clear()
+        fajr = []
+        dhuhr = []
+        asr = []
+        asr_hanafi = []
+        maghrib = []
+        isha = []
 
         for time in server_times:
-            fajr.append(time[1])
+            fajr.append(time[0])
             dhuhr.append(time[2])
             asr.append(time[3])
             asr_hanafi.append(time[4])
@@ -289,24 +294,34 @@ class PrayerTimes(commands.Cog):
         PrayerTimesHandler.server_df['Maghrib'] = maghrib
         PrayerTimesHandler.server_df['Isha'] = isha
 
+    @update_times.before_loop
+    async def before_update(self):
+        await self.bot.wait_until_ready()
+
+    @update_times.after_loop
+    async def restart_update(self):
+        print("Prayer time update failed, restarting.")
+        await self.update_times.start()
+        
     @tasks.loop(minutes=1)
     async def check_times(self):
-        print('lol')
-
         for row in PrayerTimesHandler.user_df.iterrows():
             data = row[1].to_dict()
-
             try:
                 await self.evaluate_times(data, is_user = True)
             except:
-                pass
+                print(f'USER ERROR! Data = {data}')
 
         for row in PrayerTimesHandler.server_df.iterrows():
             data = row[1].to_dict()
             try:
                 await self.evaluate_times(data, is_user = False)
             except:
-                pass
+                print(f'SERVER ERROR! Data = {data}')
+        
+    @check_times.before_loop
+    async def before_checks(self):
+        await self.bot.wait_until_ready()
 
     @check_times.after_loop
     async def restart_checks(self):
@@ -324,7 +339,7 @@ class PrayerTimes(commands.Cog):
 
         else:
             channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
-                int(data['channel']), data['location'], data['timezone'], data['calculation_method'], data['Fajr'], \
+                self.bot.get_channel(int(data['channel'])), data['location'], data['timezone'], data['calculation_method'], data['Fajr'], \
                 data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
 
         em.title = location
