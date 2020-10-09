@@ -259,7 +259,7 @@ class Quran(commands.Cog):
 
             name, _, translated_name, revelation_location, _, num_verses, _, _, _ = await self.get_surah_info(spec)
 
-            if spec.max_ayah > num_verses or spec.min_ayah < 1:
+            if spec.max_ayah >= num_verses or spec.min_ayah < 1:
                 raise InvalidAyah(num_verses)
 
             if revelation_location == "Makkah":
