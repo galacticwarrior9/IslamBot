@@ -38,6 +38,8 @@ class InvalidAyah(commands.CommandError):
 
 class QuranSpecifics:
     def __init__(self, ref, edition):
+        self.max_ayah = None
+        self.min_ayah = None
         self.edition = edition
         self.edition_name = None
         self.ref = ref
@@ -54,26 +56,26 @@ class QuranSpecifics:
         if not 0 < surah < 115:
             raise InvalidSurah
 
-        try:
-            self.min_ayah = int(ref.split(':')[1].split('-')[0])
-        except IndexError:
-            raise BadArgument
+        min_ayah = int(ref.split(':')[1].split('-')[0])
 
         try:
-            self.max_ayah = int(ref.split(':')[1].split('-')[1]) + 1
+            max_ayah = int(ref.split(':')[1].split('-')[1]) + 1
         except IndexError:
-            self.max_ayah = self.min_ayah + 1
+            max_ayah = min_ayah + 1
 
         # If the min ayah is larger than the max ayah, we assume this is a mistake and swap their values.
-        if self.min_ayah > self.max_ayah:
-            temp = self.min_ayah
-            self.min_ayah = self.max_ayah
-            self.max_ayah = temp
+        if min_ayah > max_ayah:
+            temp = min_ayah
+            min_ayah = max_ayah
+            max_ayah = temp
 
-        offset = self.min_ayah - 1
-        limit = self.max_ayah - self.min_ayah
+        offset = min_ayah - 1
+        limit = max_ayah - min_ayah
         if limit > 25:
             limit = 25
+
+        self.max_ayah = max_ayah - 1
+        self.min_ayah = min_ayah
 
         return [surah, offset, limit]
 
@@ -259,7 +261,7 @@ class Quran(commands.Cog):
 
             name, _, translated_name, revelation_location, _, num_verses, _, _, _ = await self.get_surah_info(spec)
 
-            if spec.max_ayah >= num_verses or spec.min_ayah < 1:
+            if spec.max_ayah > num_verses or spec.min_ayah < 1:
                 raise InvalidAyah(num_verses)
 
             if revelation_location == "Makkah":
