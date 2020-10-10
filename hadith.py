@@ -77,8 +77,7 @@ class HadithSpecifics:
 
     def processRef(self, ref):
         if ':' in ref:
-            self.hadith.book_number, self.hadith.hadith_number = \
-                    [int(arg) for arg in ref.split(':')]
+            self.hadith.book_number, self.hadith.hadith_number = [int(arg) for arg in ref.split(':')]
             self.url = self.url.format(self.lang, self.collection_name, self.hadith.book_number)
         elif self.isSingleBook():
             self.hadith.hadith_number = int(ref)
@@ -214,7 +213,7 @@ class HadithSpecifics:
         return arabic_hadith_collections[collection_name]
 
     def isSingleBook(self):
-        return self.collection_name in ['qudsi', 'nawawi', 'hisn']
+        return self.collection_name in ['qudsi', 'nawawi', 'hisn', 'qudsi40', 'nawawi40']
 
 
 class Hadith(commands.Cog):
@@ -276,16 +275,19 @@ class Hadith(commands.Cog):
                 await msg.add_reaction(emoji='⬅')
                 await msg.add_reaction(emoji='➡')
 
+            await msg.add_reaction(emoji='❎')
+
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout=120, check=lambda reaction, user:
-                    (reaction.emoji == '➡' or reaction.emoji == '⬅')
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout=180, check=lambda reaction, user:
+                    (reaction.emoji == '➡' or reaction.emoji == '⬅' or reaction.emoji == '❎')
                      and user != self.bot.user
                      and reaction.message.id == msg.id)
 
                 except asyncio.TimeoutError:
                     await msg.remove_reaction(emoji='➡', member=self.bot.user)
                     await msg.remove_reaction(emoji='⬅', member=self.bot.user)
+                    await msg.remove_reaction(emoji=':x:', member=self.bot.user)
                     break
 
                 if reaction.emoji == '➡' and spec.page < spec.num_pages:
@@ -293,6 +295,9 @@ class Hadith(commands.Cog):
 
                 if reaction.emoji == '⬅' and spec.page > 1:
                     spec.page -= 1
+
+                if reaction.emoji == '❎':
+                    await msg.delete()
 
                 em = spec.makeEmbed()
                 await msg.edit(embed=em)
@@ -322,8 +327,11 @@ class Hadith(commands.Cog):
                 meta = url.split("/")
                 name = meta[3]
                 book = meta[4]
-                hadith = meta[5]
-                ref = f"{book}:{hadith}"
+                try:
+                    hadith = meta[5]
+                    ref = f"{book}:{hadith}"
+                except:
+                    ref = book  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
                 await self.abstract_hadith(message.channel, name, ref, "english", 1)
             except:
                 return
