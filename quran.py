@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 from utils import convert_to_arabic_number, make_embed
 from dbhandler import DBHandler
+from quranInfo import *
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
                       "lambot/blob/master/Translations.md>"
@@ -33,6 +34,10 @@ class InvalidSurah(commands.CommandError):
 class InvalidAyah(commands.CommandError):
     def __init__(self, num_verses, *args, **kwargs):
         self.num_verses = num_verses
+        super().__init__(*args, **kwargs)
+
+class ConnectionIssue(commands.CommandError):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
@@ -259,7 +264,11 @@ class Quran(commands.Cog):
             # Now fetch the verses:
             spec = self.get_spec(ref, edition)
 
-            name, _, translated_name, revelation_location, _, num_verses, _, _, _ = await self.get_surah_info(spec)
+            try:
+                name, _, translated_name, revelation_location, _, num_verses, _, _, _ = await self.get_surah_info(spec)
+            except ConnectionIssue:
+                name, _, translated_name, revelation_location, _, num_verses, _, _ = self.get_surah_info_local(spec)
+
 
             if spec.max_ayah > num_verses or spec.min_ayah < 1:
                 raise InvalidAyah(num_verses)
@@ -284,7 +293,11 @@ class Quran(commands.Cog):
 
         spec = self.get_spec(ref)
 
-        _, name, _, _, _, _, _, _, _ = await self.get_surah_info(spec)
+
+        try:
+            _, name, _, _, _, _, _, _, _ = await self.get_surah_info(spec)
+        except ConnectionIssue:
+            _, name, _, _, _, _, _, _ = self.get_surah_info_local(spec)
         verses = await self.get_verses(spec)
 
         em = make_embed(fields=verses, author=f' سورة {name}', author_icon=ICON, colour=0x048c28, inline=False,
@@ -314,9 +327,13 @@ class Quran(commands.Cog):
             return await ctx.send(INVALID_SURAH)
 
         spec = self.get_spec(f'{surah_number}:1')
-
-        name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary, first_page, \
-        final_page = await self.get_surah_info(spec)
+        try:
+            name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary, first_page, \
+            final_page = await self.get_surah_info(spec)
+        except ConnectionIssue:
+            summary = ''
+            name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, first_page, \
+            final_page = self.get_surah_info_local(spec)
 
         em = discord.Embed(colour=0x048c28, title=f'Surah {name} ({translated_name}) |  سورة {arabic_name}')
         em.set_author(name="Surah Information", icon_url=ICON)
@@ -325,7 +342,6 @@ class Quran(commands.Cog):
                          f'\n• **Revelation location**: {revelation_location}' \
                          f'\n• **Revelation order**: {revelation_order} ' \
                          f'\n• **Pages on mushaf**: {first_page}—{final_page}'
-
         await ctx.send(embed=em)
 
     @staticmethod
@@ -370,6 +386,8 @@ class Quran(commands.Cog):
         language_code = self.get_language_code(spec.edition)
 
         async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}?language={language_code}') as r:
+            if r.status != 200:
+                raise ConnectionIssue
             data = await r.json()
             name = data['chapter']['name_simple']
             arabic_name = data['chapter']['name_arabic']
@@ -380,10 +398,32 @@ class Quran(commands.Cog):
             first_page, final_page = [page for page in data['chapter']['pages']]
 
         async with self.session.get(f'http://api.quran.com/api/v3/chapters/{spec.surah}/info') as r:
+            if r.status != 200:
+                raise ConnectionIssue
             data = await r.json()
             summary = data['chapter_info']['short_text']
 
         return name, arabic_name, translated_name, revelation_location, revelation_order, verses_count, summary,\
+               first_page, final_page
+
+    def get_surah_info_local(self, spec):
+        surahNum = spec.surah
+        name = quranInfo['surah'][surahNum][5]
+        arabic_name = quranInfo['surah'][surahNum][4]
+        translated_name = quranInfo['surah'][surahNum][6]
+        revelation_location = quranInfo['surah'][surahNum][7]
+        revelation_order = quranInfo['surah'][surahNum][2]
+        verses_count = quranInfo['surah'][surahNum][1]
+        first_page, final_page = (None, None)
+        for i, page in enumerate(quranInfo['page']):
+            if first_page is None and page[0] >= surahNum:
+                if page[0] == surahNum and page[1] == 1:
+                    first_page = i
+                else:
+                    first_page = i-1
+            if final_page is None and page[0] > surahNum:
+                final_page = i-1
+        return name, arabic_name, translated_name, revelation_location, revelation_order, verses_count,\
                first_page, final_page
 
 
