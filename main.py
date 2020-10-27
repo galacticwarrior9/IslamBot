@@ -11,6 +11,7 @@
 """
 
 import configparser
+import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from utils import PrefixHandler
@@ -33,7 +34,7 @@ async def get_prefix(_, message):
     if PrefixHandler.has_custom_prefix(guild_id):
         guild_prefix = PrefixHandler.get_prefix(guild_id)
         if guild_prefix:
-            return (*prefix_list, guild_prefix)
+            return *prefix_list, guild_prefix
     else:
         return prefix_list
 
@@ -42,7 +43,10 @@ description = "A Discord bot with Islamic utilities."
 cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
             'mushaf', 'dua', 'help', 'TopGG', 'settings']
 
-bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True)
+intents = discord.Intents(messages=True, guilds=True, reactions=True)
+
+bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True,
+                              intents=intents)
 
 bot.remove_command('help')
 
