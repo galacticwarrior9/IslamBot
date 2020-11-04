@@ -140,18 +140,13 @@ class HadithSpecifics:
         em = discord.Embed(title=self.hadith.bab_name, colour=0x467f05, description=page)
         em.set_author(name=authorName, icon_url=ICON)
 
-        if self.num_pages > self.page:
-            footer = f'Page {self.page}/{self.num_pages}'
-        else:
-            footer = ''
+        if self.num_pages > 1:
+            em.set_footer(text=f'Page {self.page}/{self.num_pages}')
 
         if self.hadith.grading:
             em.set_footer(text=footer + "\n" \
                     + ("Grading: " if self.lang == "english" else "") \
                     + f'{self.hadith.grading}')
-
-        elif self.num_pages > self.page:
-            em.set_footer(text=f'{footer}')
 
         return em
 
@@ -287,17 +282,23 @@ class Hadith(commands.Cog):
                 except asyncio.TimeoutError:
                     await msg.remove_reaction(emoji='➡', member=self.bot.user)
                     await msg.remove_reaction(emoji='⬅', member=self.bot.user)
-                    await msg.remove_reaction(emoji=':x:', member=self.bot.user)
+                    await msg.remove_reaction(emoji='❎', member=self.bot.user)
                     break
 
-                if reaction.emoji == '➡' and spec.page < spec.num_pages:
-                    spec.page += 1
+                if reaction.emoji == '➡':
+                    if spec.page < spec.num_pages:
+                        spec.page += 1
+                    else:
+                        spec.page = 1
 
-                if reaction.emoji == '⬅' and spec.page > 1:
-                    spec.page -= 1
+                if reaction.emoji == '⬅':
+                    if spec.page > 1:
+                        spec.page -= 1
+                    else:
+                        spec.page = spec.num_pages
 
                 if reaction.emoji == '❎':
-                    await msg.delete()
+                    return await msg.delete()
 
                 em = spec.makeEmbed()
                 await msg.edit(embed=em)
