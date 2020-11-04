@@ -140,8 +140,11 @@ class HadithSpecifics:
         em = discord.Embed(title=self.hadith.bab_name, colour=0x467f05, description=page)
         em.set_author(name=authorName, icon_url=ICON)
 
+        footer = ""
+
         if self.num_pages > 1:
-            em.set_footer(text=f'Page {self.page}/{self.num_pages}')
+            footer = f'Page {self.page}/{self.num_pages}'
+            em.set_footer(text=footer)
 
         if self.hadith.grading:
             em.set_footer(text=footer + "\n" \
@@ -218,10 +221,8 @@ class Hadith(commands.Cog):
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
-        try:
-            await self.abstract_hadith(ctx, collection_name, ref, "english", page)
-        except:
-            await ctx.send(INVALID_INPUT.format(ctx.prefix))
+        await self.abstract_hadith(ctx, collection_name, ref, "english", page)
+
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str = None, ref: str = None, page: int = 1):
