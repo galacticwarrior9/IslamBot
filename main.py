@@ -40,7 +40,8 @@ async def get_prefix(_, message):
 
 description = "A Discord bot with Islamic utilities."
 
-cog_list = ['hadith-transmitters', 'help', 'hadith']
+cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
+            'mushaf', 'dua', 'help', 'TopGG', 'settings']
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
