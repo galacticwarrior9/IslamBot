@@ -66,6 +66,7 @@ class HadithSpecifics:
         else:
             url = f'https://api.sunnah.com/v1/collections/{self.collection}/hadiths/{self.ref.hadith_number}'
 
+
         headers = {"X-API-Key": API_KEY}
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(url) as resp:
@@ -142,9 +143,9 @@ class HadithSpecifics:
         else:
             footer = ''
 
-        if self.ref.book_number:
+        try:
             footer = footer + f'\nReference: {self.collection} {self.hadith_number} (Book {self.ref.book_number}, Hadith {self.ref.hadith_number})'
-        else:
+        except AttributeError:
             footer = footer + f'\nReference: {self.collection} {self.hadith_number}'
 
         if self.grading and self.grading != '':
