@@ -215,7 +215,6 @@ class HadithSpecifics:
 class HadithCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.dua_list = None
 
     async def abstract_hadith(self, channel, collection_name, ref, lang):
 
