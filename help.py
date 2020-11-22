@@ -97,16 +97,18 @@ class Help(commands.Cog):
 
             em.add_field(name=f"{pre}hadith", inline=True, value="Gets a sunnah.com hadith in English."
                                                             f"\n\n`{pre}hadith <collection> <book number>:<hadith number>`"
-                                                            f"\n\nExample: `{pre}hadith bukhari 97:6` for http://sunnah.com/bukhari/97/6")
+                                                            f"\n\nExample: `{pre}hadith bukhari 97:6` for https://sunnah.com/bukhari/97/6"
+                                                            f"\n\n__**OR**__\n\n `{pre}hadith <collection> <hadith number>`"
+                                                            f"\n\nExample: `{pre}hadith muslim 1051` for https://sunnah.com/muslim:1051")
 
-            em.add_field(name=f"{pre}ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic."
-                                                            f"\n\n`{pre}ahadith <collection> <book number>:<hadith number>`"
-                                                            f"\n\nExample: `{pre}ahadith bukhari 97:6` for http://sunnah.com/bukhari/97/6")
+            em.add_field(name=f"{pre}ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic. " 
+                                                                  "The usage is the same as `-hadith`.")
 
-            em.add_field(name=f"{pre}uhadith", inline=True, value="Gets a sunnah.com hadith in Urdu."
-                                                            f"\n\n`{pre}uhadith <collection> <book number>:<hadith number>`"
-                                                            f"\n\nExample: `{pre}uhadith bukhari 1:1` for http://sunnah.com/bukhari/1/1"
-                                                            "\n\n*Only Sahih al-Bukhari and Sunan Abu Dawud are available in Urdu.*")
+            em.add_field(name=f"{pre}biography", inline=True, value="Gets the biography of a hadith transmitter "
+                                                                    "or early Muslim from al-Dhahabi's *Siyar A'lam al-"
+                                                                    "al-Nubala*."
+                                                            f"\n\n`{pre}biography <name of person in Arabic>`"
+                                                            f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
             await ctx.send(embed=em)
 

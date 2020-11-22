@@ -40,8 +40,7 @@ async def get_prefix(_, message):
 
 description = "A Discord bot with Islamic utilities."
 
-cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
-            'mushaf', 'dua', 'help', 'TopGG', 'settings']
+cog_list = ['hadith-transmitters', 'help', 'hadith']
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
@@ -63,7 +62,6 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
-    raise error
 
 
 bot.run(token)
