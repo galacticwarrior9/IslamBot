@@ -240,59 +240,45 @@ class PrayerTimes(commands.Cog):
     @tasks.loop(hours=1)
     async def update_times(self):
 
-        user_times = []
-        for location, method in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method']):
-            sleep(160/250)  # Respect API rate limit
-            user_times.append(await self.get_prayertimes(location, int(method)))
-
-        server_times = []
+        index = -1
         for location, method in zip(PrayerTimesHandler.server_df['location'], PrayerTimesHandler.server_df['calculation_method']):
-            sleep(160/250)  # Respect API rate limit
-            server_times.append(await self.get_prayertimes(location, int(method)))
+            index = index + 1
 
-        fajr = []
-        dhuhr = []
-        asr = []
-        asr_hanafi = []
-        maghrib = []
-        isha = []
+            try:
+                fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await self.get_prayertimes(location, int(method))
 
-        for time in user_times:
-            fajr.append(time[0])
-            dhuhr.append(time[2])
-            asr.append(time[3])
-            asr_hanafi.append(time[4])
-            maghrib.append(time[5])
-            isha.append(time[6])
+                PrayerTimesHandler.server_df.at[index, 'Fajr'] = fajr
+                PrayerTimesHandler.server_df.at[index, 'Dhuhr'] = dhuhr
+                PrayerTimesHandler.server_df.at[index, 'Asr'] = asr
+                PrayerTimesHandler.server_df.at[index, 'Asr (Hanafi)'] = hanafi_asr
+                PrayerTimesHandler.server_df.at[index, 'Maghrib'] = maghrib
+                PrayerTimesHandler.server_df.at[index, 'Isha'] = isha
 
-        PrayerTimesHandler.user_df['Fajr'] = fajr
-        PrayerTimesHandler.user_df['Dhuhr'] = dhuhr
-        PrayerTimesHandler.user_df['Asr'] = asr
-        PrayerTimesHandler.user_df['Asr (Hanafi)'] = asr_hanafi
-        PrayerTimesHandler.user_df['Maghrib'] = maghrib
-        PrayerTimesHandler.user_df['Isha'] = isha
+            except:
+                PrayerTimesHandler.server_df.drop(index)
+                print(f"Dropped {location} (index: {index}) due to error!")
 
-        fajr = []
-        dhuhr = []
-        asr = []
-        asr_hanafi = []
-        maghrib = []
-        isha = []
+            sleep(30/100)  # Respect API rate limit (which is 250 requests/30 seconds)
 
-        for time in server_times:
-            fajr.append(time[0])
-            dhuhr.append(time[2])
-            asr.append(time[3])
-            asr_hanafi.append(time[4])
-            maghrib.append(time[5])
-            isha.append(time[6])
+        index = -1
+        for location, method in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method']):
+            index = index + 1
 
-        PrayerTimesHandler.server_df['Fajr'] = fajr
-        PrayerTimesHandler.server_df['Dhuhr'] = dhuhr
-        PrayerTimesHandler.server_df['Asr'] = asr
-        PrayerTimesHandler.server_df['Asr (Hanafi)'] = asr_hanafi
-        PrayerTimesHandler.server_df['Maghrib'] = maghrib
-        PrayerTimesHandler.server_df['Isha'] = isha
+            try:
+                fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await self.get_prayertimes(location, int(method))
+
+                PrayerTimesHandler.user_df.at[index, 'Fajr'] = fajr
+                PrayerTimesHandler.user_df.at[index, 'Dhuhr'] = dhuhr
+                PrayerTimesHandler.user_df.at[index, 'Asr'] = asr
+                PrayerTimesHandler.user_df.at[index, 'Asr (Hanafi)'] = hanafi_asr
+                PrayerTimesHandler.user_df.at[index, 'Maghrib'] = maghrib
+                PrayerTimesHandler.user_df.at[index, 'Isha'] = isha
+
+            except:
+                PrayerTimesHandler.user_df.drop(index)
+                print(f"Dropped {location} (index: {index}) due to error!")
+
+            sleep(30/100)  # Respect API rate limit (which is 250 requests/30 seconds).
 
     @update_times.before_loop
     async def before_update(self):
@@ -309,16 +295,16 @@ class PrayerTimes(commands.Cog):
             data = row[1].to_dict()
             try:
                 await self.evaluate_times(data, is_user = True)
-            except:
-                print(f'USER ERROR! Data = {data}')
+            except Exception as e:
+                print(f'USER ERROR! Error = {e}, Data = {data}')
 
         for row in PrayerTimesHandler.server_df.iterrows():
             data = row[1].to_dict()
             try:
                 await self.evaluate_times(data, is_user = False)
-            except:
-                print(f'SERVER ERROR! Data = {data}')
-        
+            except Exception as e:
+                print(f'SERVER ERROR! Error = {e}, Data = {data}')
+
     @check_times.before_loop
     async def before_checks(self):
         await self.bot.wait_until_ready()
@@ -379,8 +365,10 @@ class PrayerTimes(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def save_dataframes(self):
+
         engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
         connection = engine.connect()
+
         user_df_truncated = PrayerTimesHandler.user_df[['user', 'location', 'timezone', 'calculation_method']].copy()
         user_df_truncated.to_sql(f"{user_prayer_times_table_name}", engine, if_exists="replace", index=False)
 
