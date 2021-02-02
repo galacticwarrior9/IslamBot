@@ -47,7 +47,8 @@ For example:
 ```  
 For example:  
 ```  
--quran 1:1-7 khattab ```  
+-quran 1:1-7 khattab
+```  
 The above command would quote Surah 1, Verses 1-7 (Surah al-Fatihah) using the translation of Dr Mustafa Khattab.  
   
 #### Valid translations  
@@ -66,7 +67,8 @@ The above command would quote Surah 1, Verses 1-7 (Surah al-Fatihah) using the t
 For example:  
   
 ```  
--settranslation sahih ```  
+-settranslation sahih
+```  
 The above command would set the default Qur'an translation to Sahih International.   
   
   
