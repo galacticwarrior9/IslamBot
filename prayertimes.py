@@ -9,11 +9,37 @@ from datetime import datetime
 from dbhandler import PrayerTimesHandler, user, password, host, database, user_prayer_times_table_name, server_prayer_times_table_name
 from discord.ext import commands, tasks
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
-from pytz import timezone
+from pytz import timezone, UnknownTimeZoneError
 
 icon = 'https://www.muslimpro.com/img/muslimpro-logo-2016-250.png'
 
 headers = {'content-type': 'application/json'}
+
+
+class PrayerReminder:
+    def __init__(self, data, for_user: bool, index: int):
+        self.for_user = for_user
+        if self.for_user:
+            self.channel = data['user']
+        else:
+            self.channel = data['channel']
+        self.location = data['location']
+        self.time_zone = data['timezone']
+        self.calculation_method = data['calculation_method']
+        self.fajr = data['Fajr']
+        self.dhuhr = data['Dhuhr']
+        self.asr = data['Asr']
+        self.asr_hanafi = data['Asr (Hanafi)']
+        self.maghrib = data['Maghrib']
+        self.isha = data['Isha']
+        self.index = index
+
+    def drop(self, reason):
+        if self.for_user:
+            PrayerTimesHandler.user_df.drop(self.index)
+        else:
+            PrayerTimesHandler.server_df.drop(self.index)
+        print(f"Dropped reminder (user: {self.for_user}, index: {self.index}). Reason: {reason}")
 
 
 class PrayerTimes(commands.Cog):
@@ -161,6 +187,7 @@ class PrayerTimes(commands.Cog):
                         return await ctx.send("❌ **You do not have the Administrator permission**. Aborting.")
                 else:
                     return await ctx.send("❌ **Invalid channel**. Aborting.")
+
             # Ask for location.
             em.description = "Please set the **location** to send prayer times for. " \
                              "\n\n**Example**: Burj Khalifa, Dubai, UAE"
@@ -242,7 +269,7 @@ class PrayerTimes(commands.Cog):
 
         index = -1
         for location, method in zip(PrayerTimesHandler.server_df['location'], PrayerTimesHandler.server_df['calculation_method']):
-            index = index + 1
+            index += 1
 
             try:
                 fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await self.get_prayertimes(location, int(method))
@@ -254,15 +281,15 @@ class PrayerTimes(commands.Cog):
                 PrayerTimesHandler.server_df.at[index, 'Maghrib'] = maghrib
                 PrayerTimesHandler.server_df.at[index, 'Isha'] = isha
 
-            except:
-                PrayerTimesHandler.server_df.drop(index)
-                print(f"Dropped {location} (index: {index}) due to error!")
+            except Exception as e:
+                print(f"Error at {location} (index: {index}): {e}")
+                continue
 
             sleep(30/100)  # Respect API rate limit (which is 250 requests/30 seconds)
 
         index = -1
         for location, method in zip(PrayerTimesHandler.user_df['location'], PrayerTimesHandler.user_df['calculation_method']):
-            index = index + 1
+            index += 1
 
             try:
                 fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await self.get_prayertimes(location, int(method))
@@ -274,9 +301,9 @@ class PrayerTimes(commands.Cog):
                 PrayerTimesHandler.user_df.at[index, 'Maghrib'] = maghrib
                 PrayerTimesHandler.user_df.at[index, 'Isha'] = isha
 
-            except:
-                PrayerTimesHandler.user_df.drop(index)
-                print(f"Dropped {location} (index: {index}) due to error!")
+            except Exception as e:
+                print(f"Error at {location} (index: {index}): {e}")
+                continue
 
             sleep(30/100)  # Respect API rate limit (which is 250 requests/30 seconds).
 
@@ -291,19 +318,25 @@ class PrayerTimes(commands.Cog):
         
     @tasks.loop(minutes=1)
     async def check_times(self):
+        user_index = -1
         for row in PrayerTimesHandler.user_df.iterrows():
             data = row[1].to_dict()
+            user_index += 1
             try:
-                await self.evaluate_times(data, is_user = True)
+                await self.evaluate_times(PrayerReminder(data, True, user_index))
             except Exception as e:
                 print(f'USER ERROR! Error = {e}, Data = {data}')
+                continue
 
+        server_index = -1
         for row in PrayerTimesHandler.server_df.iterrows():
             data = row[1].to_dict()
+            server_index += 1
             try:
-                await self.evaluate_times(data, is_user = False)
+                await self.evaluate_times(PrayerReminder(data, False, server_index))
             except Exception as e:
                 print(f'SERVER ERROR! Error = {e}, Data = {data}')
+                continue
 
     @check_times.before_loop
     async def before_checks(self):
@@ -313,55 +346,58 @@ class PrayerTimes(commands.Cog):
     async def restart_checks(self):
         await self.check_times.start()
 
-    async def evaluate_times(self, data, is_user: bool):
+    async def evaluate_times(self, reminder: PrayerReminder):
 
         em = discord.Embed(colour=0x467f05)
         em.set_author(name='Prayer Times Reminder', icon_url=icon)
 
-        if is_user:
-            channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
-                self.bot.get_user(int(data['user'])), data['location'], data['timezone'], data['calculation_method'], \
-                data['Fajr'], data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
+        em.title = reminder.location
 
-        else:
-            channel, location, time_zone, calculation_method, fajr, dhuhr, asr, asr_hanafi, maghrib, isha = \
-                self.bot.get_channel(int(data['channel'])), data['location'], data['timezone'], data['calculation_method'], data['Fajr'], \
-                data['Dhuhr'], data['Asr'], data['Asr (Hanafi)'], data['Maghrib'], data['Isha']
+        try:
+            tz = timezone(reminder.time_zone)
+        except UnknownTimeZoneError as e:
+            return reminder.drop(f"Unsupported timezone: {e}")
 
-        em.title = location
-
-        tz = timezone(time_zone)
         tz_time = datetime.now(tz).strftime('%H:%M')
 
         success = False
 
-        if tz_time == fajr:
-            em.description = f"It is **Fajr** time in **{location}**! (__{fajr}__)" \
-                             f"\n\n**Dhuhr** will be at __{dhuhr}__."
+        if tz_time == reminder.fajr:
+            em.description = f"It is **Fajr** time in **{reminder.location}**! (__{reminder.fajr}__)" \
+                             f"\n\n**Dhuhr** will be at __{reminder.dhuhr}__."
             success = True
 
-        elif tz_time == dhuhr:
-            em.description = f"It is **Dhuhr** time in **{location}**! (__{dhuhr}__)" \
-                             f"\n\n**Asr** will be at __{asr}__."
+        elif tz_time == reminder.dhuhr:
+            em.description = f"It is **Dhuhr** time in **{reminder.location}**! (__{reminder.dhuhr}__)" \
+                             f"\n\n**Asr** will be at __{reminder.asr}__."
             success = True
 
-        elif tz_time == asr:
-            em.description = f"It is **Asr** time in **{location}**! (__{asr}__)." \
-                             f"\n\nFor Hanafis, Asr will be at __{asr_hanafi}__." \
-                             f"\n\n**Maghrib** will be at __{maghrib}__."
+        elif tz_time == reminder.asr:
+            em.description = f"It is **Asr** time in **{reminder.location}**! (__{reminder.asr}__)." \
+                             f"\n\nFor Hanafis, Asr will be at __{reminder.asr_hanafi}__." \
+                             f"\n\n**Maghrib** will be at __{reminder.maghrib}__."
             success = True
 
-        elif tz_time == maghrib:
-            em.description = f"It is **Maghrib** time in **{location}**! (__{maghrib}__)" \
-                             f"\n\n**Isha** will be at __{isha}__."
+        elif tz_time == reminder.maghrib:
+            em.description = f"It is **Maghrib** time in **{reminder.location}**! (__{reminder.maghrib}__)" \
+                             f"\n\n**Isha** will be at __{reminder.isha}__."
             success = True
 
-        elif tz_time == isha:
-            em.description = f"It is **Isha** time in **{location}**! (__{isha}__)"
+        elif tz_time == reminder.isha:
+            em.description = f"It is **Isha** time in **{reminder.location}**! (__{reminder.isha}__)"
             success = True
 
-        if success:
+        if not success:
+            return
+
+        try:
+            if reminder.for_user:
+                channel = self.bot.get_user(int(reminder.channel))
+            else:
+                channel = self.bot.get_channel(int(reminder.channel))
             await channel.send(embed=em)
+        except Exception as e:
+            reminder.drop(f"Could not send reminder to channel: {e}")
 
     @tasks.loop(minutes=5)
     async def save_dataframes(self):
