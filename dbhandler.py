@@ -1,9 +1,10 @@
-import aiomysql
 import asyncio
 import configparser
+
+import aiomysql
+import pandas as pd
 from aiomysql.sa import create_engine
 from sqlalchemy import create_engine
-import pandas as pd
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -47,10 +48,20 @@ class DBHandler:
                                  f"FROM {server_translations_table_name} "
                                  f"WHERE server = {guild_id}")
             result = await cursor.fetchone()
-            if result is None:  # If no translation has been set
+
+            # If no translation has been set, return the default translation:
+            if result is None:
                 translation = 'haleem'
             else:
                 translation = result[0]
+
+            from quran import Translation
+            try:
+                Translation.get_translation_id(translation)
+            except KeyError:
+                await cls.delete_guild_translation(guild_id)
+                return 'haleem'
+
             connection.close()
             return translation
 
@@ -61,6 +72,14 @@ class DBHandler:
             create_sql = f"INSERT INTO {server_translations_table_name} (server, translation) VALUES (%s, %s) " \
                          f"ON DUPLICATE KEY UPDATE server=%s, translation=%s"
             await cursor.execute(create_sql, (guild_id, translation, guild_id, translation))
+            connection.close()
+
+    @classmethod
+    async def delete_guild_translation(cls, guild_id):
+        connection = await cls.create_connection()
+        async with connection.cursor() as cursor:
+            delete_sql = f"DELETE FROM {server_translations_table_name} WHERE server=%s"
+            await cursor.execute(delete_sql, guild_id)
             connection.close()
 
 
