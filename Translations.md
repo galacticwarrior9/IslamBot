@@ -339,13 +339,11 @@ To be used with `-quran` and `-settranslation`.
 
 `maududi` (Abul Ala Maududi)
 
-`qadri` (Tahir ul Qadri)
+`israrahmad` (Dr. Israr Ahmad)
 
-`jawadi` (Syed Zeeshan Haider Jawadi)
+`jalandhari` (Fateh Muhammad Jalandhry)
 
-`jalandhry` (Fateh Muhammad Jalandhry)
-
-`junagarhi` (Muhammad Junagarhi)
+`mahmudhasan` (Shaykh al-Hind Mahmud al-Hasan)
 ##
 **Uzbek**
 
