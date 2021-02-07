@@ -145,7 +145,7 @@ To be used with `-quran` and `-settranslation`.
 ##
 **Hebrew**
 
-`hebrew` (Dar Al-Salam Center)
+`hebrew` (Dar al-Salam Center)
 ##
 **Hindi**
 
@@ -260,6 +260,11 @@ To be used with `-quran` and `-settranslation`.
 `abuadel` (Abu Adel)
 
 `kuliev` (Elmir Kuliev)
+
+##
+**Serbian**
+
+`serbian` (Dar al-Salam Center)
 
 ##
 **Sindhi**
