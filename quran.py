@@ -64,17 +64,7 @@ class Surah:
         self.revelation_location = quranInfo['surah'][num][7]
         self.revelation_order = quranInfo['surah'][num][2]
         self.verses_count = quranInfo['surah'][num][1]
-        self.get_pages()
-
-    def get_pages(self):
-        for i, page in enumerate(quranInfo['page']):
-            if page[0] >= self.num:
-                if page[0] == self.num and page[1] == 1:
-                    self.first_page = i
-                else:
-                    self.first_page = i-1
-            if page[0] > self.num:
-                self.final_page = i-1
+        # TODO: Re-add pages.
 
 
 class Translation:
@@ -199,7 +189,10 @@ class Translation:
             'bubenheim': 27, # German
             'indonesian': 33, # Indonesian
         }
-        return translation_list[key]
+        if key in translation_list.keys():
+            return translation_list[key]
+        else:
+            raise InvalidTranslation
 
 
 class QuranReference:
@@ -212,13 +205,17 @@ class QuranReference:
             raise InvalidAyah(num_ayat)
 
     def process_ref(self, ref):
-        self.surah = int(ref.split(':', 1)[0])
+        try:
+            self.surah = int(ref.split(':', 1)[0])
+        except:
+            raise BadArgument
+
         if not 1 <= self.surah <= 114:
             raise InvalidSurah
 
         try:
             self.min_ayah = int(ref.split(':')[1].split('-')[0])
-        except IndexError:
+        except:
             raise BadArgument
 
         if self.min_ayah <= 0:
@@ -226,7 +223,7 @@ class QuranReference:
 
         try:
             self.max_ayah = int(ref.split(':')[1].split('-')[1])
-        except IndexError:
+        except:
             self.max_ayah = self.min_ayah
 
         # If the min ayah is larger than the max ayah, we assume this is a mistake and swap their values.
@@ -325,21 +322,14 @@ class Quran(commands.Cog):
         async with ctx.channel.typing():
             await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
 
-    @aquran.error
     @quran.error
-    async def general_error(self, ctx, error):
+    async def quran_command_error(self, ctx, error):
         if isinstance(error, InvalidSurah):
             await ctx.send(INVALID_SURAH)
         if isinstance(error, InvalidAyah):
             await ctx.send(INVALID_AYAH.format(error.num_verses))
-
-        if isinstance(error, KeyError):
+        if isinstance(error, InvalidTranslation) or isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(INVALID_TRANSLATION)
-
-    @quran.error
-    async def quran_command_error(self, ctx, error):
         if isinstance(error, InvalidReference):
             await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
         if isinstance(error, BadArgument):
@@ -347,6 +337,12 @@ class Quran(commands.Cog):
 
     @aquran.error
     async def aquran_command_error(self, ctx, error):
+        if isinstance(error, InvalidSurah):
+            await ctx.send(INVALID_SURAH)
+        if isinstance(error, InvalidAyah):
+            await ctx.send(INVALID_AYAH.format(error.num_verses))
+        if isinstance(error, InvalidTranslation) or isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_TRANSLATION)
         if isinstance(error, InvalidReference):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
         if isinstance(error, BadArgument):
@@ -365,7 +361,7 @@ class Quran(commands.Cog):
     async def settranslation_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, MissingRequiredArgument) or isinstance(error, KeyError):
+        if isinstance(error, MissingRequiredArgument) or isinstance(error, InvalidTranslation):
             await ctx.send(INVALID_TRANSLATION)
         if isinstance(error, pymysql.err.OperationalError):
             print(error)
@@ -377,12 +373,11 @@ class Quran(commands.Cog):
 
             surah = Surah(surah_num)
 
-            em = discord.Embed(colour=0x048c28, title=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}')
-            em.set_author(name="Surah Information", icon_url=ICON)
+            em = discord.Embed(colour=0x048c28)
+            em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
             em.description = (f'\n• **Number of verses**: {surah.verses_count}' 
                               f'\n• **Revelation location**: {surah.revelation_location}' 
-                              f'\n• **Revelation order**: {surah.revelation_order} ' 
-                              f'\n• **Pages on mushaf**: {surah.first_page}—{surah.final_page}')
+                              f'\n• **Revelation order**: {surah.revelation_order} ')
             await ctx.send(embed=em)
 
     @surah.error

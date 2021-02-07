@@ -6,6 +6,8 @@ import pandas as pd
 from aiomysql.sa import create_engine
 from sqlalchemy import create_engine
 
+from quran import InvalidTranslation
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -58,7 +60,7 @@ class DBHandler:
             from quran import Translation
             try:
                 Translation.get_translation_id(translation)
-            except KeyError:
+            except InvalidTranslation:
                 await cls.delete_guild_translation(guild_id)
                 return 'haleem'
 
