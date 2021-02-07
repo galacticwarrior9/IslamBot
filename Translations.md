@@ -29,8 +29,11 @@ To be used with `-quran` and `-settranslation`.
 **Bengali** 
 
 `taisirulquran` (Taisirul Quran, Tawheed Publication)
+
 `mujibur` (Sheikh Mujibur Rahman) 
+
 `rawai` (Rawai al-Bayan, Bayaan Foundation)
+
 `zakaria` (Dr. Abu Bakr Muhammad Zakaria)
 
 ##
