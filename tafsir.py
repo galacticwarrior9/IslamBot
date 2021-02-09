@@ -46,7 +46,27 @@ dictName = {
     'samarqandi': 'بحر العلوم — السمرقندي (٣٧٣ هـ)',
     'zamakhshari': 'الكشاف — الزمخشري (٥٣٨ هـ)',
     'ibnabihatim': 'تفسير القرآن العظيم مسندًا — ابن أبي حاتم الرازي (٣٢٧ هـ)',
-    'thaalabi': 'الجواهر الحسان — الثعالبي (٨٧٥ هـ)'
+    'thaalabi': 'الجواهر الحسان — الثعالبي (٨٧٥ هـ)',
+    'farraa': 'معاني القرآن للفراء — أبو زكريا الفراء (٢٠٧ هـ)',
+    'jassas': 'أحكام القرآن للجصاص — الجصاص (٣٧٠ هـ)',
+    'zajjaj': 'معاني الزجاج — الزجاج (٣١١ هـ)',
+    'ibnalarabi': 'أحكام القرآن لابن العربي — ابن العربي (٥٤٣ هـ)',
+    'adwaa': 'أضواء البيان — محمد الأمين الشنقيطي (١٣٩٤ هـ)',
+    'tadabbur': 'تدبر وعمل — شركة الخبرات الذكية',
+    'mawsoah': 'القراءات — الموسوعة القرآنية — إبراهيم الأبياري (١٤١٤ هـ)',
+    'naskh': 'ناسخ القرآن ومنسوخه لمكي — مكي بن أبي طالب (٤٣٧ هـ)',
+    'iraab': 'الإعراب الميسر — شركة الدار العربية',
+    'jadwal': 'الجدول في إعراب القرآن — محمود الصافي (١٣٧٦ هـ)',
+    'lubab': 'اللباب في علوم الكتاب — ابن عادل (٨٨٠ هـ)',
+    'aldur': 'الدر المصون للسمين الحلبي — السمين الحلبي (٧٥٦ هـ)',
+    'mushkil-iraab': 'مجتبى مشكل إعراب القرآن — أحمد بن محمد الخراط',
+    'iraab-aldarweesh': 'إعراب القرآن للدرويش — محيي الدين درويش (١٤٠٣ هـ)',
+    'majaz': 'مجاز القرآن لمعمر بن المثنى — أبو عبيدة معمر بن المثنى (٢٠٩ هـ)',
+    'asbab': 'أسباب النزول للواحدي — الواحدي (٤٦٨ هـ)',
+    'altibyan': 'غريب القرآن لابن الهائم — ابن الهائم (٨١٥ هـ)',
+    'ibnqutaybah': 'غريب القرآن لابن قتيبة — ابن قتيبة (٢٧٦ هـ)',
+    'siraaj': 'غريب القرآن للخضيري — محمد بن عبد العزيز الخضيري',
+    'mafateeh': 'مفاتيح الأغاني في القراءات — أبو العلاء الكرماني (بعد ٥٦٣ هـ)'
 }
 
 dictNameReverse = dict((value, key) for key, value in dictName.items())
@@ -88,7 +108,27 @@ dictID = {
     'samarqandi': 'samarqandi',
     'zamakhshari': 'kashaf',
     'ibnabihatim': 'ibn-abi-hatim',
-    'thaalabi': 'althaalabi'
+    'thaalabi': 'althaalabi',
+    'farraa': 'farraa',
+    'jassas': 'aljasas',
+    'zajjaj': 'zajjaj',
+    'ibnalarabi': 'ahkham-ibn-alarabee',
+    'adwaa': 'adwaa-albayan',
+    'tadabbur': 'tadabbur-wa-amal',
+    'mawsoah': 'qiraat-almawsoah',
+    'naskh': 'eedah-naskh-mansukh',
+    'iraab': 'aliraab-almuyassar',
+    'jadwal': 'aljadwal',
+    'lubab': 'lubab',
+    'aldur': 'aldur-almasoon',
+    'mushkil-iraab': 'mujtaba-mushkil-iraab',
+    'iraab-aldarweesh': 'iraab-aldarweesh',
+    'majaz': 'majaz-alquran',
+    'asbab': 'wahidi-asbab',
+    'altibyan': 'altibyan-ghreeb',
+    'ibnqutaybah': 'ghareeb-ibn-qutaybah',
+    'siraaj': 'siraaj-ghareeb',
+    'mafateeh': 'mafateeh-alaghanee'
 }
 
 
@@ -127,22 +167,22 @@ class Tafsir(commands.Cog):
 
         # Parse the website's source and find the tafsir text.
         soup = BeautifulSoup(content, 'html.parser')
+        print(soup)
         tag = soup.find('div', attrs={'id': 'preloaded'})
-        text = tag.get_text(separator=" ").strip()
-        text = text.replace(']]', '*]')\
-            .replace('[[', '[*')\
-            .replace('*', '')\
-            .replace('"ayah":', '') \
-            .replace('"', '') \
-            .replace('}', ' ﴾') \
-            .replace('{', ' ﴿') \
-            .replace(' ).', ').#') \
+        text = tag.get_text().strip()
+        cleanr = re.compile('{.*}')
+        text = re.sub(cleanr, '', text)
+        text = text.replace('*', '')\
+            .replace('⁕', '')\
+            .replace('﴾', '﴾"')\
+            .replace('﴿', '"﴿')\
+            .replace('[[', '')\
+            .replace(']]', '')
 
         # Paginate the text, set the embed text to the current page and calculate how many pages were made:
         try:
             pages = textwrap.wrap(text, 2034, break_long_words=False)
             text = pages[page - 1]
-            text = '***' + text + '***'
             num_pages = len(pages)
         except IndexError:
             return
@@ -174,6 +214,7 @@ class Tafsir(commands.Cog):
 
         ref = convert_to_arabic_number(f'{surah}:{ayah}')
         text = text.replace('#', '\n')
+        text = f'```py\n{text}\n```'
         em = discord.Embed(title=ref, colour=0x467f05, description=text)
         if footer != '':
             em.set_footer(text=f'Page {page}/{num_pages} \n____________________________________\n{footer}')
