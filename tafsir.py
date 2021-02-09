@@ -112,7 +112,7 @@ dictID = {
     'farraa': 'farraa',
     'jassas': 'aljasas',
     'zajjaj': 'zajjaj',
-    'ibnalarabi': 'ahkham-ibn-alarabee',
+    'ibnalarabi': 'ahkam-ibn-alarabee',
     'adwaa': 'adwaa-albayan',
     'tadabbur': 'tadabbur-wa-amal',
     'mawsoah': 'qiraat-almawsoah',
