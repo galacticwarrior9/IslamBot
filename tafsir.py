@@ -167,17 +167,21 @@ class Tafsir(commands.Cog):
 
         # Parse the website's source and find the tafsir text.
         soup = BeautifulSoup(content, 'html.parser')
-        print(soup)
         tag = soup.find('div', attrs={'id': 'preloaded'})
         text = tag.get_text().strip()
-        cleanr = re.compile('{.*}')
-        text = re.sub(cleanr, '', text)
+        cleanbr = re.compile('{.*}')
+        text = re.sub(cleanbr, '', text)
         text = text.replace('*', '')\
             .replace('⁕', '')\
             .replace('﴾', '﴾"')\
-            .replace('﴿', '"﴿')\
-            .replace('[[', '')\
-            .replace(']]', '')
+            .replace('﴿', '"﴿') \
+            .replace('«', '"«') \
+            .replace('»', '»"') \
+            .replace(']]', ']') \
+            .replace('[[', '[')
+
+        cleanb = re.compile('\([^)]*\)')
+        text = re.sub(cleanb, '', text)
 
         # Paginate the text, set the embed text to the current page and calculate how many pages were made:
         try:
