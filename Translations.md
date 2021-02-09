@@ -3,10 +3,14 @@
 
 To be used with `-quran` and `-settranslation`.
 
-**For example**: `-quran 1:1 bengali`
+**For example**: `-quran 1:1 khattab`
 
 **For example**: `-settranslation khattab`
 
+##
+**Amazigh**
+
+`amazigh` (Ramdane At Mansour)
 ##
 **Amharic** 
 
@@ -16,19 +20,22 @@ To be used with `-quran` and `-settranslation`.
 
 `ahmeti` (Sherif Ahmeti)
 
-`mehdiu` (Feti Mehdiu)
-
-`nahi` (Hasan Efendi Nahi)
+`hasanefendi` (Hasan Efendi Nahi)
 ##
 **Azerbaijani** 
-
-`mammadaliyev` (Vasim Mammadaliyev and Ziya Bunyadov)
 
 `musayev` (Alikhan Musayev)
 ##
 **Bengali** 
 
-`bengali` (Muhiuddin Khan)
+`taisirulquran` (Taisirul Quran, Tawheed Publication)
+
+`mujibur` (Sheikh Mujibur Rahman) 
+
+`rawai` (Rawai al-Bayan, Bayaan Foundation)
+
+`zakaria` (Dr. Abu Bakr Muhammad Zakaria)
+
 ##
 **Bulgarian**
 
@@ -36,21 +43,29 @@ To be used with `-quran` and `-settranslation`.
 ##
 **Bosnian**
 
-`bosnian` 
+`mehanovic` (Muhamed Mehanović)
+
+`korkut` (Besim Korkut)
 ##
 **Chechen**
 
 `chechen` (Magomed Magomedov)
 ##
-**Chinese** (*Simplified*)
+**Chinese** 
 
-`chinese` (Ma Jian)
+`majian` (Ma Jian)
+
+`makin` (Muhammad Makin)
 ##
 **Czech**
 
-`hrbek` (Preklad I. Hrbek)
+`czech` 
 
-`nykl` (A. R. Nykl)
+##
+**Ganda**
+
+`ganda` (African Development Foundation)
+
 ##
 **German**
 
@@ -58,9 +73,8 @@ To be used with `-quran` and `-settranslation`.
 
 `bubenheim` (A. S. F. Bubenheim and N. Elyas)
 
-`khoury` (Adel Theodor Khoury)
+`sabiq` (The Sabiq Company)
 
-`zaidan` (Amir Zaidan)
 
 ##
 **Divehi** *(Maldivian)*
@@ -73,29 +87,23 @@ To be used with `-quran` and `-settranslation`.
 
 `khattab` (Dr. Mustafa Khattab, *The Clear Qur'an*)
 
+`bridges` (Fadel Soliman, *Bridges' Translation of the Ten Qira'at of the Noble Qur'an*)
+
+`pickthall` (Muhammad Marmaduke William Pickthall)
+
+`maarifulquran` (Maarif-ul-Quran)
+
+`ruwwad` (Ruwwad Center)
+
 `sahih` (Sahih International)
 
 `taqiusmani` (Mufti Taqi Usmani) 
 
-`ahmedali` (Ahmed Ali)
-
-`arberry` (A. J. Arberry)
-
-`asad` (Muhammad Asad)
-
-`daryabadi` (Abdul Majid Daryabadi)
-
 `hilali` (Hilali & Khan)
-
-`pickthall` (Muhammad Marmaduke William Pickthall)
-
-`qaribullah` (Qaribullah & Darwish)
-
-`sarwar` (Muhammad Sarwar)
 
 `yusufali` (Yusuf Ali)
 
-`shakir` (Muhammad Shakir)
+`muhammadhijab` (Muhammad Hijab)
 
 `ghali` (Dr. Mohammad Mahmoud Ghali)
 
@@ -105,19 +113,17 @@ To be used with `-quran` and `-settranslation`.
 ##
 **Spanish**
 
-`spanish` (Sheikh Isa García)
+`isagarcia` (Sheikh Isa García)
+
+`noor` (Noor International Center)
+
+`cortes` (Julio Cortes)
+
 ##
 **Farsi** (Persian)
 
-`ansarian` (Hussain Ansarian)
+`farsi` (Hussein Taji Kal Dari) 
 
-`ayati` (Abdul Muhammad Ayati)
-
-`fooladvand` (Mohammad Mahdi Fooladvand)
-
-`ghomshei` (Mahdi Elahi Ghomshei)
-
-`makarem` (Naser Makarem Shirazi)
 ##
 **Finnish**
 
@@ -125,67 +131,127 @@ To be used with `-quran` and `-settranslation`.
 ##
 **French**
 
-`french` (Muhammad Hamidullah)
+`hamidullah` (Muhammad Hamidullah)
+
+`montada` (Montada Islamic Foundation)
+##
+**Gujarati**
+
+`gujarati` (Rabila al-Umry)
 ##
 **Hausa**
 
 `hausa` (Abubakar Mahmoud Gumi)
 ##
+**Hebrew**
+
+`hebrew` (Dar al-Salam Center)
+##
 **Hindi**
 
-`hindi` (Suhel Farooq Khan and Saifur Rahman Nadwi)
+`suhel` (Suhel Farooq Khan and Saifur Rahman Nadwi)
+
+`umari` (Maulana Azizul Haque al-Umari)
+
 ##
 **Indonesian**
 
 `indonesian` (Ministry of Religious Affairs)
+
+`fahad.in` (King Fahad Quran Complex)
+
 ##
 **Italian**
 
-`italian` (Hamza Roberto Piccardo)
+`piccardo` (Hamza Roberto Piccardo)
+
+`othman` (Othman al-Sharif) 
+
 ##
 **Japanese**
 
-`japanese`
+`sato` (Saeed Sato)
+
+`ryoichi` (Ryoichi Mita)
+
+##
+**Kazakh**
+
+`kazakh` (Khalifa Altay)
+
+##
+**Khmer**
+
+`khmer` (Cambodian Muslim Community Development)
+
 ##
 **Korean**
 
 `korean`
+
 ##
 **Kurdish**
 
-`kurdish` (Burhan Muhammad-Amin)
+`burhan` (Burhan Muhammad-Amin)
+
+`bamoki` (Muhammad Saleh Bamoki)
+
 ##
 **Malayalam**
 
-`malayalam`  (Abdul Hameed & Kunhi Mohammed)
+`hameed`  (Abdul Hameed & Kunhi Mohammed)
+
+`karakunnu` (Muhammad Karakunnu and Vanidas Elayavoor)
+
 ##
 **Malay**
 
 `malay` (Abdullah Muhammad Basmeih)
+
 ##
 **Maranao**
 
-`maranao` 
+`maranao`
+
+##
+**Marathi**
+
+`marathi` (Muhammad Shafi’i Ansari)
+
 ##
 **Dutch**
 
-`dutch` (Salomo Keyzer)
+`abdulislam` (Salomo Keyzer)
+
+`siregar` (Sofian S. Siregar)
+
 ##
 **Norwegian**
 
 `norwegian` (Einar Berg)
+
+##
+**Pashto**
+
+`pashto` 
+
 ##
 **Polish**
 
 `polish` (Józefa Bielawskiego)
+
 ##
 **Portuguese**
 
-`portuguese` (Samir El-Hayek)
+`elhayek` (Samir El-Hayek)
+
+`nasr` (Helmi Nasr)
+
 ##
 **Romanian**
 
 `romanian` (George Grigore)
+
 ##
 **Russian**
 
@@ -195,33 +261,59 @@ To be used with `-quran` and `-settranslation`.
 
 `kuliev` (Elmir Kuliev)
 
-`osmanov` (Magomed-Nuri Osmanovich Osmanov)
+##
+**Serbian**
 
-`porokhova` (V. Porokhova)
+`serbian` (Dar al-Salam Center)
+
 ##
 **Sindhi**
 
 `sindhi` (Taj Mehmood Amroti)
+
 ##
 **Somali** 
 
-`somali` (Mahmud Muhammad Abduh)
+`abduh` (Mahmud Muhammad Abduh)
+
+`barwani` (Ali Muhsin Al-Barwani)
+
 ##
 **Swedish**
 
 `swedish` (Knut Bernström)
+
 ##
 **Swahili** 
 
-`swahili` (Ali Muhsin Al-Barwani)
+`khamis` (Dr. Abdullah Muhammad Abu Bakr and Sheikh Nasir Khamis)
+
+`barwani` (Ali Muhsin Al-Barwani)
+
+##
+**Tagalog**
+
+`tagalog` 
+
 ##
 **Tamil**
 
-`tamil` (Jan Turst Foundation)
+`jantrust` (Jan Trust Foundation)
+
+`omar` (Omar Sharif bin Abdul Salam)
+
 ##
 **Tajik**
 
-`tajik` (Abdolmohammad Ayati)
+`ayati` (Abdolmohammad Ayati)
+
+`khawaja` (Khawaja Mirof & Khawaja Mir)
+
+##
+**Telugu**
+
+`telugu` (Maulana Abder-Rahim ibn Muhammad)
+
 ##
 **Thai**
 
@@ -231,7 +323,10 @@ To be used with `-quran` and `-settranslation`.
 
 `diyanet` (Diyanet İşleri)
 
-`yazir` (Elmalili Hamdi Yazir)
+`shahin` (Muslim Shahin)
+
+`britch` (Shaban Britch)
+
 ##
 **Tatar**
 
@@ -239,7 +334,7 @@ To be used with `-quran` and `-settranslation`.
 ##
 **Ukrainian**
 
-`uzbek` (Mykhaylo Yakubovych)
+`ukrainian` (Mykhaylo Yakubovych)
 ##
 **Uyghur**
 
@@ -249,14 +344,19 @@ To be used with `-quran` and `-settranslation`.
 
 `maududi` (Abul Ala Maududi)
 
-`qadri` (Tahir ul Qadri)
+`israrahmad` (Dr. Israr Ahmad)
 
-`jawadi` (Syed Zeeshan Haider Jawadi)
+`jalandhari` (Fateh Muhammad Jalandhry)
 
-`jalandhry` (Fateh Muhammad Jalandhry)
-
-`junagarhi` (Muhammad Junagarhi)
+`mahmudhasan` (Shaykh al-Hind Mahmud al-Hasan)
 ##
 **Uzbek**
 
-`uzbek` (Muhammad Sodik Muhammad Yusuf)
+`sodik` (Muhammad Sodik Muhammad Yusuf)
+
+`mansour` (Alauddin Mansour)
+
+##
+**Vietamese**
+
+`vietnamese` (Translation Pioneers Center)
