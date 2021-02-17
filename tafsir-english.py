@@ -153,11 +153,9 @@ class TafsirSpecifics:
 
         elif self.tafsir in quranCom_sources.keys():
             source = await get_site_json(self.url)
-            try:
-                self.text = source['tafsirs'][0]['text']
-                self.tafsir_author = source['meta']['author_name']
-            except IndexError:
-                raise NoText
+            self.text = source['tafsirs'][0]['text']
+            self.tafsir_author = source['meta']['author_name']
+
 
             # Replace HTML tags
             cleanr = re.compile('<(.*?)>')
@@ -246,9 +244,16 @@ class TafsirEnglish(commands.Cog):
             except discord.ext.commands.errors.CommandInvokeError:
                 pass
 
-    async def process_request(self, ref: str, tafsir: str, page: int, attempt: int):
+    async def process_request(self, ref: str, tafsir: str, page: int):
         spec = TafsirSpecifics(tafsir, ref, page)
-        await spec.get_text()
+        try:
+            await spec.get_text()
+        except IndexError:
+            # If no entry was found in the default tafsir (Maarif-ul-Quran), fall back to Tafsir al-Jalalayn.
+            if tafsir == 'maarifulquran':
+                return await self.process_request(ref, 'jalalayn', page)
+            else:
+                raise NoText
 
         if len(spec.text) == 0:
             raise NoText
@@ -258,7 +263,7 @@ class TafsirEnglish(commands.Cog):
 
     @commands.command(name='tafsir')
     async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
-        spec = await self.process_request(ref, tafsir, page, -1)
+        spec = await self.process_request(ref, tafsir, page)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
