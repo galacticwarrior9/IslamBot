@@ -2,13 +2,12 @@ import re
 
 import discord
 import pymysql
-from discord.ext import commands
+from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
 
 from dbhandler import DBHandler
-from utils import get_site_json
-from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
-from utils import convert_to_arabic_number
 from quranInfo import *
+from utils import convert_to_arabic_number
+from utils import get_site_json
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
                       "lambot/blob/master/Translations.md>"
@@ -32,11 +31,6 @@ TOO_LONG = "This passage was too long to send."
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 
-class InvalidSurah(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
 class InvalidReference(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,20 +45,6 @@ class InvalidAyah(commands.CommandError):
 class InvalidTranslation(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-
-class Surah:
-    def __init__(self, num):
-        if not 1 <= num <= 114:
-            raise InvalidSurah
-        self.num = num
-        self.name = quranInfo['surah'][num][5]
-        self.arabic_name = quranInfo['surah'][num][4]
-        self.translated_name = quranInfo['surah'][num][6]
-        self.revelation_location = quranInfo['surah'][num][7]
-        self.revelation_order = quranInfo['surah'][num][2]
-        self.verses_count = quranInfo['surah'][num][1]
-        # TODO: Re-add pages.
 
 
 class Translation:
@@ -121,7 +101,6 @@ class Translation:
             'marathi': 226, # Marathi
             'hebrew': 223, # Hebrew
             'gujarati': 225, # Gujarati
-            'haidar': 224, # Malayalam
             'abdulislam': 235, # Dutch
             'ganda': 232, # Ganda
             'khamis': 231, # Swahili
@@ -161,12 +140,13 @@ class Translation:
             'maranao': 38, # Maranao
             'ahmeti': 89, # Albanian
             'majian': 56, # Chinese
-            'gumi': 32, # Hausa
+            'hausa': 32, # Hausa
             'nepali': 108, # Nepali
             'hameed': 37, # Malayalam
             'elhayek': 43, # Portuguese
             'cortes': 28, # Spanish
             'oromo': 111, # Oromo
+            'french': 31, # French
             'hamidullah': 31, # French
             'persian': 29, # Persian
             'farsi': 29, # Persian
@@ -370,13 +350,11 @@ class Quran(commands.Cog):
     @commands.command(name="surah")
     async def surah(self, ctx, surah_num: int):
         async with ctx.channel.typing():
-
             surah = Surah(surah_num)
-
             em = discord.Embed(colour=0x048c28)
             em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
-            em.description = (f'\n• **Number of verses**: {surah.verses_count}' 
-                              f'\n• **Revelation location**: {surah.revelation_location}' 
+            em.description = (f'\n• **Number of verses**: {surah.verses_count}'
+                              f'\n• **Revelation location**: {surah.revelation_location}'
                               f'\n• **Revelation order**: {surah.revelation_order} ')
             await ctx.send(embed=em)
 
