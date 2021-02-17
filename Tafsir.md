@@ -1,15 +1,32 @@
-# English Tafsir
+# Tafsir
 
-The bot is able to quote from 7 *tafaseer* (commentaries on the Qurʾān) translated to English for use with the `-tafsir` command (see the [documentation](https://github.com/galacticwarrior9/islambot/blob/master/README.md)). I have attempted to add a short description to each one:
+The bot is able to quote from 7 translated *tafaseer* (commentaries on the Qurʾān) for use with the `-tafsir` command (see the [documentation](https://github.com/galacticwarrior9/islambot/blob/master/README.md)). I have attempted to add a short description to each one:
 
-1. `jalalayn` - the tafsir of the "Two Jalals" -  a commentary written by Jalāl ad-Dīn al-Maḥalli and his student Jalāl ad-Dīn as-Suyūtī. It is known for his brevity and concision. This is the default tafsir. 
-2. `ibnkathir` - the tafsir of Ibn Kathir (d. 774 AH) entitled *al-Qurʾān al-ʿAẓeem*, or more simply, *Tafsir Ibn Kathir*, is a popular commentary on the Qurʾān based on Ibn Taymiyyah's exegetical style of quoting early Muslim authorities (the *salaf*).
-3. `tustari` - the tafsir of Sahl al-Tustarī (d. 283 AH), a Persian Ṣūfī mystic. 
-4. `qushayri` - the tafsir of Abūʾl Qāsim al-Qushayrī (d. 465 AH), entitled *Laṭāʾif al-Ishārāt*, ('Subtle Allusions').
-5. `kashani` - the tafsir of ʿAbd al-Razzāq al-Kāshānī (d. 730–6 AH).
-6. `wahidi` - *Asbab al-Nuzul* by 'Alī ibn Ahmad al-Wāhidī (d. 468 AH), which aims to collect and systemize information concerning all the known reasons and contexts for the revelation of particular Qur'anic verses.
-7. `kashf` - *Kashf al-asrār wa ʿuddat al-abrār* by Rashīd al-Dīn Maybudī, about whom little is known. It is the longest Sunni commentary in the Persian language.
+### English
 
+1. `maarifulquran` (default) - the tafsir of the Pakistani scholar Muhammad Shafi Deobandi (d. 1976 CE).
+2. `mukhtasar` - I was unable to find details on this (presumably translated) tafsir. 
+3. `jalalayn` - the tafsir of the "Two Jalals" -  a commentary written by Jalāl ad-Dīn al-Maḥalli and his student Jalāl ad-Dīn as-Suyūtī. It is known for his brevity and concision. This is the default tafsir. 
+4. `ibnkathir` - the tafsir of Ibn Kathir (d. 774 AH) entitled *al-Qurʾān al-ʿAẓeem*, or more simply, *Tafsir Ibn Kathir*, is a popular commentary on the Qurʾān based on Ibn Taymiyyah's exegetical style of quoting early Muslim authorities (the *salaf*).
+5. `tustari` - the tafsir of Sahl al-Tustarī (d. 283 AH), a Persian Ṣūfī mystic. 
+6. `qushayri` - the tafsir of Abūʾl Qāsim al-Qushayrī (d. 465 AH), entitled *Laṭāʾif al-Ishārāt*, ('Subtle Allusions').
+7. `kashani` - the tafsir of ʿAbd al-Razzāq al-Kāshānī (d. 730–6 AH).
+8. `wahidi` - *Asbab al-Nuzul* by 'Alī ibn Ahmad al-Wāhidī (d. 468 AH), which aims to collect and systemize information concerning all the known reasons and contexts for the revelation of particular Qur'anic verses.
+9. `kashf` - *Kashf al-asrār wa ʿuddat al-abrār* by Rashīd al-Dīn Maybudī, about whom little is known. It is the longest Sunni commentary in the Persian language.
+
+### Russian
+
+10. `saadi` - the tafsir of ʿAbd ar-Raḥman b. Nasir as-Sa'di (d. 1376 AH), translated into Russian. 
+
+### Urdu
+
+11. `ibnkathir.ur` - Urdu translation of Ibn Kathir's tafsir. 
+12. `israr` - the tafsir of Dr Israr Ahmad (d. 2010 CE) entitled *Bayan-ul-Quran*.
+
+### Bengali
+
+13. `ibnkathir.bn` - Bengali translation of Ibn Kathir's tafsir.
+14. `ahsanul`- a Bengali-language tafsir authored by a certain Salahuddin Yusuf.
 
 # Arabic Tafsir
 
@@ -125,4 +142,42 @@ The tafsir of Abū al-Muzaffar al-Sam’ani (d. 489 AH).
 37. `wahidi` - الوجيز — الواحدي (٤٦٨ هـ)
 The tafsir of Abū al-Hasan b. Ahmad al-Wahidi al-Nisapuri (d. 468 AH), a Persian Shafi'ite jurist.
 
+38. `faraa` - معاني القرآن للفراء — أبو زكريا الفراء (٢٠٧ هـ)
 
+39. `jassas` - أحكام القرآن للجصاص — الجصاص (٣٧٠ هـ)
+
+40. `zajjaj` - معاني الزجاج — الزجاج (٣١١ هـ)
+
+41. `ibnalarabi` - أحكام القرآن لابن العربي — ابن العربي (٥٤٣ هـ)
+
+42. `adwaa` - أضواء البيان — محمد الأمين الشنقيطي (١٣٩٤ هـ)
+
+43. `tadabbur` - تدبر وعمل — شركة الخبرات الذكية
+
+44. `mawsoah` - القراءات — الموسوعة القرآنية — إبراهيم الأبياري (١٤١٤ هـ)
+
+45. `naskh` - ناسخ القرآن ومنسوخه لمكي — مكي بن أبي طالب (٤٣٧ هـ)
+
+46. `iraab` - الإعراب الميسر — شركة الدار العربية
+
+47. `jadwal` - الجدول في إعراب القرآن — محمود الصافي (١٣٧٦ هـ)
+
+48. `lubab` - اللباب في علوم الكتاب — ابن عادل (٨٨٠ هـ)
+
+49. `aldur` - الدر المصون للسمين الحلبي — السمين الحلبي (٧٥٦ هـ)
+
+50. `mushkil-iraab` - مجتبى مشكل إعراب القرآن — أحمد بن محمد الخراط
+
+51. `iraab-aldarweesh` - إعراب القرآن للدرويش — محيي الدين درويش (١٤٠٣ هـ)
+
+52. `majaz` - مجاز القرآن لمعمر بن المثنى — أبو عبيدة معمر بن المثنى (٢٠٩ هـ)
+
+53. `asbab` - أسباب النزول للواحدي — الواحدي (٤٦٨ هـ)
+
+54. `altibyan` - غريب القرآن لابن الهائم — ابن الهائم (٨١٥ هـ)
+
+55. `ibnqutaybah` - غريب القرآن لابن قتيبة — ابن قتيبة (٢٧٦ هـ)
+
+56. `siraaj` - غريب القرآن للخضيري — محمد بن عبد العزيز الخضيري
+
+57. `mafateeh` - مفاتيح الأغاني في القراءات — أبو العلاء الكرماني (بعد ٥٦٣ هـ)

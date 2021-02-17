@@ -10,8 +10,8 @@
   
 An Islamic bot for Discord with the following features:  
   
-* *Qur'an*, with support for 75+ translations.  
-* *Tafsir*, with 7 available in English and 37 in Arabic.  
+* *Qur'an*, with support for 100+ translations.  
+* *Tafsir*, with 9 available in English and 37 in Arabic.  
 * *Hadith* in English and Arabic, from [sunnah.com](https://sunnah.com).  
 * Prayer times for any location in the world, with the ability to set reminders and change the calculation method.  
 * The ability to view the morphology of every word in the Qur'an.   
@@ -132,7 +132,7 @@ For example:
 **-atafsir** allows you to quote from over 37 Arabic *tafaseer* (commentaries on the Qurʾān). A list of valid *tafaseer* is available [here](https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md).  
   
 ```  
--atafsir <surah>:<verse(s> [tafsir]  
+-atafsir <surah>:<verse> <tafsir name>
 ```  
   
 For example:  
@@ -145,10 +145,11 @@ The above command would quote the tafsir of Ayatul Kursi from Tafsir al-Tabari.
   
   
 ### -tafsir  
-**-tafsir** allows you to quote the English tasfir (commentary) of verses from Tafsīr al-Jalālayn (`jalalayn`), Tafsīr Ibn Kathīr (`ibnkathir`), Tafsīr al-Tustarī (`tustari`), Rashīd al-Dīn Maybudī's Kashf al-Asrār (`kashf`), al-Qurayshi's Laṭāʾif al-Ishārāt (`qurayshi`), Tafsīr ʿAbd al-Razzāq al-Kāshānī (`kashani`) and al-Wahidi's Asbāb al-Nuzūl (`wahidi`). It works in the same manner as **-atafsir**.  
-  
+**-tafsir** allows you to quote from non-Arabic *tafaseer*, including 9 in English. [Click here for a list](https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md).
+
+It works in the same manner as **-atafsir**.  
 ```  
--tafsir <surah>:<verse> <jalalayn/ibnkathir/kashf/tustari/qurayshi/kashani/wahidi>  
+-tafsir <surah>:<verse> <tafsir name> 
 ```  
   
 For example:  
@@ -195,22 +196,22 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
   
   
 #### Hadith collection names   
-| **Hadith Collection** | **Name for Bot** |   
-|--|--|--|  
-| Musnad Ahmad ibn Hanbal | `ahmad` |   
-| Mishkat al-Masabih | `mishkat` |  
-| Sahih al-Bukhari | `bukhari` |  
-| Sahih Muslim | `muslim` |  
-|  Jami' at-Tirmidhi | `tirmidhi` |   
-| Sunan Abi Dawud | `abudawud` |   
-| Sunan an-Nasa'i | `nasai` |   
-| Muwatta Malik | `malik` |   
-| Riyadh as-Saliheen | `riyadussalihin ` |   
-| Al-Adab al-Mufrad | `adab ` |   
-| Bulugh al-Maram | `bulugh ` |   
-| 40 Hadith Qudsi | `qudsi ` |  
-| 40 Hadith Nawawi | `nawawi ` |   
-| Hisn al-Muslim (Fortress of the Muslim) | `hisn ` |  
+| **Hadith Collection** | **Name for Bot** |
+|--|--|
+| Musnad Ahmad ibn Hanbal | `ahmad` 
+| Mishkat al-Masabih | `mishkat` 
+| Sahih al-Bukhari | `bukhari` 
+| Sahih Muslim | `muslim` 
+| Jami' at-Tirmidhi | `tirmidhi` 
+| Sunan Abi Dawud | `abudawud` 
+| Sunan an-Nasa'i | `nasai` 
+| Muwatta Malik | `malik` 
+| Riyadh as-Saliheen | `riyadussalihin `
+| Al-Adab al-Mufrad | `adab ` 
+| Bulugh al-Maram | `bulugh ` 
+| 40 Hadith Qudsi | `qudsi ` 
+| 40 Hadith Nawawi | `nawawi ` 
+| Hisn al-Muslim (Fortress of the Muslim) | `hisn ` 
   
 40 Hadith Qudsi, 40 Hadith Nawawi and Hisn al-Muslim only need a hadith number. 
 
