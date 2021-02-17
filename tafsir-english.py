@@ -52,13 +52,15 @@ quranCom_sources = {
 INVALID_ARGUMENTS = '**Invalid arguments.** Type the command in this format: `{0}tafsir <surah>:<ayah> <tafsir name>`.' \
                 '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
 
-INVALID_TAFSIR = "**Couldn't find tafsir!** List of tafasir: <https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md>."
+INVALID_TAFSIR = "**Couldn't find tafsir!** " \
+                 "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md>."
 
 INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
 
 INVALID_AYAH = "**There are only {0} verses in this surah**."
 
-NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir."
+NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir." \
+          "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md>."
 
 altafsir_url = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSoraNo={}&tAyahNo={}&tDisplay=yes&Page={}&Size=1&LanguageId=2'
 
@@ -79,6 +81,11 @@ class InvalidAyah(commands.CommandError):
 
 
 class InvalidTafsir(commands.CommandError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class NoText(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -146,8 +153,11 @@ class TafsirSpecifics:
 
         elif self.tafsir in quranCom_sources.keys():
             source = await get_site_json(self.url)
-            self.text = source['tafsirs'][0]['text']
-            self.tafsir_author = source['meta']['author_name']
+            try:
+                self.text = source['tafsirs'][0]['text']
+                self.tafsir_author = source['meta']['author_name']
+            except IndexError:
+                raise NoText
 
             # Replace HTML tags
             cleanr = re.compile('<(.*?)>')
@@ -182,11 +192,15 @@ class TafsirSpecifics:
         em = discord.Embed(colour=0x467f05, description=self.pages[self.page - 1])
         em.title = f'Tafsir of Surah {self.ref.surah.name}, Verse {self.ref.ayah}'
         em.set_author(name=self.tafsir_name, icon_url=icon)
+
         if self.num_pages > 1:
             if self.tafsir_author is None:
                 em.set_footer(text=f'Page: {self.page}/{self.num_pages}')
             else:
                 em.set_footer(text=f'Author: {self.tafsir_author}\nPage: {self.page}/{self.num_pages}')
+        elif self.tafsir_author is not None:
+            em.set_footer(text=f'Author: {self.tafsir_author}')
+
         self.embed = em
 
 
@@ -232,11 +246,19 @@ class TafsirEnglish(commands.Cog):
             except discord.ext.commands.errors.CommandInvokeError:
                 pass
 
-    @commands.command(name='tafsir')
-    async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
+    async def process_request(self, ref: str, tafsir: str, page: int, attempt: int):
         spec = TafsirSpecifics(tafsir, ref, page)
         await spec.get_text()
+
+        if len(spec.text) == 0:
+            raise NoText
+
         await spec.make_embed()
+        return spec
+
+    @commands.command(name='tafsir')
+    async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
+        spec = await self.process_request(ref, tafsir, page, -1)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
@@ -251,6 +273,8 @@ class TafsirEnglish(commands.Cog):
             await ctx.send(INVALID_SURAH)
         elif isinstance(error, InvalidTafsir):
             await ctx.send(INVALID_TAFSIR)
+        elif isinstance(error, NoText):
+            await ctx.send(NO_TEXT)
 
 
 def setup(bot):
