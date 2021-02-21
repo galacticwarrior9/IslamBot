@@ -99,7 +99,7 @@ class Translation:
             'sabiq': 141, # German
             'telegu': 227, # Telugu
             'marathi': 226, # Marathi
-            'hebrew': 223, # Hebrew
+            'hebrew': 233, # Hebrew
             'gujarati': 225, # Gujarati
             'abdulislam': 235, # Dutch
             'ganda': 232, # Ganda
