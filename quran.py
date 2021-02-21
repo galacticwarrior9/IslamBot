@@ -233,7 +233,7 @@ class QuranRequest:
             text = json['translations'][0]['text']
 
             # Clear footnotes
-            cleanr = re.compile('<.*>')
+            cleanr = re.compile('/<sup\s+foot_note=\d+>\d+<\/sup>/ig')
             text = re.sub(cleanr, '', text)
 
             # Truncate verses longer than 1024 characters
