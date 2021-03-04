@@ -4,35 +4,40 @@ import re
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from utils import get_site_source, convert_to_arabic_number, convert_from_arabic_number
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.slash_utils import generate_choices_from_dict
+from utils.utils import get_site_source, convert_to_arabic_number, convert_from_arabic_number
 
 
 icon = 'https://lh5.ggpht.com/lRz25mOFrRL42NuHtuSCneXbWV2Gtm7iYZ5eQbuA7JWUC3guWaTaQxNJ7j9rsRMCNAU=w150'
 
 dictName = {
-    'ibnatiyah': 'المحرر الوجيز — ابن عطية (٥٤٦ هـ)',
     'tabari': 'جامع البيان — ابن جرير الطبري (٣١٠ هـ)',
+    'razi': 'مفاتيح الغيب — فخر الدين الرازي (٦٠٦ هـ)',
+    'zamakhshari': 'الكشاف — الزمخشري (٥٣٨ هـ)',
+    'qurtubi': 'الجامع لأحكام القرآن — القرطبي (٦٧١ هـ)',
+    'baghawi': 'معالم التنزيل — البغوي (٥١٦ هـ)',
+    'baydawi': 'أنوار التنزيل — البيضاوي (٦٨٥ هـ)',
+    'jalalayn': 'تفسير الجلالين — المحلّي والسيوطي (٨٦٤، ٩١١ هـ)',
+    'alusi': 'روح المعاني — الآلوسي (١٢٧٠ هـ)',
+    'ibnashur': 'التحرير والتنوير — ابن عاشور (١٣٩٣ هـ)',
+    'ibnuthaymeen': 'تفسير القرآن الكريم — ابن عثيمين (١٤٢١ هـ)',
+    'ibnatiyah': 'المحرر الوجيز — ابن عطية (٥٤٦ هـ)',
     'fathalbayan': 'فتح البيان — صديق حسن خان (١٣٠٧ هـ)',
     'muyassar': 'الميسر — مجمع الملك فهد',
     'ibnkathir': 'تفسير القرآن العظيم — ابن كثير (٧٧٤ هـ)',
     'shawkani': 'فتح القدير — الشوكاني (١٢٥٠ هـ)',
     'mukhtasar': 'المختصر — مركز تفسير',
-    'qurtubi': 'الجامع لأحكام القرآن — القرطبي (٦٧١ هـ)',
     'ibnjuzayy': 'التسهيل لعلوم التنزيل — ابن جُزَيّ (٧٤١ هـ)',
     'saadi': 'تيسير الكريم الرحمن — السعدي (١٣٧٦ هـ)',
-    'baghawi': 'معالم التنزيل — البغوي (٥١٦ هـ)',
     'jazaeri': 'أيسر التفاسير — أبو بكر الجزائري (١٤٣٩ هـ)',
-    'alusi': 'روح المعاني — الآلوسي (١٢٧٠ هـ)',
     'ibnaljawzi': 'زاد المسير — ابن الجوزي (٥٩٧ هـ)',
-    'razi': 'مفاتيح الغيب — فخر الدين الرازي (٦٠٦ هـ)',
-    'ibnuthaymeen': 'تفسير القرآن الكريم — ابن عثيمين (١٤٢١ هـ)',
     'mawardi': 'النكت والعيون — الماوردي (٤٥٠ هـ)',
-    'jalalayn': 'تفسير الجلالين — المحلّي والسيوطي (٨٦٤، ٩١١ هـ)',
     'ibnalqayyim': 'تفسير ابن قيّم الجوزيّة — ابن القيم (٧٥١ هـ)',
     'baqai': 'نظم الدرر — البقاعي (٨٨٥ هـ)',
     'iji': 'جامع البيان — الإيجي (٩٠٥ هـ)',
-    'baydawi': 'أنوار التنزيل — البيضاوي (٦٨٥ هـ)',
-    'ibnashur': 'التحرير والتنوير — ابن عاشور (١٣٩٣ هـ)',
     'nasafi': 'مدارك التنزيل — النسفي (٧١٠ هـ)',
     'samaani': 'تفسير القرآن — السمعاني (٤٨٩ هـ)',
     'wahidi': 'الوجيز — الواحدي (٤٦٨ هـ)',
@@ -44,7 +49,6 @@ dictName = {
     'abualsuod': 'إرشاد العقل السليم — أبو السعود (٩٨٢ هـ)',
     'suyuti': 'الدر المنثور — جلال الدين السيوطي (٩١١ هـ)',
     'samarqandi': 'بحر العلوم — السمرقندي (٣٧٣ هـ)',
-    'zamakhshari': 'الكشاف — الزمخشري (٥٣٨ هـ)',
     'ibnabihatim': 'تفسير القرآن العظيم مسندًا — ابن أبي حاتم الرازي (٣٢٧ هـ)',
     'thaalabi': 'الجواهر الحسان — الثعالبي (٨٧٥ هـ)',
     'farraa': 'معاني القرآن للفراء — أبو زكريا الفراء (٢٠٧ هـ)',
@@ -169,14 +173,15 @@ class Tafsir(commands.Cog):
         soup = BeautifulSoup(content, 'html.parser')
         tag = soup.find('div', attrs={'id': 'preloaded'})
         text = tag.get_text().strip()
-        cleanbr = re.compile('{.*}')
-        text = re.sub(cleanbr, '', text)
         text = text.replace('*', '')\
-            .replace('⁕', '')\
+            .replace('⁕', '') \
+            .replace('}', ' ﴾') \
+            .replace('{', ' ﴿') \
             .replace('﴾', '﴾"')\
             .replace('﴿', '"﴿') \
             .replace('«', '"«') \
             .replace('»', '»"') \
+            .replace('"ayah":', '') \
             .replace(']]', ']') \
             .replace('[[', '[')
 
@@ -228,15 +233,10 @@ class Tafsir(commands.Cog):
 
         return em
 
-    @commands.command(name="atafsir")
-    async def atafsir(self, ctx, ref: str, tafsir: str = "tabari", page: int = 1):
-
+    async def _atafsir(self, ctx, ref: str, tafsir: str, page: int):
         surah, ayah = self.process_ref(ref)
-
         tafsir_name, tafsir_id = self.get_tafsir_id(tafsir)
-
         formatted_url = self.make_url(tafsir_id, surah, ayah)
-
         content = str(await get_site_source(formatted_url))
 
         try:
@@ -250,6 +250,27 @@ class Tafsir(commands.Cog):
         if num_pages > 1:
             await msg.add_reaction(emoji='⬅')
             await msg.add_reaction(emoji='➡')
+
+    @commands.command(name="atafsir")
+    async def atafsir(self, ctx, ref: str, tafsir: str = "tabari", page: int = 1):
+        await self._atafsir(ctx, ref, tafsir, page)
+
+    @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية", guild_ids=[610613297452023837],
+                       options=[
+                           create_option(
+                               name="تفسير",
+                               description="اسم التفسير.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(dictName)),
+                           create_option(
+                               name= "السورة_و_الآية",
+                               description = "رقم السورة:رقم الآية - على سبيل المثال: 2:255",
+                               option_type=3,
+                               required=True)])
+    async def slash_atafsir(self, ctx: SlashContext, tafsir: str, ref: str):
+        await ctx.respond()
+        await self._atafsir(ctx, ref, tafsir, 1)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):

@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord.ext.commands import BadArgument
 
 quranInfo = {'surah': [
     # [start, ayas, order, rukus, name, tname, ename, type]
@@ -474,3 +475,62 @@ class Surah:
         self.revelation_order = quranInfo['surah'][num][2]
         self.verses_count = quranInfo['surah'][num][1]
         # TODO: Re-add pages.
+
+
+class InvalidAyah(commands.CommandError):
+    def __init__(self, num_verses, *args, **kwargs):
+        self.num_verses = num_verses
+        super().__init__(*args, **kwargs)
+
+
+class QuranReference:
+    def __init__(self, ref: str, allow_multiple_verses: bool = False):
+        self.multiple_verses = allow_multiple_verses
+        self.surah = None
+        self.ayat_list = self.process_ref(ref)
+
+    def process_ref(self, ref):
+        try:
+            self.surah = int(ref.split(':', 1)[0])
+        except:
+            raise BadArgument
+
+        if not 1 <= self.surah <= 114:
+            raise InvalidSurah
+
+        if self.multiple_verses:
+            try:
+                min_ayah = int(ref.split(':')[1].split('-')[0])
+            except:
+                raise BadArgument
+
+            if min_ayah <= 0:
+                min_ayah = 1
+
+            try:
+                max_ayah = int(ref.split(':')[1].split('-')[1])
+            except:
+                max_ayah = min_ayah
+
+            # If the min ayah is larger than the max ayah, we assume this is a mistake and swap their values.
+            if min_ayah > max_ayah:
+                min_ayah, max_ayah = max_ayah, min_ayah
+
+            self.check_ayat_num(self.surah, max_ayah)
+
+            return range(min_ayah, max_ayah + 1)
+
+        else:
+            try:
+                ayah = int(ref.split(':')[1])
+            except:
+                raise InvalidAyah
+
+            self.check_ayat_num(self.surah, ayah)
+
+            return ayah
+
+    def check_ayat_num(self, surah_num: int, max_ayah: int):
+        num_ayat = quranInfo['surah'][surah_num][1]
+        if max_ayah > num_ayat:
+            raise InvalidAyah(num_ayat)

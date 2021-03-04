@@ -3,15 +3,12 @@ import discord
 
 
 class Help(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name="ihelp")
     async def ihelp(self, ctx, *, section: str = "main"):
-
         pre = ctx.prefix
-
         section = section.lower()
 
         if section == "main":
@@ -78,7 +75,7 @@ class Help(commands.Cog):
 
             await ctx.send(embed=em)
 
-        elif section == "calendar":
+        elif section == "hijri_calendar":
             em = discord.Embed(title="Hijri Calendar", colour=0x0a519c)
 
             em.add_field(name=f"{pre}hijridate", inline=True, value="Gets the current Hijri date (in the US)")

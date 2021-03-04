@@ -5,13 +5,17 @@ import discord
 import textwrap
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 
-from quranInfo import quranInfo, Surah, InvalidSurah
-from utils import get_site_source, get_site_json
+from quran.quran_info import quranInfo, Surah, InvalidSurah, QuranReference
+from utils.utils import get_site_source, get_site_json
+from utils.slash_utils import generate_choices_from_dict
 
 icon = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 name_mappings = {
+    'maarifulquran': 'Maarif-ul-Quran',
     'ibnkathir': 'Tafsīr Ibn Kathīr',
     'jalalayn': 'Tafsīr al-Jalālayn',
     'tustari': 'Tafsīr al-Tustarī',
@@ -19,13 +23,12 @@ name_mappings = {
     'qushayri': 'Laṭāʾif al-Ishārāt',
     'wahidi': 'Asbāb al-Nuzūl',
     'kashf': 'Kashf al-Asrār',
-    'saddi': "Tafsīr al-Sa'di",
-    'zakaria': 'Tafsir Abu Bakr Zakaria',
+    'saddi': "Tafsīr al-Sa'di (Russian)",
+    'zakaria': 'Tafsir Abu Bakr Zakaria (Bengali)',
     "israr": "تفسیر بیان القرآن",
     "ibnkathir.ur": "تفسیر ابنِ کثیر",
     'ibnkathir.bn': 'তাফসীর ইবনে কাছী',
     'mukhtasar': 'Al-Mukhtasar',
-    'maarifulquran': 'Maarif-ul-Quran',
     'ahsanul': 'Tafsir Ahsanul Bayaan'
 }
 
@@ -66,7 +69,7 @@ altafsir_url = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSor
 
 quranCom_url = 'https://api.quran.com/api/v4/quran/tafsirs/{}?verse_key={}'
 
-jalalayn_url = 'https://raw.githubusercontent.com/galacticwarrior9/islambot/master/tafsir_jalalayn.txt'
+jalalayn_url = 'https://raw.githubusercontent.com/galacticwarrior9/islambot/master/tafsir/tafsir_jalalayn.txt'
 
 
 class InvalidReference(commands.CommandError):
@@ -90,31 +93,6 @@ class NoText(commands.CommandError):
         super().__init__(*args, **kwargs)
 
 
-class TafsirReference:
-    def __init__(self, ref: str):
-        self.ref = ref
-        self.surah_num = None
-        self.process_ref()
-        self.surah = Surah(self.surah_num)
-
-    def process_ref(self):
-        try:
-            self.surah_num, self.ayah = self.ref.split(':', 1)
-            self.surah_num, self.ayah = int(self.surah_num), int(self.ayah)
-        except:
-            raise InvalidReference
-
-        if not 1 <= self.surah_num <= 114:
-            raise InvalidSurah
-
-        self.check_ayat_num()
-
-    def check_ayat_num(self):
-        num_ayat = quranInfo['surah'][self.surah_num][1]
-        if self.ayah > num_ayat:
-            raise InvalidAyah(num_ayat)
-
-
 class TafsirSpecifics:
     def __init__(self, tafsir, ref, page):
         self.pages = None
@@ -128,18 +106,18 @@ class TafsirSpecifics:
         if self.tafsir not in name_mappings.keys():
             raise InvalidTafsir
         self.tafsir_name = name_mappings[tafsir]
-        self.ref = TafsirReference(ref)
+        self.ref = QuranReference(ref)
         self.make_url()
 
     def make_url(self):
         if self.tafsir in altafsir_sources.keys():
             tafsir_id = altafsir_sources[self.tafsir]
-            self.url = altafsir_url.format(tafsir_id, self.ref.surah_num, self.ref.ayah, 1)
+            self.url = altafsir_url.format(tafsir_id, self.ref.surah, self.ref.ayat_list, 1)
         elif self.tafsir == 'jalalayn':
             self.url = jalalayn_url
         elif self.tafsir in quranCom_sources.keys():
             tafsir_id = quranCom_sources[self.tafsir]
-            self.url = quranCom_url.format(tafsir_id, f'{self.ref.surah_num}:{self.ref.ayah}')
+            self.url = quranCom_url.format(tafsir_id, f'{self.ref.surah}:{self.ref.ayat_list}')
 
     async def get_text(self):
         if self.tafsir in altafsir_sources.keys():
@@ -168,17 +146,17 @@ class TafsirSpecifics:
             self.tafsir_author = 'Jalal ad-Din al-Maḥalli and Jalal ad-Din as-Suyuti'
 
             try:
-                char1 = f'[{self.ref.surah_num}:{self.ref.ayah}]'
-                next_ayah = self.ref.ayah + 1
-                char2 = f'[{self.ref.surah_num}:{next_ayah}]'
+                char1 = f'[{self.ref.surah}:{self.ref.ayat_list}]'
+                next_ayah = self.ref.ayat_list + 1
+                char2 = f'[{self.ref.surah}:{next_ayah}]'
 
                 text = source[(source.index(char1) + len(char1)):source.index(char2)]
                 self.text = f"{text}".replace('`', '\\`').replace('(s)', '(ﷺ)').rstrip()
 
             except:
-                char1 = f'[{self.ref.surah_num}:{self.ref.ayah}]'
-                self.ref.surah_num += 1
-                char2 = f'[{self.ref.surah_num}:1]'
+                char1 = f'[{self.ref.surah}:{self.ref.surah}]'
+                self.ref.surah += 1
+                char2 = f'[{self.ref.surah}:1]'
 
                 text = source[(source.index(char1) + len(char1)):source.index(char2)]
                 self.text = u"{}".format(text).replace('`', '\\`').rstrip()
@@ -188,7 +166,7 @@ class TafsirSpecifics:
 
     async def make_embed(self):
         em = discord.Embed(colour=0x467f05, description=self.pages[self.page - 1])
-        em.title = f'Tafsir of Surah {self.ref.surah.name}, Verse {self.ref.ayah}'
+        em.title = f'Tafsir of Surah {self.ref.surah.name}, Verse {self.ref.surah}'
         em.set_author(name=self.tafsir_name, icon_url=icon)
 
         if self.num_pages > 1:
@@ -264,6 +242,24 @@ class TafsirEnglish(commands.Cog):
     @commands.command(name='tafsir')
     async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
         spec = await self.process_request(ref, tafsir, page)
+        await self.send_embed(ctx, spec)
+
+    @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.", guild_ids=[610613297452023837],
+                       options=[
+                           create_option(
+                               name="tafsir",
+                               description="The name of the tafsir.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(name_mappings)),
+                           create_option(
+                               name = "reference",
+                               description = "The verse to get the tafsir of, e.g. 1:4 or 2:255.",
+                               option_type=3,
+                               required=True)])
+    async def slash_tafsir(self, ctx: SlashContext, tafsir: str, ref: str):
+        await ctx.respond()
+        spec = await self.process_request(ref, tafsir, 1)
         await self.send_embed(ctx, spec)
 
     @tafsir.error

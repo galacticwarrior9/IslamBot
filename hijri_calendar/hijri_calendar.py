@@ -3,7 +3,7 @@ from datetime import datetime, date
 from discord.ext import commands, tasks
 from discord.ext.commands import MissingRequiredArgument
 from hijri_converter import convert
-from utils import convert_to_arabic_number, make_embed
+from utils.utils import convert_to_arabic_number, make_embed
 
 ICON = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/512/calendar-icon.png'
 DATE_INVALID = '**Invalid date**. Dates must be in this format: DD-MM-YYYY.\n\n**Example**: 01-12-2020'

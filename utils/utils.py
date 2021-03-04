@@ -135,7 +135,7 @@ def convert_from_arabic_number(number_string):
     return "".join([dic[char] for char in number_string])
 
 
-path = "prefixes.csv"
+path = "../prefixes.csv"
 
 
 def make_csv():
