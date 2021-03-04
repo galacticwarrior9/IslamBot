@@ -1,7 +1,10 @@
 from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from utils import get_site_source
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.utils import get_site_source
 import asyncio
 import discord
 import textwrap
@@ -10,19 +13,18 @@ INVALID_PERSON = "**Error**: Could not find person."
 INVALID_ARGUMENTS = "**Error**: Please specify a name (in Arabic)."
 
 
-class HadithTransmitters(commands.Cog):
+class Biographies(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
         self.session = ClientSession(loop=bot.loop)
         self.url = 'http://hadithtransmitters.hawramani.com/?s={}&cat=5563'
 
-    @commands.command(name="biography")
-    async def biography(self, ctx, *, name):
+    async def _biography(self, ctx, name):
         soup = await get_site_source(self.url.format(name))
 
         try:
-            permalink = soup.find('a', href=True, class_='sectionperma')['href']
+            permalink = soup.find('a', href=True, class_='sectionpermaanchor')['href']
         except TypeError:
             return await ctx.send("**Error**: Person not found.")
 
@@ -63,11 +65,15 @@ class HadithTransmitters(commands.Cog):
                 await msg.remove_reaction(emoji='❎', member=self.bot.user)
                 break
 
-            if reaction.emoji == '➡' and page < num_pages:
-                page += 1
-
-            if reaction.emoji == '⬅' and page > 1:
+            if reaction.emoji == '➡':
                 page -= 1
+                if page < 1:
+                    page = num_pages
+
+            if reaction.emoji == '⬅':
+                page += 1
+                if page > num_pages:
+                    page = 1
 
             if reaction.emoji == '❎':
                 await msg.delete()
@@ -83,11 +89,26 @@ class HadithTransmitters(commands.Cog):
             except discord.ext.commands.errors.CommandInvokeError:
                 pass
 
+    @commands.command(name="biography")
+    async def biography(self, ctx, *, name):
+        await self._biography(ctx, name)
+
     @biography.error
     async def biography_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
-            await ctx.send("**Error**: Please submit a valid")
+            await ctx.send("**Error**: Please type a valid name. For example: ")
+
+    @cog_ext.cog_slash(name="biography", description="View the biography of a hadith transmitter or early Muslim.",
+                       options=[
+                           create_option(
+                               name="name",
+                               description="The *Arabic* name of the person to fetch information for, e.g. {}".format("عبد الله بن عباس "),
+                               option_type=3,
+                               required=True)])
+    async def slash_biography(self, ctx: SlashContext, name: str):
+        await ctx.respond()
+        await self._biography(ctx, name)
 
 
 def setup(bot):
-    bot.add_cog(HadithTransmitters(bot))
+    bot.add_cog(Biographies(bot))

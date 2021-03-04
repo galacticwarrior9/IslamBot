@@ -1,15 +1,20 @@
 import asyncio
+from datetime import datetime
+from time import sleep
+
 import discord
 import pytz
-from time import sleep
-from aiomysql.sa import create_engine
-from sqlalchemy import create_engine
 from aiohttp import ClientSession
-from datetime import datetime
-from dbhandler import PrayerTimesHandler, user, password, host, database, user_prayer_times_table_name, server_prayer_times_table_name
+from aiomysql.sa import create_engine
 from discord.ext import commands, tasks
 from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
+from discord_slash import SlashContext, cog_ext
+from discord_slash.utils.manage_commands import create_option
 from pytz import timezone, UnknownTimeZoneError
+from sqlalchemy import create_engine
+
+from utils.database_utils import PrayerTimesHandler, user, password, host, database, user_prayer_times_table_name, \
+    server_prayer_times_table_name
 
 icon = 'https://www.muslimpro.com/img/muslimpro-logo-2016-250.png'
 
@@ -43,7 +48,6 @@ class PrayerReminder:
 
 
 class PrayerTimes(commands.Cog):
-
     def __init__(self, bot):
         self.session = ClientSession(loop = bot.loop)
         self.bot = bot
@@ -85,9 +89,7 @@ class PrayerTimes(commands.Cog):
 
         return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date
 
-    @commands.command(name="prayertimes")
-    async def prayertimes(self, ctx, *, location):
-
+    async def _prayertimes(self, ctx, location):
         calculation_method = await PrayerTimesHandler.get_user_calculation_method(ctx.author.id)
         calculation_method = int(calculation_method)
 
@@ -109,18 +111,32 @@ class PrayerTimes(commands.Cog):
         em.add_field(name=f'**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)
         em.add_field(name=f'**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
 
-        method_names = await self.get_calculation_methods()
-        em.set_footer(text=f'Calculation Method: {method_names[calculation_method]}')
+        calculation_methods = await self.get_calculation_methods()
+        em.set_footer(text=f'Calculation Method: {calculation_methods[calculation_method]}')
         await ctx.send(embed=em)
+
+    @commands.command(name="prayertimes")
+    async def prayertimes(self, ctx, *, location):
+        await self._prayertimes(ctx, location)
 
     @prayertimes.error
     async def on_prayertimes_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(f"**Please provide a location**. \n\nExample: `{ctx.prefix}prayertimes Dubai, UAE`")
 
+    @cog_ext.cog_slash(name="prayertimes", description="Get the prayer times for a location.",
+                       options=[
+                           create_option(
+                               name="location",
+                               description="The location to get prayer times for.",
+                               option_type=3,
+                               required=True)])
+    async def slash_prayertimes(self, ctx: SlashContext, location: str, calculation_method: int = None):
+        await ctx.respond()
+        await self._prayertimes(ctx, location)
+
     @commands.command(name="setcalculationmethod")
     async def setcalculationmethod(self, ctx):
-
         def is_user(msg):
             return msg.author == ctx.author
 
@@ -217,11 +233,8 @@ class PrayerTimes(commands.Cog):
 
             message = await self.bot.wait_for('message', timeout=180.0, check=is_user)
             method = message.content
-            try:
-                method = int(method)
-                if method not in calculation_methods.keys():
-                    raise TypeError
-            except TypeError:
+            method = int(method)
+            if method not in calculation_methods.keys():
                 return await ctx.send("❌ **Invalid calculation method number.** ")
 
             # Update database.
@@ -252,7 +265,6 @@ class PrayerTimes(commands.Cog):
 
     @commands.command(name="removepersonalprayerreminder")
     async def removepersonalprayerreminder(self, ctx):
-
         await PrayerTimesHandler.delete_user_prayer_times_details(ctx.author.id)
         await ctx.send(f":white_check_mark: **You will no longer receive prayer times reminders.**")
 
@@ -266,7 +278,6 @@ class PrayerTimes(commands.Cog):
 
     @tasks.loop(hours=1)
     async def update_times(self):
-
         index = -1
         for location, method in zip(PrayerTimesHandler.server_df['location'], PrayerTimesHandler.server_df['calculation_method']):
             index += 1

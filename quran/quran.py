@@ -2,12 +2,13 @@ import re
 
 import discord
 import pymysql
-from discord.ext.commands import CheckFailure, MissingRequiredArgument, BadArgument
+from discord.ext.commands import CheckFailure, MissingRequiredArgument
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 
-from dbhandler import DBHandler
-from quranInfo import *
-from utils import convert_to_arabic_number
-from utils import get_site_json
+from utils.database_utils import DBHandler
+from quran.quran_info import *
+from utils.utils import convert_to_arabic_number, get_site_json
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
                       "lambot/blob/master/Translations.md>"
@@ -21,7 +22,6 @@ INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah
                                "\n\nExample: `{0}quran 1:1-7`"
 
 INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
-
 INVALID_AYAH = "**There are only {0} verses in this surah**."
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
@@ -174,45 +174,15 @@ class Translation:
         else:
             raise InvalidTranslation
 
-
-class QuranReference:
-    def __init__(self, ref: str):
-        self.ayat_list = self.process_ref(ref)
-
-    def check_ayat_num(self, surah_num: int, max_ayah: int):
-        num_ayat = quranInfo['surah'][surah_num][1]
-        if max_ayah > num_ayat:
-            raise InvalidAyah(num_ayat)
-
-    def process_ref(self, ref):
+    @staticmethod
+    async def get_guild_translation(guild_id):
+        translation_key = await DBHandler.get_guild_translation(guild_id)
         try:
-            self.surah = int(ref.split(':', 1)[0])
-        except:
-            raise BadArgument
-
-        if not 1 <= self.surah <= 114:
-            raise InvalidSurah
-
-        try:
-            self.min_ayah = int(ref.split(':')[1].split('-')[0])
-        except:
-            raise BadArgument
-
-        if self.min_ayah <= 0:
-            self.min_ayah = 1
-
-        try:
-            self.max_ayah = int(ref.split(':')[1].split('-')[1])
-        except:
-            self.max_ayah = self.min_ayah
-
-        # If the min ayah is larger than the max ayah, we assume this is a mistake and swap their values.
-        if self.min_ayah > self.max_ayah:
-            self.min_ayah, self.max_ayah = self.max_ayah, self.min_ayah
-
-        self.check_ayat_num(self.surah, self.max_ayah)
-
-        return range(self.min_ayah, self.max_ayah + 1)
+            translation = Translation.get_translation_id(translation_key)
+            return translation
+        except InvalidTranslation:
+            await DBHandler.delete_guild_translation(guild_id)
+            return 'haleem'
 
 
 class QuranRequest:
@@ -247,7 +217,6 @@ class QuranRequest:
 
     async def get_arabic_verses(self):
         for ayah in self.ref.ayat_list:
-            print(self.arabic_url.format(f'{self.ref.surah}:{ayah}'))
             json = await get_site_json(self.arabic_url.format(f'{self.ref.surah}:{ayah}'))
             text = json['verses'][0]['text_uthmani']
 
@@ -294,7 +263,7 @@ class Quran(commands.Cog):
     async def quran(self, ctx, ref: str, translation_key: str = None):
         async with ctx.channel.typing():
             if translation_key is None:
-                translation_key = await DBHandler.get_guild_translation(ctx.guild.id)
+                translation_key = await Translation.get_guild_translation(ctx.guild.id)
             await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     @commands.command(name="aquran")
@@ -328,14 +297,44 @@ class Quran(commands.Cog):
         if isinstance(error, BadArgument):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
-    @commands.command(name="settranslation")
-    @commands.has_permissions(administrator=True)
-    async def settranslation(self, ctx, translation: str):
+    @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
+                       options=[
+                           create_option(
+                               name="reference",
+                               description="The verse(s) to fetch, e.g. 1:1, 2:255, 1:1-7, 2:255-260",
+                               option_type=3,
+                               required=True),
+                           create_option(
+                               name = "translation_key",
+                               description="The translation to use.",
+                               option_type=3,
+                               required=False)])
+    async def slash_quran(self, ctx: SlashContext, reference: str, translation_key: str = None):
+        await ctx.respond()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=reference, translation_key=translation_key).process_request()
 
+    @cog_ext.cog_slash(name="aquran",
+                       description="تبعث آيات قرآنية في الشات",
+                       options=[
+                           create_option(
+                               name="ayat",
+                               description="اكتب رقم السورة:رقم الآية. اذا اردت ان تبعث اكثر من اية, اكتب  رقم السورة:أول آية-اخر آية",
+                               option_type=3,
+                               required=True)])
+    async def slash_aquran(self, ctx: SlashContext, reference: str):
+        await ctx.respond()
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=reference).process_request()
+
+    async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)
         await DBHandler.create_connection()
         await DBHandler.update_guild_translation(ctx.guild.id, translation)
         await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
+
+    @commands.command(name="settranslation")
+    @commands.has_permissions(administrator=True)
+    async def settranslation(self, ctx, translation: str):
+        await self._settranslation(ctx, translation)
 
     @settranslation.error
     async def settranslation_error(self, ctx, error):
@@ -346,6 +345,19 @@ class Quran(commands.Cog):
         if isinstance(error, pymysql.err.OperationalError):
             print(error)
             await ctx.send(DATABASE_UNREACHABLE)
+
+    @cog_ext.cog_slash(name="settranslation",
+                       description="🔒 Administrator only command. Changes the default translation for /quran.",
+                       options=[
+                           create_option(
+                               name="translation",
+                               description="The translation to use. See /help quran for a list.",
+                               option_type=3,
+                               required=True)])
+    @commands.has_permissions(administrator=True)
+    async def slash_settranslation(self, ctx: SlashContext, translation: str):
+        await ctx.respond()
+        await self._settranslation(ctx, translation)
 
     @commands.command(name="surah")
     async def surah(self, ctx, surah_num: int):

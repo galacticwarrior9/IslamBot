@@ -3,10 +3,9 @@ import configparser
 
 import aiomysql
 import pandas as pd
+import pymysql
 from aiomysql.sa import create_engine
 from sqlalchemy import create_engine
-
-from quran import InvalidTranslation
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -57,13 +56,6 @@ class DBHandler:
             else:
                 translation = result[0]
 
-            from quran import Translation
-            try:
-                Translation.get_translation_id(translation)
-            except InvalidTranslation:
-                await cls.delete_guild_translation(guild_id)
-                return 'haleem'
-
             connection.close()
             return translation
 
@@ -96,7 +88,11 @@ def create_df():
 
 class PrayerTimesHandler(DBHandler):
 
-    user_df, server_df = create_df()
+    try:
+        user_df, server_df = create_df()
+    except:  # If the MySQL DB is offline, send a message but do not crash the bot!
+        print("Could not reach the MySQL database. Prayer time reminders will not work.")
+        pass
 
     @classmethod
     async def update_server_prayer_times_details(cls, guild_id, channel_id, location, timezone, method):

@@ -1,11 +1,16 @@
-from discord.ext import commands
-import aiohttp
 import asyncio
 import configparser
-import discord
-import html2text
 import re
 import textwrap
+
+import aiohttp
+import discord
+import html2text
+from discord.ext import commands
+from discord_slash import SlashContext, cog_ext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.slash_utils import generate_choices_from_dict
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -16,6 +21,45 @@ ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
                     'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
                     'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
+
+english_hadith_collections = {
+    'ahmad': 'Musnad Ahmad ibn Hanbal',
+    'bukhari': 'Sahīh al-Bukhārī',
+    'muslim': 'Sahīh Muslim',
+    'tirmidhi': 'Jamiʿ at-Tirmidhī',
+    'abudawud': 'Sunan Abī Dāwūd',
+    'nasai': "Sunan an-Nāsaʿī",
+    'ibnmajah': 'Sunan Ibn Mājah',
+    'malik': 'Muwatta Mālik',
+    'riyadussalihin': 'Riyadh as-Salihīn',
+    'adab': "Al-Adab al-Mufrad",
+    'bulugh': 'Bulugh al-Maram',
+    'shamail': "Shamā'il Muhammadiyyah",
+    'mishkat': 'Mishkat al-Masabih',
+    'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
+    'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah',
+    'hisn': 'Fortress of the Muslim'
+}
+
+arabic_hadith_collections = {
+    'ahmad': 'مسند أحمد بن حنبل',
+    'bukhari': 'صحيح البخاري',
+    'muslim': 'صحيح مسلم',
+    'tirmidhi': 'جامع الترمذي',
+    'abudawud': 'سنن أبي داود',
+    'nasai': "سنن النسائي",
+    'ibnmajah': 'سنن ابن ماجه',
+    'malik': 'موطأ مالك',
+    'riyadussalihin': 'رياض الصالحين',
+    'adab': "الأدب المفرد",
+    'bulugh': 'بلوغ المرام',
+    'shamail': 'الشمائل المحمدية',
+    'mishkat': 'مشكاة المصابيح',
+    'qudsi40': 'الأربعون القدسية',
+    'nawawi40': 'الأربعون النووية',
+    'hisn': 'حصن المسلم'
+}
+
 
 INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
                 '\n\n**Example**: `{0}hadith bukhari 1:1`' \
@@ -300,6 +344,40 @@ class HadithCommands(commands.Cog):
             await ctx.send(INVALID_COLLECTION)
         else:
             await ctx.send("Hadith could not be found.")
+
+    @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.",
+                       options=[
+                           create_option(
+                               name="hadith_collection",
+                               description="The name of the hadith collection.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(english_hadith_collections)),
+                           create_option(
+                               name = "hadith_number",
+                               description = "The number of the hadith.",
+                               option_type=3,
+                               required=True)])
+    async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
+        await ctx.respond()
+        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
+
+    @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
+                       options=[
+                           create_option(
+                               name="hadith_collection",
+                               description="The name of the hadith collection.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(arabic_hadith_collections)),
+                           create_option(
+                               name = "hadith_number",
+                               description = "The number of the hadith.",
+                               option_type=3,
+                               required=True)])
+    async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
+        await ctx.respond()
+        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')
 
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
