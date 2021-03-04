@@ -105,7 +105,7 @@ class Biographies(commands.Cog):
                                description="The *Arabic* name of the person to fetch information for, e.g. {}".format("عبد الله بن عباس "),
                                option_type=3,
                                required=True)])
-    async def slash_ahadith(self, ctx: SlashContext, name: str):
+    async def slash_biography(self, ctx: SlashContext, name: str):
         await ctx.respond()
         await self._biography(ctx, name)
 
