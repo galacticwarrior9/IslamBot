@@ -177,9 +177,10 @@ class Translation:
     @staticmethod
     async def get_guild_translation(guild_id):
         translation_key = await DBHandler.get_guild_translation(guild_id)
+        # Ensure we are not somehow retrieving an invalid translation
         try:
-            translation = Translation.get_translation_id(translation_key)
-            return translation
+            Translation.get_translation_id(translation_key)
+            return translation_key
         except InvalidTranslation:
             await DBHandler.delete_guild_translation(guild_id)
             return 'haleem'
@@ -188,7 +189,7 @@ class Translation:
 class QuranRequest:
     def __init__(self, ctx, ref: str, is_arabic: bool, translation_key: str = None):
         self.ctx = ctx
-        self.ref = QuranReference(ref)
+        self.ref = QuranReference(ref, True)
         self.is_arabic = is_arabic
         if translation_key is not None:
             self.translation = Translation(translation_key)
