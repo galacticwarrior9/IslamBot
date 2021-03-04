@@ -1,14 +1,18 @@
 from discord.ext import commands
 import discord
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.slash_utils import generate_choices_from_list
+
+SECTIONS = ['Main', 'Quran', 'Tafsir', 'Hijri Calendar', 'Hadith', 'Prayer Times', 'Dua']
 
 
 class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="ihelp")
-    async def ihelp(self, ctx, *, section: str = "main"):
-        pre = ctx.prefix
+    async def _help(self, ctx, pre, section):
         section = section.lower()
 
         if section == "main":
@@ -93,9 +97,7 @@ class Help(commands.Cog):
             em = discord.Embed(title="Hadith", colour=0x0a519c, description="These commands fetch hadith from *sunnah.com*.")
 
             em.add_field(name=f"{pre}hadith", inline=True, value="Gets a sunnah.com hadith in English."
-                                                            f"\n\n`{pre}hadith <collection> <book number>:<hadith number>`"
-                                                            f"\n\nExample: `{pre}hadith bukhari 97:6` for https://sunnah.com/bukhari/97/6"
-                                                            f"\n\n__**OR**__\n\n `{pre}hadith <collection> <hadith number>`"
+                                                            f"\n\n `{pre}hadith <collection> <hadith number>`"
                                                             f"\n\nExample: `{pre}hadith muslim 1051` for https://sunnah.com/muslim:1051")
 
             em.add_field(name=f"{pre}ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic. " 
@@ -147,6 +149,22 @@ class Help(commands.Cog):
                                                          "\n\n__Usage__"
                                                          f"\n\n`{pre}prefix remove`")
             await ctx.send(embed=em)
+
+    @commands.command(name="ihelp")
+    async def help(self, ctx, *, section: str = "main"):
+        await self._help(ctx, ctx.prefix, section)
+
+    @cog_ext.cog_slash(name="help", description="The help command for the bot.",
+                       options=[
+                           create_option(
+                               name="section",
+                               description="NOTE: Not all commands have slash equivalents yet!",
+                               option_type=3,
+                               choices=generate_choices_from_list(SECTIONS),
+                               required=False)])
+    async def slash_help(self, ctx: SlashContext, section: str = "Main"):
+        await ctx.respond()
+        await self._help(ctx, '/', section)
 
 
 def setup(bot):
