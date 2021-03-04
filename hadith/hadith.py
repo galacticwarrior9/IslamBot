@@ -345,7 +345,7 @@ class HadithCommands(commands.Cog):
         else:
             await ctx.send("Hadith could not be found.")
 
-    @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.",
                        options=[
                            create_option(
                                name="hadith_collection",
@@ -357,13 +357,12 @@ class HadithCommands(commands.Cog):
                                name = "hadith_number",
                                description = "The number of the hadith.",
                                option_type=3,
-                               required=True,
-                           )])
+                               required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
         await ctx.respond()
         await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
 
-    @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
                        options=[
                            create_option(
                                name="hadith_collection",
@@ -375,8 +374,7 @@ class HadithCommands(commands.Cog):
                                name = "hadith_number",
                                description = "The number of the hadith.",
                                option_type=3,
-                               required=True,
-                           )])
+                               required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
         await ctx.respond()
         await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')

@@ -297,7 +297,7 @@ class Quran(commands.Cog):
         if isinstance(error, BadArgument):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
-    @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
                        options=[
                            create_option(
                                name="reference",
@@ -315,7 +315,6 @@ class Quran(commands.Cog):
 
     @cog_ext.cog_slash(name="aquran",
                        description="تبعث آيات قرآنية في الشات",
-                       guild_ids=[610613297452023837],
                        options=[
                            create_option(
                                name="ayat",

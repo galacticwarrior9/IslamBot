@@ -255,7 +255,7 @@ class Tafsir(commands.Cog):
     async def atafsir(self, ctx, ref: str, tafsir: str = "tabari", page: int = 1):
         await self._atafsir(ctx, ref, tafsir, page)
 
-    @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
                        options=[
                            create_option(
                                name="تفسير",

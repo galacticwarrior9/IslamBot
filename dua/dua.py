@@ -86,7 +86,7 @@ class Dua(commands.Cog):
         if isinstance(error, KeyError):
             await ctx.send(f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
 
-    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.",
                        options=[
                            create_option(
                                name="topic",

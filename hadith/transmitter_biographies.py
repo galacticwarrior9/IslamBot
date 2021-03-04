@@ -98,7 +98,7 @@ class Biographies(commands.Cog):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send("**Error**: Please type a valid name. For example: ")
 
-    @cog_ext.cog_slash(name="biography", description="View the biography of a hadith transmitter or early Muslim.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="biography", description="View the biography of a hadith transmitter or early Muslim.",
                        options=[
                            create_option(
                                name="name",

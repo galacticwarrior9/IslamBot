@@ -98,7 +98,7 @@ class QuranMorphology(commands.Cog):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
 
-    @cog_ext.cog_slash(name="morphology", description="View the morphology of a Quranic word.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="morphology", description="View the morphology of a Quranic word.",
                        options=[
                            create_option(
                                name="surah_num",

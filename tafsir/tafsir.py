@@ -244,7 +244,7 @@ class TafsirEnglish(commands.Cog):
         spec = await self.process_request(ref, tafsir, page)
         await self.send_embed(ctx, spec)
 
-    @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
                        options=[
                            create_option(
                                name="tafsir",

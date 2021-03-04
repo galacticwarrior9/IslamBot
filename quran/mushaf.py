@@ -54,7 +54,7 @@ class Mushaf(commands.Cog):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_INPUT.format(ctx.prefix))
 
-    @cog_ext.cog_slash(name="mushaf", description="View an ayah on the mushaf.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="mushaf", description="View an ayah on the mushaf.",
                        options=[
                            create_option(
                                name="reference",

@@ -124,7 +124,7 @@ class PrayerTimes(commands.Cog):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(f"**Please provide a location**. \n\nExample: `{ctx.prefix}prayertimes Dubai, UAE`")
 
-    @cog_ext.cog_slash(name="prayertimes", description="Get the prayer times for a location.", guild_ids=[610613297452023837],
+    @cog_ext.cog_slash(name="prayertimes", description="Get the prayer times for a location.",
                        options=[
                            create_option(
                                name="location",
