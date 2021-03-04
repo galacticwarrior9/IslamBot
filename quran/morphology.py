@@ -101,23 +101,23 @@ class QuranMorphology(commands.Cog):
     @cog_ext.cog_slash(name="morphology", description="View the morphology of a Quranic word.",
                        options=[
                            create_option(
-                               name="surah_num",
+                               name="surah_number",
                                description="The surah number of the word.",
                                option_type=4,
                                required=True),
                            create_option(
-                               name = "verse_num",
+                               name = "verse_number",
                                description = "The ayah number of the word.",
                                option_type=4,
                                required=True),
                            create_option(
-                               name="word_num",
+                               name="word_number",
                                description="The word number of the word.",
                                option_type=4,
                                required=True)])
-    async def slash_morphology(self, ctx: SlashContext, surah_num: int, verse_num: int, word_num: int):
+    async def slash_morphology(self, ctx: SlashContext, surah_number: int, verse_number: int, word_number: int):
         await ctx.respond()
-        ref = f'{surah_num}:{verse_num}:{word_num}'
+        ref = f'{surah_number}:{verse_number}:{word_number}'
         await self._morphology(ctx, ref)
 
 
