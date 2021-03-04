@@ -325,14 +325,16 @@ class Quran(commands.Cog):
         await ctx.respond()
         await QuranRequest(ctx=ctx, is_arabic=True, ref=reference).process_request()
 
-    @commands.command(name="settranslation")
-    @commands.has_permissions(administrator=True)
-    async def settranslation(self, ctx, translation: str):
-
+    async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)
         await DBHandler.create_connection()
         await DBHandler.update_guild_translation(ctx.guild.id, translation)
         await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
+
+    @commands.command(name="settranslation")
+    @commands.has_permissions(administrator=True)
+    async def settranslation(self, ctx, translation: str):
+        await self._settranslation(ctx, translation)
 
     @settranslation.error
     async def settranslation_error(self, ctx, error):
@@ -343,6 +345,19 @@ class Quran(commands.Cog):
         if isinstance(error, pymysql.err.OperationalError):
             print(error)
             await ctx.send(DATABASE_UNREACHABLE)
+
+    @cog_ext.cog_slash(name="settranslation",
+                       description="🔒 Administrator only command. Changes the default translation for /quran.",
+                       options=[
+                           create_option(
+                               name="translation",
+                               description="The translation to use. See /help quran for a list.",
+                               option_type=3,
+                               required=True)])
+    @commands.has_permissions(administrator=True)
+    async def slash_settranslation(self, ctx: SlashContext, translation: str):
+        await ctx.respond()
+        await self._settranslation(ctx, translation)
 
     @commands.command(name="surah")
     async def surah(self, ctx, surah_num: int):
