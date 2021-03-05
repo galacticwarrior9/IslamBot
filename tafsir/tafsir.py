@@ -166,7 +166,7 @@ class TafsirSpecifics:
 
     async def make_embed(self):
         em = discord.Embed(colour=0x467f05, description=self.pages[self.page - 1])
-        em.title = f'Tafsir of Surah {self.ref.surah.name}, Verse {self.ref.surah}'
+        em.title = f'Tafsir of Surah {Surah(self.ref.surah).name}, Verse {self.ref.ayat_list}'
         em.set_author(name=self.tafsir_name, icon_url=icon)
 
         if self.num_pages > 1:
@@ -242,22 +242,23 @@ class TafsirEnglish(commands.Cog):
     @commands.command(name='tafsir')
     async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
         spec = await self.process_request(ref, tafsir, page)
+        print("lol")
         await self.send_embed(ctx, spec)
 
     @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
                        options=[
                            create_option(
+                               name="reference",
+                               description="The verse to get the tafsir of, e.g. 1:4 or 2:255.",
+                               option_type=3,
+                               required=True),
+                           create_option(
                                name="tafsir",
                                description="The name of the tafsir.",
                                option_type=3,
-                               required=True,
-                               choices=generate_choices_from_dict(name_mappings)),
-                           create_option(
-                               name = "reference",
-                               description = "The verse to get the tafsir of, e.g. 1:4 or 2:255.",
-                               option_type=3,
-                               required=True)])
-    async def slash_tafsir(self, ctx: SlashContext, tafsir: str, ref: str):
+                               required=False,
+                               choices=generate_choices_from_dict(name_mappings))])
+    async def slash_tafsir(self, ctx: SlashContext, ref: str, tafsir: str = "maarifulquran"):
         await ctx.respond()
         spec = await self.process_request(ref, tafsir, 1)
         await self.send_embed(ctx, spec)
