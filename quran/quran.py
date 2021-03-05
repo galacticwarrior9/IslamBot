@@ -312,6 +312,8 @@ class Quran(commands.Cog):
                                required=False)])
     async def slash_quran(self, ctx: SlashContext, reference: str, translation_key: str = None):
         await ctx.respond()
+        if translation_key is None:
+            translation_key = await Translation.get_guild_translation(ctx.guild.id)
         await QuranRequest(ctx=ctx, is_arabic=False, ref=reference, translation_key=translation_key).process_request()
 
     @cog_ext.cog_slash(name="aquran",
