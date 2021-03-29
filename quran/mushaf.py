@@ -32,7 +32,6 @@ class Mushaf(commands.Cog):
             page = data['data']['page']
 
         formatted_page = str(page).zfill(3)
-
         if show_tajweed:
             url = f'https://www.searchtruth.org/quran/images1/{formatted_page}.jpg'
         else:
@@ -43,11 +42,17 @@ class Mushaf(commands.Cog):
                                  f'\n  الصفحة{arabic_page_number}', colour=0x006400)
         em.set_author(name=f'Mushaf / مصحف', icon_url=ICON)
         em.set_image(url=url)
+
         await ctx.send(embed=em)
 
     @commands.command(name="mushaf")
-    async def mushaf(self, ctx, ref: str, tajweed: bool = False):
-        await self._mushaf(ctx, ref, tajweed)
+    async def mushaf(self, ctx, ref: str, tajweed: str = None):
+        if tajweed is None:
+            await self._mushaf(ctx, ref, False)
+        elif tajweed.lower() == 'tajweed':
+            await self._mushaf(ctx, ref, True)
+        else:
+            raise MissingRequiredArgument
 
     @mushaf.error
     async def on_mushaf_error(self, ctx, error):
