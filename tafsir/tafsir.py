@@ -259,7 +259,7 @@ class TafsirEnglish(commands.Cog):
                                required=False,
                                choices=generate_choices_from_dict(name_mappings))])
     async def slash_tafsir(self, ctx: SlashContext, ref: str, tafsir: str = "maarifulquran"):
-        await ctx.respond()
+        await ctx.defer()
         spec = await self.process_request(ref, tafsir, 1)
         await self.send_embed(ctx, spec)
 

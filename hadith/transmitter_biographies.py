@@ -106,7 +106,7 @@ class Biographies(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_biography(self, ctx: SlashContext, name: str):
-        await ctx.respond()
+        await ctx.defer()
         await self._biography(ctx, name)
 
 

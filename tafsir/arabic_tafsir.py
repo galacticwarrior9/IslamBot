@@ -269,7 +269,7 @@ class Tafsir(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_atafsir(self, ctx: SlashContext, tafsir: str, ref: str):
-        await ctx.respond()
+        await ctx.defer()
         await self._atafsir(ctx, ref, tafsir, 1)
 
     @commands.Cog.listener()

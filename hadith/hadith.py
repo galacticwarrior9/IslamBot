@@ -359,7 +359,7 @@ class HadithCommands(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await ctx.respond()
+        await ctx.defer()
         await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
 
     @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
@@ -376,7 +376,7 @@ class HadithCommands(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await ctx.respond()
+        await ctx.defer()
         await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')
 
     def findURL(self, message):

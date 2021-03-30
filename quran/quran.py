@@ -96,7 +96,7 @@ class Translation:
             'omar': 229, # Tamil
             'serbian': 215, # Serbian
             'bamoki': 143, # Kurdish
-            'sabiq': 141, # German
+            'sabiq': 141, # Indonesian
             'telegu': 227, # Telugu
             'marathi': 226, # Marathi
             'hebrew': 233, # Hebrew
@@ -311,7 +311,7 @@ class Quran(commands.Cog):
                                option_type=3,
                                required=False)])
     async def slash_quran(self, ctx: SlashContext, reference: str, translation_key: str = None):
-        await ctx.respond()
+        await ctx.defer()
         if translation_key is None:
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
         await QuranRequest(ctx=ctx, is_arabic=False, ref=reference, translation_key=translation_key).process_request()
@@ -325,7 +325,7 @@ class Quran(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_aquran(self, ctx: SlashContext, reference: str):
-        await ctx.respond()
+        await ctx.defer()
         await QuranRequest(ctx=ctx, is_arabic=True, ref=reference).process_request()
 
     async def _settranslation(self, ctx, translation):
@@ -359,7 +359,7 @@ class Quran(commands.Cog):
                                required=True)])
     @commands.has_permissions(administrator=True)
     async def slash_settranslation(self, ctx: SlashContext, translation: str):
-        await ctx.respond()
+        await ctx.defer()
         await self._settranslation(ctx, translation)
 
     @commands.command(name="surah")

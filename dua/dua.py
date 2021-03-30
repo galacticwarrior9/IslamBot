@@ -95,7 +95,7 @@ class Dua(commands.Cog):
                                required=True,
                                choices=generate_choices_from_list(list(DUAS.keys())))])
     async def slash_dua(self, ctx: SlashContext, subject: str):
-        await ctx.respond()
+        await ctx.defer()
         await self._dua(ctx, subject)
 
     @commands.command(name='dualist')

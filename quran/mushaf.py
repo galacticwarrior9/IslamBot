@@ -73,7 +73,7 @@ class Mushaf(commands.Cog):
                                required=False
                            )])
     async def slash_mushaf(self, ctx: SlashContext, reference: str, show_tajweed: bool = False):
-        await ctx.respond()
+        await ctx.defer()
         await self._mushaf(ctx, reference, show_tajweed)
 
 

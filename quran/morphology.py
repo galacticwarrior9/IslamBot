@@ -116,7 +116,7 @@ class QuranMorphology(commands.Cog):
                                option_type=4,
                                required=True)])
     async def slash_morphology(self, ctx: SlashContext, surah_number: int, verse_number: int, word_number: int):
-        await ctx.respond()
+        await ctx.defer()
         ref = f'{surah_number}:{verse_number}:{word_number}'
         await self._morphology(ctx, ref)
 

@@ -112,7 +112,7 @@ class HijriCalendar(commands.Cog):
                                    required=True)
                             ])
     async def slash_converttohijri(self, ctx: SlashContext, gregorian_date: str):
-        await ctx.respond()
+        await ctx.send()
         await self._converttohijri(ctx, gregorian_date)
 
     @cog_ext.cog_subcommand(base="calendar", name="to_gregorian", description="Convert a Hijri date to a Gregorian date.",
@@ -125,7 +125,7 @@ class HijriCalendar(commands.Cog):
                                    required=True)
                             ])
     async def slash_converttogregorian(self, ctx: SlashContext, hijri_date: str):
-        await ctx.respond()
+        await ctx.send()
         await self._converttogregorian(ctx, hijri_date)
 
 
