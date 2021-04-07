@@ -16,7 +16,7 @@ class Utility(commands.Cog):
             await ctx.send(f":warning: **Invalid extension**. Valid extensions: `{list(self.bot.extensions.keys())}`")
 
     @reload.error
-    async def settranslation_error(self, ctx, error):
+    async def reload_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 **You do not have permission to use this command**.")
 
