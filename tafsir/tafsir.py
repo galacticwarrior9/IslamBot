@@ -56,14 +56,14 @@ INVALID_ARGUMENTS = '**Invalid arguments.** Type the command in this format: `{0
                 '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
 
 INVALID_TAFSIR = "**Couldn't find tafsir!** " \
-                 "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md>."
+                 "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
 
 INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
 
 INVALID_AYAH = "**There are only {0} verses in this surah**."
 
 NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir." \
-          "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md>."
+          "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
 
 altafsir_url = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSoraNo={}&tAyahNo={}&tDisplay=yes&Page={}&Size=1&LanguageId=2'
 

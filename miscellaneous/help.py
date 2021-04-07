@@ -30,7 +30,7 @@ class Help(commands.Cog):
             await ctx.send(embed=em)
 
         elif section == "quran":
-            em = discord.Embed(title="Qurʼān", colour=0x0a519c, description='[Click here for the translations list.](https://github.com/galacticwarrior9/islambot/blob/master/Translations.md)')
+            em = discord.Embed(title="Qurʼān", colour=0x0a519c, description='[Click here for the translations list.](https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List)')
             em.add_field(name=f"{pre}quran", inline=True, value="Gets Qur'anic verses."
                                               f"\n\n`{pre}quran <surah>:<ayah> <optional translation>`"
                                               f"\n\nExample: `{pre}quran 1:1`"
@@ -65,7 +65,7 @@ class Help(commands.Cog):
             await ctx.send(embed=em)
 
         elif section == "tafsir":
-            em = discord.Embed(title="Tafsīr", colour=0x0a519c, description='[Click here for the tafsir list.](https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md)')
+            em = discord.Embed(title="Tafsīr", colour=0x0a519c, description='[Click here for the tafsir list.](https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List)')
 
             em.add_field(name=f"{pre}tafsir", inline=True, value="Gets tafsīr in English."
                                               f"\n\n`{pre}tafsir <surah>:<ayah> <optional tafsir name>`"

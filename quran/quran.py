@@ -10,8 +10,7 @@ from utils.database_utils import DBHandler
 from quran.quran_info import *
 from utils.utils import convert_to_arabic_number, get_site_json
 
-INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/is" \
-                      "lambot/blob/master/Translations.md>"
+INVALID_TRANSLATION = "**Invalid translation**. List of translations: https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List"
 
 INVALID_ARGUMENTS_ARABIC = "**Invalid arguments!** Type `{0}aquran [surah]:[ayah]`. \n\nExample: `{0}aquran 1:1`" \
                                "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
