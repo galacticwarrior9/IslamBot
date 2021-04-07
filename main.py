@@ -31,7 +31,7 @@ description = "A Discord bot with Islamic utilities."
 
 cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir', 'tafsir.arabic_tafsir',
             'quran.mushaf', 'dua.dua', 'miscellaneous.help', 'miscellaneous.TopGG', 'miscellaneous.settings',
-            'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times'}
+            'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times', 'miscellaneous.utility'}
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
