@@ -16,7 +16,7 @@ from sqlalchemy import create_engine
 from utils.database_utils import PrayerTimesHandler, user, password, host, database, user_prayer_times_table_name, \
     server_prayer_times_table_name
 
-icon = 'https://www.muslimpro.com/img/muslimpro-logo-2016-250.png'
+icon = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
 
 headers = {'content-type': 'application/json'}
 
