@@ -132,6 +132,7 @@ class PrayerTimes(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_prayertimes(self, ctx: SlashContext, location: str, calculation_method: int = None):
+        await ctx.defer()
         await self._prayertimes(ctx, location)
 
     @commands.command(name="setcalculationmethod")
