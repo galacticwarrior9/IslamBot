@@ -242,7 +242,6 @@ class TafsirEnglish(commands.Cog):
     @commands.command(name='tafsir')
     async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
         spec = await self.process_request(ref, tafsir, page)
-        print("lol")
         await self.send_embed(ctx, spec)
 
     @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
@@ -259,7 +258,6 @@ class TafsirEnglish(commands.Cog):
                                required=False,
                                choices=generate_choices_from_dict(name_mappings))])
     async def slash_tafsir(self, ctx: SlashContext, ref: str, tafsir: str = "maarifulquran"):
-        await ctx.defer()
         spec = await self.process_request(ref, tafsir, 1)
         await self.send_embed(ctx, spec)
 
