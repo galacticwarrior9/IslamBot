@@ -375,27 +375,34 @@ class PrayerTimes(commands.Cog):
 
         if tz_time == reminder.fajr:
             em.description = f"It is **Fajr** time in **{reminder.location}**! (__{reminder.fajr}__)" \
-                             f"\n\n**Dhuhr** will be at __{reminder.dhuhr}__."
+                             f"\n\n**Dhuhr** will be at __{reminder.dhuhr}__." \
+                             ":warning: Due to bugs and maintainability issues, the prayer times reminder service will be shut down soon. It may be reintroduced after a full rewrite of the feature."
             success = True
 
         elif tz_time == reminder.dhuhr:
             em.description = f"It is **Dhuhr** time in **{reminder.location}**! (__{reminder.dhuhr}__)" \
-                             f"\n\n**Asr** will be at __{reminder.asr}__."
+                             f"\n\n**Asr** will be at __{reminder.asr}__." \
+                             ":warning: Due to bugs and maintainability issues, the prayer times reminder service will be shut down soon. It may be reintroduced after a full rewrite of the feature."
+
             success = True
 
         elif tz_time == reminder.asr:
             em.description = f"It is **Asr** time in **{reminder.location}**! (__{reminder.asr}__)." \
                              f"\n\nFor Hanafis, Asr will be at __{reminder.asr_hanafi}__." \
-                             f"\n\n**Maghrib** will be at __{reminder.maghrib}__."
+                             f"\n\n**Maghrib** will be at __{reminder.maghrib}__." \
+                             ":warning: Due to bugs and maintainability issues, the prayer times reminder service will be shut down soon. It may be reintroduced after a full rewrite of the feature."
+
             success = True
 
         elif tz_time == reminder.maghrib:
             em.description = f"It is **Maghrib** time in **{reminder.location}**! (__{reminder.maghrib}__)" \
-                             f"\n\n**Isha** will be at __{reminder.isha}__."
+                             f"\n\n**Isha** will be at __{reminder.isha}__." \
+                             ":warning: Due to bugs and maintainability issues, the prayer times reminder service will be shut down soon. It may be reintroduced after a full rewrite of the feature."
             success = True
 
         elif tz_time == reminder.isha:
-            em.description = f"It is **Isha** time in **{reminder.location}**! (__{reminder.isha}__)"
+            em.description = f"It is **Isha** time in **{reminder.location}**! (__{reminder.isha}__)" \
+                             ":warning: Due to bugs and maintainability issues, the prayer times reminder service will be shut down soon. It may be reintroduced after a full rewrite of the feature."
             success = True
 
         if not success:
