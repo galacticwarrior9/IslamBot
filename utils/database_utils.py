@@ -77,47 +77,7 @@ class DBHandler:
             connection.close()
 
 
-def create_df():
-    engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:3306/{database}')
-    connection = engine.connect()
-    user_df = pd.read_sql(f"SELECT * FROM {user_prayer_times_table_name}", connection)
-    server_df = pd.read_sql(f"SELECT * FROM {server_prayer_times_table_name}", connection)
-    connection.close()
-    return user_df, server_df
-
-
 class PrayerTimesHandler(DBHandler):
-
-    try:
-        user_df, server_df = create_df()
-    except:  # If the MySQL DB is offline, send a message but do not crash the bot!
-        print("Could not reach the MySQL database. Prayer time reminders will not work.")
-        pass
-
-    @classmethod
-    async def update_server_prayer_times_details(cls, guild_id, channel_id, location, timezone, method):
-        new_row = {'server': str(guild_id), 'channel': str(channel_id), 'location': location, 'timezone': timezone, 'calculation_method': method}
-        if str(channel_id) not in cls.server_df.channel.values:
-            cls.server_df = cls.server_df.append(new_row, ignore_index=True)
-        else:
-            updated_df = pd.DataFrame(new_row, index=[0])
-            cls.server_df.update(updated_df)
-
-    @classmethod
-    async def delete_server_prayer_times_details(cls, channel):
-        if str(channel) not in cls.server_df.channel.values:
-            pass
-        else:
-            cls.server_df = cls.server_df[cls.server_df.channel != str(channel)]
-
-    @classmethod
-    async def update_user_prayer_times_details(cls, user_id, location: str, timezone: str, method: str):
-        new_row = {'user': str(user_id), 'location': location, 'timezone': timezone, 'calculation_method': method}
-        if str(user_id) not in cls.user_df.user.values:
-            cls.user_df = cls.user_df.append(new_row, ignore_index=True)
-        else:
-            updated_df = pd.DataFrame(new_row, index=[0])
-            cls.user_df.update(updated_df)
 
     @classmethod
     async def delete_user_prayer_times_details(cls, user_id):
