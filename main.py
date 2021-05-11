@@ -1,21 +1,9 @@
-"""
-    This file is part of IslamBot.
-    IslamBot is free software: you can redistribute it and/or modify
-    it under the terms of version 3 of the GNU General Public License
-    as published by the Free Software Foundation.
-    Simply put, this means you can use the code for your own purposes on the *condition* that
-    it is:
-    (1) made open-source, and
-    (2) credit is given.
-    I don't know why you would though, it isn't great!
-"""
-
 import configparser
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
-from utils import PrefixHandler
-
+from discord_slash import SlashCommand
+from utils.utils import PrefixHandler
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -38,15 +26,18 @@ async def get_prefix(_, message):
     else:
         return prefix_list
 
+
 description = "A Discord bot with Islamic utilities."
 
-cog_list = ['hadith', 'hijricalendar', 'prayertimes', 'quran-morphology', 'quran', 'tafsir', 'tafsir-english',
-            'mushaf', 'dua', 'help', 'TopGG', 'settings', 'hadith-transmitters']
+cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir', 'tafsir.arabic_tafsir',
+            'quran.mushaf', 'dua.dua', 'miscellaneous.help', 'miscellaneous.TopGG', 'miscellaneous.settings',
+            'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times', 'miscellaneous.utility'}
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
 bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True,
                               intents=intents)
+slash = SlashCommand(bot, sync_commands=True)
 
 bot.remove_command('help')
 

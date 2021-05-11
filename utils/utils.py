@@ -91,8 +91,14 @@ async def get_site_source(url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             text = await resp.read()
-
     return BeautifulSoup(text.decode('utf-8', 'ignore'), 'html5lib')
+
+
+async def get_site_json(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as r:
+            data = await r.json()
+    return data
 
 
 def convert_to_arabic_number(number_string):
@@ -129,7 +135,7 @@ def convert_from_arabic_number(number_string):
     return "".join([dic[char] for char in number_string])
 
 
-path = "prefixes.csv"
+path = "../prefixes.csv"
 
 
 def make_csv():

@@ -1,11 +1,16 @@
-from discord.ext import commands
-import aiohttp
 import asyncio
 import configparser
-import discord
-import html2text
 import re
 import textwrap
+
+import aiohttp
+import discord
+import html2text
+from discord.ext import commands
+from discord_slash import SlashContext, cog_ext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.slash_utils import generate_choices_from_dict
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -13,9 +18,48 @@ API_KEY = config['APIs']['sunnah.com']
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
-HADITH_COLLECTION_LIST = ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
+HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
                     'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
-                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn']
+                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
+
+english_hadith_collections = {
+    'ahmad': 'Musnad Ahmad ibn Hanbal',
+    'bukhari': 'Sahīh al-Bukhārī',
+    'muslim': 'Sahīh Muslim',
+    'tirmidhi': 'Jamiʿ at-Tirmidhī',
+    'abudawud': 'Sunan Abī Dāwūd',
+    'nasai': "Sunan an-Nāsaʿī",
+    'ibnmajah': 'Sunan Ibn Mājah',
+    'malik': 'Muwatta Mālik',
+    'riyadussalihin': 'Riyadh as-Salihīn',
+    'adab': "Al-Adab al-Mufrad",
+    'bulugh': 'Bulugh al-Maram',
+    'shamail': "Shamā'il Muhammadiyyah",
+    'mishkat': 'Mishkat al-Masabih',
+    'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
+    'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah',
+    'hisn': 'Fortress of the Muslim'
+}
+
+arabic_hadith_collections = {
+    'ahmad': 'مسند أحمد بن حنبل',
+    'bukhari': 'صحيح البخاري',
+    'muslim': 'صحيح مسلم',
+    'tirmidhi': 'جامع الترمذي',
+    'abudawud': 'سنن أبي داود',
+    'nasai': "سنن النسائي",
+    'ibnmajah': 'سنن ابن ماجه',
+    'malik': 'موطأ مالك',
+    'riyadussalihin': 'رياض الصالحين',
+    'adab': "الأدب المفرد",
+    'bulugh': 'بلوغ المرام',
+    'shamail': 'الشمائل المحمدية',
+    'mishkat': 'مشكاة المصابيح',
+    'qudsi40': 'الأربعون القدسية',
+    'nawawi40': 'الأربعون النووية',
+    'hisn': 'حصن المسلم'
+}
+
 
 INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
                 '\n\n**Example**: `{0}hadith bukhari 1:1`' \
@@ -65,7 +109,6 @@ class HadithSpecifics:
 
         else:
             url = f'https://api.sunnah.com/v1/collections/{self.collection}/hadiths/{self.ref.hadith_number}'
-
 
         headers = {"X-API-Key": API_KEY}
         async with aiohttp.ClientSession(headers=headers) as session:
@@ -123,9 +166,9 @@ class HadithSpecifics:
         self.pages = textwrap.wrap(self.text, 1024)
 
         if self.lang == 'en':
-            self.collection = self.format_english_collection_name(self.collection)
+            self.formatted_collection = self.format_english_collection_name(self.collection)
         else:
-            self.collection = self.format_arabic_collection_name(self.collection)
+            self.formatted_collection = self.format_arabic_collection_name(self.collection)
 
         em = self.make_embed()
         return em
@@ -136,7 +179,7 @@ class HadithSpecifics:
         self.num_pages = len(self.pages)
 
         em = discord.Embed(title=self.chapter_name, colour=0x467f05, description=page)
-        em.set_author(name=f'{self.collection}', icon_url=ICON)
+        em.set_author(name=f'{self.formatted_collection}', icon_url=ICON)
 
         if self.num_pages > 1:
             footer = f'Page {self.page}/{self.num_pages}'
@@ -144,11 +187,11 @@ class HadithSpecifics:
             footer = ''
 
         try:
-            footer = footer + f'\nReference: {self.collection} {self.hadith_number} (Book {self.ref.book_number}, Hadith {self.ref.hadith_number})'
+            footer = f'{footer}\nReference: {self.formatted_collection} {self.hadith_number} (Book {self.ref.book_number}, Hadith {self.ref.hadith_number})'
         except AttributeError:
-            footer = footer + f'\nReference: {self.collection} {self.hadith_number}'
+            footer = f'{footer}\nReference: {self.formatted_collection} {self.hadith_number}'
 
-        if self.grading and self.grading != '':
+        if self.grading and self.grading != '' and self.collection not in {'bukhari', 'muslim'}:
             if self.lang == 'en':
                 footer = footer + f'\nGrading: {self.grading}'
             else:
@@ -217,12 +260,14 @@ class HadithCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    FORTY_HADITH_COLLECTIONS = {'qudsi40', 'nawawi40'}
+
     async def abstract_hadith(self, channel, collection_name, ref, lang):
 
         if collection_name not in HADITH_COLLECTION_LIST:
             raise InvalidCollection
 
-        if collection_name == 'qudsi' or collection_name == 'nawawi':
+        if f'{collection_name}40' in self.FORTY_HADITH_COLLECTIONS:
             collection_name = collection_name + '40'
 
         hadith = HadithSpecifics(collection_name, ref, lang)
@@ -300,6 +345,39 @@ class HadithCommands(commands.Cog):
         else:
             await ctx.send("Hadith could not be found.")
 
+    @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.",
+                       options=[
+                           create_option(
+                               name="hadith_collection",
+                               description="The name of the hadith collection.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(english_hadith_collections)),
+                           create_option(
+                               name = "hadith_number",
+                               description = "The number of the hadith.",
+                               option_type=3,
+                               required=True)])
+    async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
+        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
+
+    @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
+                       options=[
+                           create_option(
+                               name="hadith_collection",
+                               description="The name of the hadith collection.",
+                               option_type=3,
+                               required=True,
+                               choices=generate_choices_from_dict(arabic_hadith_collections)),
+                           create_option(
+                               name = "hadith_number",
+                               description = "The number of the hadith.",
+                               option_type=3,
+                               required=True)])
+    async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
+        await ctx.defer()
+        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')
+
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
         for link in urls:
@@ -313,15 +391,22 @@ class HadithCommands(commands.Cog):
         if url:
             meta = url.split("/")
             collection = meta[3]
-            book = meta[4]
-            if collection == "nawawi40" or collection == "qudsi40":
+            if collection in self.FORTY_HADITH_COLLECTIONS:
                 collection = collection[:-2]
-            try:
-                hadith = meta[5]
-                ref = f"{book}:{hadith}"
+            if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
+                if collection[-1] == "/":  # if url ended with /
+                    collection = collection[:-1]
+                ref = collection.split(":")[1]  # getting hadith number
                 ref = Reference(ref)
-            except:
-                ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+                collection = collection.split(":")[0]  # getting book name
+            else:
+                book = meta[4]
+                try:
+                    hadith = meta[5]
+                    ref = f"{book}:{hadith}"
+                    ref = Reference(ref)
+                except:
+                    ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
             await self.abstract_hadith(message.channel, collection, ref, "en")
 
 

@@ -1,0 +1,130 @@
+import asyncio
+import discord
+from aiohttp import ClientSession
+from discord.ext import commands
+from discord.ext.commands import MissingRequiredArgument
+from discord_slash import SlashContext, cog_ext
+from discord_slash.utils.manage_commands import create_option
+
+from utils.database_utils import PrayerTimesHandler
+
+icon = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
+
+headers = {'content-type': 'application/json'}
+
+
+class PrayerTimes(commands.Cog):
+    def __init__(self, bot):
+        self.session = ClientSession(loop = bot.loop)
+        self.bot = bot
+        self.methods_url = 'https://api.aladhan.com/methods'
+        self.prayertimes_url = 'http://api.aladhan.com/timingsByAddress?address={}&method={}&school={}'
+
+    async def get_calculation_methods(self):
+        async with self.session.get(self.methods_url, headers=headers) as resp:
+            data = await resp.json()
+            data = data['data'].values()
+
+            # There's an entry ('CUSTOM') with no 'name' value, so we need to ignore it:
+            calculation_methods = {method['id']: method['name'] for method in data if int(method['id']) != 99}
+            return calculation_methods
+
+    async def get_prayertimes(self, location, calculation_method):
+        url = self.prayertimes_url.format(location, calculation_method, '0')
+
+        async with self.session.get(url, headers=headers) as resp:
+            data = await resp.json()
+            fajr = data['data']['timings']['Fajr']
+            sunrise = data['data']['timings']['Sunrise']
+            dhuhr = data['data']['timings']['Dhuhr']
+            asr = data['data']['timings']['Asr']
+            maghrib = data['data']['timings']['Maghrib']
+            isha = data['data']['timings']['Isha']
+            imsak = data['data']['timings']['Imsak']
+            midnight = data['data']['timings']['Midnight']
+            date = data['data']['date']['readable']
+
+        url = self.prayertimes_url.format(location, calculation_method, '1')
+
+        async with self.session.get(url, headers=headers) as resp:
+            data = await resp.json()
+            hanafi_asr = data['data']['timings']['Asr']
+
+        return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date
+
+    async def _prayertimes(self, ctx, location):
+        calculation_method = await PrayerTimesHandler.get_user_calculation_method(ctx.author.id)
+        calculation_method = int(calculation_method)
+
+        try:
+            fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await \
+                self.get_prayertimes(location, calculation_method)
+        except:
+            return await ctx.send("**Location not found**.")
+
+        em = discord.Embed(colour=0x2186d3, title=date)
+        em.set_author(name=f'Prayer Times for {location.title()}', icon_url=icon)
+        em.add_field(name=f'**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)
+        em.add_field(name=f'**Fajr (صلاة الفجر)**', value=f'{fajr}', inline=True)
+        em.add_field(name=f'**Sunrise (طلوع الشمس)**', value=f'{sunrise}', inline=True)
+        em.add_field(name=f'**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr}', inline=True)
+        em.add_field(name=f'**Asr (صلاة العصر)**', value=f'{asr}', inline=True)
+        em.add_field(name=f'**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{hanafi_asr}', inline=True)
+        em.add_field(name=f'**Maghrib (صلاة المغرب)**', value=f'{maghrib}', inline=True)
+        em.add_field(name=f'**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)
+        em.add_field(name=f'**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
+
+        calculation_methods = await self.get_calculation_methods()
+        em.set_footer(text=f'Calculation Method: {calculation_methods[calculation_method]}')
+        await ctx.send(embed=em)
+
+    @commands.command(name="prayertimes")
+    async def prayertimes(self, ctx, *, location):
+        await self._prayertimes(ctx, location)
+
+    @prayertimes.error
+    async def on_prayertimes_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f"**Please provide a location**. \n\nExample: `{ctx.prefix}prayertimes Dubai, UAE`")
+
+    @cog_ext.cog_slash(name="prayertimes", description="Get the prayer times for a location.",
+                       options=[
+                           create_option(
+                               name="location",
+                               description="The location to get prayer times for.",
+                               option_type=3,
+                               required=True)])
+    async def slash_prayertimes(self, ctx: SlashContext, location: str, calculation_method: int = None):
+        await ctx.defer()
+        await self._prayertimes(ctx, location)
+
+    @commands.command(name="setcalculationmethod")
+    async def setcalculationmethod(self, ctx):
+        def is_user(msg):
+            return msg.author == ctx.author
+
+        em = discord.Embed(colour=0x467f05, description="Please select a **calculation method number**.\n\n")
+        em.set_author(name='Calculation Methods', icon_url=icon)
+        calculation_methods = await self.get_calculation_methods()
+        for method, name in calculation_methods.items():
+            em.description = f'{em.description}**{method}** - {name}\n'
+        await ctx.send(embed=em)
+
+        try:
+            message = await self.bot.wait_for('message', timeout=120.0, check=is_user)
+            method = message.content
+            try:
+                method = int(method)
+                if method not in calculation_methods.keys():
+                    raise TypeError
+            except:
+                return await ctx.send("❌ **Invalid calculation method number.** ")
+
+            await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
+            await ctx.send(':white_check_mark: **Successfully updated!**')
+
+        except asyncio.TimeoutError:
+            await ctx.send("❌ **Timed out**. Please try again.")
+
+def setup(bot):
+    bot.add_cog(PrayerTimes(bot))

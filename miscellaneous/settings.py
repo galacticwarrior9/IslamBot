@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord.ext.commands import CheckFailure, MissingRequiredArgument
-from utils import PrefixHandler
+from utils.utils import PrefixHandler
 import discord
 
 help_message_set = "Type `{0}prefix set <prefix>` to set a custom prefix. \n\n**Example**: To set the prefix to" \
