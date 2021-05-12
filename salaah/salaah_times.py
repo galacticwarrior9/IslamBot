@@ -120,7 +120,7 @@ class PrayerTimes(commands.Cog):
 
         try:
             fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await \
-                self.get_prayertimes_local(location, calculation_method)
+                self.get_prayertimes(location, calculation_method)
         except:
             return await ctx.send("**Location not found**.")
 
