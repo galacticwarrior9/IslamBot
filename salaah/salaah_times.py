@@ -8,7 +8,7 @@ from discord_slash.utils.manage_commands import create_option
 import datetime as dt
 from datetime import date, timedelta
 from dateutil.tz import gettz
-from praytimes import prayTimes
+from praytimes import PrayTimes
 
 from utils.database_utils import PrayerTimesHandler
 
@@ -94,6 +94,7 @@ class PrayerTimes(commands.Cog):
         coordinates, time, time_offset = await get_information(location)
         date = (time.year, time.month, time.day)
         method_name = get_method_name(calculation_method)
+        prayTimes = PrayTimes()
         prayTimes.setMethod(method_name)
         prayTimes.adjust({"highLats": "AngleBased"})
         prayTimes.adjust({"asr": "Standard"})
