@@ -95,6 +95,7 @@ class PrayerTimes(commands.Cog):
         date = (time.year, time.month, time.day)
         method_name = get_method_name(calculation_method)
         prayTimes.setMethod(method_name)
+        prayTimes.adjust({"highLats": "AngleBased"})
         prayTimes.adjust({"asr": "Standard"})
         times = prayTimes.getTimes(date, coordinates, time_offset)
         prayTimes.adjust({"asr": "Hanafi"})
