@@ -312,10 +312,10 @@ class PrayTimes():
 			times['imsak'] = times['fajr'] - self.eval(params['imsak']) / 60.0
 		# need to ask about 'min' settings
 		if self.isMin(params['maghrib']):
-			times['maghrib'] = times['sunset'] - self.eval(params['maghrib']) / 60.0
+			times['maghrib'] = times['sunset'] + self.eval(params['maghrib']) / 60.0
 
 		if self.isMin(params['isha']):
-			times['isha'] = times['maghrib'] - self.eval(params['isha']) / 60.0
+			times['isha'] = times['maghrib'] + self.eval(params['isha']) / 60.0
 		times['dhuhr'] += self.eval(params['dhuhr']) / 60.0
 
 		return times
