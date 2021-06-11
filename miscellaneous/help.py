@@ -79,7 +79,7 @@ class Help(commands.Cog):
 
             await ctx.send(embed=em)
 
-        elif section == "hijri_calendar":
+        elif section == "calendar":
             em = discord.Embed(title="Hijri Calendar", colour=0x0a519c)
 
             em.add_field(name=f"{pre}hijridate", inline=True, value="Gets the current Hijri date (in the US)")
