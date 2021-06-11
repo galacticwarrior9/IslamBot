@@ -321,11 +321,11 @@ class HadithCommands(commands.Cog):
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx.channel, collection_name, ref, 'en')
+        await self.abstract_hadith(ctx, collection_name, ref, 'en')
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx.channel, collection_name, ref, 'ar')
+        await self.abstract_hadith(ctx, collection_name, ref, 'ar')
 
     @hadith.error
     async def hadith_error(self, ctx, error):
@@ -359,7 +359,8 @@ class HadithCommands(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
+        await ctx.defer()
+        await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'en')
 
     @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
                        options=[
@@ -376,7 +377,7 @@ class HadithCommands(commands.Cog):
                                required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
         await ctx.defer()
-        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')
+        await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'ar')
 
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
