@@ -10,6 +10,7 @@ from discord.ext import commands
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
+from objects.Hadith import Hadith
 from utils.slash_utils import generate_choices_from_dict
 
 config = configparser.ConfigParser()
@@ -84,7 +85,7 @@ class Reference:
             self.book_number, self.hadith_number = ref.split(':')
             self.type = 'normal'
         else:
-            self.hadith_number = int(ref)
+            self.hadith_number = ref
             self.type = 'hadith_number_only'
 
 
@@ -262,19 +263,13 @@ class HadithCommands(commands.Cog):
 
     FORTY_HADITH_COLLECTIONS = {'qudsi40', 'nawawi40'}
 
-    async def abstract_hadith(self, channel, collection_name, ref, lang):
+    async def send_hadith(self, channel, collection_name, hadith_number, is_arabic: bool):
 
-        if collection_name not in HADITH_COLLECTION_LIST:
-            raise InvalidCollection
-
-        if f'{collection_name}40' in self.FORTY_HADITH_COLLECTIONS:
-            collection_name = collection_name + '40'
-
-        hadith = HadithSpecifics(collection_name, ref, lang)
-        embed = await hadith.fetch_hadith()
+        hadith = Hadith(collection_name, hadith_number, is_arabic)
+        embed = await hadith.get_embed()
         msg = await channel.send(embed=embed)
 
-        if hadith.num_pages > 1:
+        if len(hadith.pages) > 1:
             await msg.add_reaction(emoji='⬅')
             await msg.add_reaction(emoji='➡')
 
@@ -294,7 +289,7 @@ class HadithCommands(commands.Cog):
                 break
 
             if reaction.emoji == '➡':
-                if hadith.page < hadith.num_pages:
+                if hadith.page < len(hadith.pages):
                     hadith.page += 1
                 else:
                     hadith.page = 1
@@ -303,12 +298,12 @@ class HadithCommands(commands.Cog):
                 if hadith.page > 1:
                     hadith.page -= 1
                 else:
-                    hadith.page = hadith.num_pages
+                    hadith.page = len(hadith.pages)
 
             if reaction.emoji == '❎':
                 return await msg.delete()
 
-            em = hadith.make_embed()
+            em = hadith.get_embed()
             await msg.edit(embed=em)
 
             try:
@@ -320,12 +315,15 @@ class HadithCommands(commands.Cog):
                 pass
 
     @commands.command(name='hadith')
-    async def hadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx.channel, collection_name, ref, 'en')
+    async def hadith(self, ctx, collection_name: str, hadith_number: str):
+        #hadith = Hadith(collection_name, hadith_number, False)
+        #embed = await hadith.get_embed()
+        #await ctx.send(embed=embed)
+        await self.send_hadith(ctx.channel, collection_name, hadith_number, False)
 
     @commands.command(name='ahadith')
-    async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx.channel, collection_name, ref, 'ar')
+    async def ahadith(self, ctx, collection_name: str, hadith_number: str):
+        await self.send_hadith(ctx.channel, collection_name, hadith_number, True)
 
     @hadith.error
     async def hadith_error(self, ctx, error):
@@ -359,7 +357,8 @@ class HadithCommands(commands.Cog):
                                option_type=3,
                                required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'en')
+        await ctx.s
+        await self.send_hadith(ctx.channel, hadith_collection, hadith_number, False)
 
     @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
                        options=[
@@ -376,7 +375,7 @@ class HadithCommands(commands.Cog):
                                required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
         await ctx.defer()
-        await self.abstract_hadith(ctx.channel, hadith_collection, Reference(hadith_number), 'ar')
+        await self.send_hadith(ctx.channel, hadith_collection, hadith_number, True)
 
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
@@ -407,7 +406,7 @@ class HadithCommands(commands.Cog):
                     ref = Reference(ref)
                 except:
                     ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
-            await self.abstract_hadith(message.channel, collection, ref, "en")
+            #await self.abstract_hadith(message.channel, collection, ref, "en")
 
 
 def setup(bot):
