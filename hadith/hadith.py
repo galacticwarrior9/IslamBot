@@ -7,7 +7,8 @@ import aiohttp
 import discord
 import html2text
 from discord.ext import commands
-from discord_slash import SlashContext, cog_ext
+from discord_slash import SlashContext, cog_ext, ButtonStyle
+from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_dict
@@ -97,6 +98,7 @@ class HadithSpecifics:
         self.grading = None
         self.graded_by = None
         self.hadith_number = None
+        self.url = None
         self.text = None
         self.num_pages = None
         self.pages = None
@@ -105,14 +107,14 @@ class HadithSpecifics:
     async def fetch_hadith(self):
 
         if self.ref.type == 'normal':
-            url = f'https://api.sunnah.com/v1/collections/{self.collection}/books/{self.ref.book_number}/hadiths'
+            self.url = f'https://api.sunnah.com/v1/collections/{self.collection}/books/{self.ref.book_number}/hadiths'
 
         else:
-            url = f'https://api.sunnah.com/v1/collections/{self.collection}/hadiths/{self.ref.hadith_number}'
+            self.url = f'https://api.sunnah.com/v1/collections/{self.collection}/hadiths/{self.ref.hadith_number}'
 
         headers = {"X-API-Key": API_KEY}
         async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(url) as resp:
+            async with session.get(self.url) as resp:
                 if resp.status == 200:
                     hadith_list = await resp.json()
                     return self.process_hadith(hadith_list)
@@ -272,52 +274,40 @@ class HadithCommands(commands.Cog):
 
         hadith = HadithSpecifics(collection_name, ref, lang)
         embed = await hadith.fetch_hadith()
-        msg = await channel.send(embed=embed)
 
-        if hadith.num_pages > 1:
-            await msg.add_reaction(emoji='⬅')
-            await msg.add_reaction(emoji='➡')
+        if hadith.num_pages == 1:
+            return await channel.send(embed=embed)
 
-        await msg.add_reaction(emoji='❎')
+        # If there are multiple pages, construct buttons for their navigation.
+        buttons = [
+            manage_components.create_button(style=ButtonStyle.grey, label="Previous Page", emoji="⬅",
+                                            custom_id="hadith_previous_page"),
+            manage_components.create_button(style=ButtonStyle.green, label="Next Page", emoji="➡",
+                                            custom_id="hadith_next_page")
+        ]
+        action_row = manage_components.create_actionrow(*buttons)
+        await channel.send(embed=embed, components=[action_row])
 
         while True:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=180, check=lambda reaction, user:
-                (reaction.emoji == '➡' or reaction.emoji == '⬅' or reaction.emoji == '❎')
-                and user != self.bot.user
-                and reaction.message.id == msg.id)
+                button_ctx = await manage_components.wait_for_component(self.bot, components=action_row, timeout=600)
+                if button_ctx.custom_id == 'hadith_previous_page':
+                    if hadith.page > 1:
+                        hadith.page -= 1
+                    else:
+                        hadith.page = hadith.num_pages
+                    em = hadith.make_embed()
+                    await button_ctx.edit_origin(embed=em)
+                elif button_ctx.custom_id == 'hadith_next_page':
+                    if hadith.page < hadith.num_pages:
+                        hadith.page += 1
+                    else:
+                        hadith.page = 1
+                    em = hadith.make_embed()
+                    await button_ctx.edit_origin(embed=em)
 
             except asyncio.TimeoutError:
-                await msg.remove_reaction(emoji='➡', member=self.bot.user)
-                await msg.remove_reaction(emoji='⬅', member=self.bot.user)
-                await msg.remove_reaction(emoji='❎', member=self.bot.user)
                 break
-
-            if reaction.emoji == '➡':
-                if hadith.page < hadith.num_pages:
-                    hadith.page += 1
-                else:
-                    hadith.page = 1
-
-            if reaction.emoji == '⬅':
-                if hadith.page > 1:
-                    hadith.page -= 1
-                else:
-                    hadith.page = hadith.num_pages
-
-            if reaction.emoji == '❎':
-                return await msg.delete()
-
-            em = hadith.make_embed()
-            await msg.edit(embed=em)
-
-            try:
-                await msg.remove_reaction(reaction.emoji, user)
-
-            # The above fails if the bot doesn't have the "Manage Messages" permission, but it can be safely ignored
-            # as it is not essential functionality.
-            except discord.ext.commands.errors.CommandInvokeError:
-                pass
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
@@ -333,8 +323,7 @@ class HadithCommands(commands.Cog):
             await ctx.send(INVALID_INPUT.format(ctx.prefix))
         elif isinstance(error, InvalidCollection):
             await ctx.send(INVALID_COLLECTION)
-        else:
-            await ctx.send("Hadith could not be found.")
+
 
     @ahadith.error
     async def ahadith_error(self, ctx, error):
@@ -342,8 +331,6 @@ class HadithCommands(commands.Cog):
             await ctx.send(INVALID_INPUT.format(f'{ctx.prefix}a'))
         elif isinstance(error, InvalidCollection):
             await ctx.send(INVALID_COLLECTION)
-        else:
-            await ctx.send("Hadith could not be found.")
 
     @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.",
                        options=[
@@ -385,6 +372,15 @@ class HadithCommands(commands.Cog):
             if "sunnah.com/" in link:
                 return link
 
+    @staticmethod
+    def make_buttons(hadith: HadithSpecifics):
+        original_link_button = manage_components.create_button(style=ButtonStyle.URL,
+                                                               label="View on sunnah.com",
+                                                               emoji=emojis["MOUSE"],
+                                                               url=hadith.url)
+
+        return manage_components.create_actionrow(*original_link_button)
+
     @commands.Cog.listener()
     async def on_message(self, message):
         content = message.content
@@ -409,6 +405,7 @@ class HadithCommands(commands.Cog):
                 except:
                     ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
             await self.abstract_hadith(message.channel, collection, ref, "en")
+
 
 
 def setup(bot):

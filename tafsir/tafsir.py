@@ -1,16 +1,17 @@
 import asyncio
 import re
+import textwrap
 
 import discord
-import textwrap
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext
+from discord_slash import cog_ext, SlashContext, ButtonStyle
+from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
-from quran.quran_info import quranInfo, Surah, InvalidSurah, QuranReference
-from utils.utils import get_site_source, get_site_json
+from quran.quran_info import Surah, InvalidSurah, QuranReference
 from utils.slash_utils import generate_choices_from_dict
+from utils.utils import get_site_source, get_site_json
 
 icon = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
@@ -186,41 +187,39 @@ class TafsirEnglish(commands.Cog):
         self.bot = bot
 
     async def send_embed(self, ctx, spec):
-        msg = await ctx.send(embed=spec.embed)
-        if spec.num_pages > 1:
-            await msg.add_reaction(emoji='⬅')
-            await msg.add_reaction(emoji='➡')
+        if spec.num_pages == 1:
+            return await ctx.send(embed=spec.embed)
+
+        # If there are multiple pages, construct buttons for their navigation.
+        buttons = [
+            manage_components.create_button(style=ButtonStyle.grey, label="Previous Page", emoji="⬅",
+                                            custom_id="tafsir_previous_page"),
+            manage_components.create_button(style=ButtonStyle.green, label="Next Page", emoji="➡",
+                                            custom_id="tafsir_next_page")
+        ]
+        action_row = manage_components.create_actionrow(*buttons)
+        await ctx.send(embed=spec.embed, components=[action_row])
 
         while True:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=300, check=lambda reaction, user:
-                (reaction.emoji == '➡' or reaction.emoji == '⬅')
-                 and user != self.bot.user
-                 and reaction.message.id == msg.id)
+                button_ctx = await manage_components.wait_for_component(self.bot, components=action_row, timeout=600)
+                if button_ctx.custom_id == 'tafsir_previous_page':
+                    if spec.page > 1:
+                        spec.page -= 1
+                    else:
+                        spec.page = spec.num_pages
+                    await spec.make_embed()
+                    await button_ctx.edit_origin(embed=spec.embed)
+                elif button_ctx.custom_id == 'tafsir_next_page':
+                    if spec.page < spec.num_pages:
+                        spec.page += 1
+                    else:
+                        spec.page = 1
+                    await spec.make_embed()
+                    await button_ctx.edit_origin(embed=spec.embed)
 
             except asyncio.TimeoutError:
-                await msg.remove_reaction(emoji='➡', member=self.bot.user)
-                await msg.remove_reaction(emoji='⬅', member=self.bot.user)
                 break
-
-            if reaction.emoji == '➡' and spec.page:
-                spec.page += 1
-                if spec.page > spec.num_pages:
-                    spec.page = 1
-
-            if reaction.emoji == '⬅':
-                spec.page -= 1
-                if spec.page < 1:
-                    spec.page = spec.num_pages
-
-            await spec.make_embed()
-            await msg.edit(embed=spec.embed)
-            try:
-                await msg.remove_reaction(reaction.emoji, user)
-            # The above fails if the bot doesn't have the "Manage Messages" permission, but it can be safely ignored
-            # as it is not essential functionality.
-            except discord.ext.commands.errors.CommandInvokeError:
-                pass
 
     async def process_request(self, ref: str, tafsir: str, page: int):
         spec = TafsirSpecifics(tafsir, ref, page)
