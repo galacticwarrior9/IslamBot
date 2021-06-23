@@ -268,6 +268,8 @@ class Tafsir(commands.Cog):
             try:
                 button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
                                                                         timeout=600)
+                if not hasattr(button_ctx, 'custom_id'):
+                    pass
                 if button_ctx.custom_id == 'atafsir_previous_page':
                     if tafsir.page > 1:
                         tafsir.page -= 1
@@ -291,6 +293,7 @@ class Tafsir(commands.Cog):
         quran_reference = QuranReference(ref, False)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
+        # TODO: Re-add error handling
 
     @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
                        options=[
