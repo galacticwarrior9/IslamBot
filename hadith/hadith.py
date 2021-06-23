@@ -311,11 +311,11 @@ class HadithCommands(commands.Cog):
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx, collection_name, ref, 'en')
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        await self.abstract_hadith(ctx, collection_name, ref, 'ar')
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
 
     @hadith.error
     async def hadith_error(self, ctx, error):
