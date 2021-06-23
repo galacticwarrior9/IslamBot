@@ -256,9 +256,9 @@ class Tafsir(commands.Cog):
 
         # If there are multiple pages, construct buttons for their navigation.
         buttons = [
-            manage_components.create_button(style=ButtonStyle.green, label="Next Page", emoji="⬅",
+            manage_components.create_button(style=ButtonStyle.green, label="الصفحة التالية", emoji="⬅",
                                             custom_id="atafsir_next_page"),
-            manage_components.create_button(style=ButtonStyle.red, label="Previous Page", emoji="➡",
+            manage_components.create_button(style=ButtonStyle.red, label="الصفحة السابقة", emoji="➡",
                                             custom_id="atafsir_previous_page"),
             manage_components.create_button(style=ButtonStyle.URL, label="tafsir.app", url=tafsir.url)
         ]
@@ -268,16 +268,14 @@ class Tafsir(commands.Cog):
             try:
                 button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
                                                                         timeout=600)
-                if hasattr(button_ctx, "custom_id") is False:
-                    pass
-                elif button_ctx.custom_id == 'tafsir_previous_page':
+                if button_ctx.custom_id == 'atafsir_previous_page':
                     if tafsir.page > 1:
                         tafsir.page -= 1
                     else:
                         tafsir.page = num_pages
                     em = tafsir.make_embed()
                     await button_ctx.edit_origin(embed=em)
-                elif button_ctx.custom_id == 'tafsir_next_page':
+                elif button_ctx.custom_id == 'atafsir_next_page':
                     if tafsir.page < num_pages:
                         tafsir.page += 1
                     else:
@@ -306,8 +304,9 @@ class Tafsir(commands.Cog):
                                name= "السورة_و_الآية",
                                description = "رقم السورة:رقم الآية - على سبيل المثال: 2:255",
                                option_type=3,
-                               required=True)])
-    async def slash_atafsir(self, ctx: SlashContext, tafsir: str, ref: str):
+                               required=True)
+                       ])
+    async def slash_atafsir(self, ctx: SlashContext, ref: str, tafsir: str):
         await ctx.defer()
         quran_reference = QuranReference(ref, False)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)

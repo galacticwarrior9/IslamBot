@@ -1,7 +1,8 @@
 from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext
+from discord_slash import cog_ext, SlashContext, ButtonStyle
+from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
 from utils.utils import get_site_source
@@ -17,7 +18,6 @@ class Biographies(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.session = ClientSession(loop=bot.loop)
         self.url = 'http://hadithtransmitters.hawramani.com/?s={}&cat=5563'
 
     async def _biography(self, ctx, name):
@@ -44,50 +44,42 @@ class Biographies(commands.Cog):
             page = 1
             em.set_footer(text=f'Page {page}/{num_pages}')
 
-        msg = await ctx.send(embed=em)
-
-        if num_pages > 1:
-            await msg.add_reaction(emoji='⬅')
-            await msg.add_reaction(emoji='➡')
-
-        await msg.add_reaction(emoji='❎')
-
         while True:
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", timeout=180, check=lambda reaction, user:
-                (reaction.emoji == '➡' or reaction.emoji == '⬅' or reaction.emoji == '❎')
-                and user != self.bot.user
-                and reaction.message.id == msg.id)
+            if num_pages == 1:
+                return await ctx.send(embed=em)
 
-            except asyncio.TimeoutError:
-                await msg.remove_reaction(emoji='➡', member=self.bot.user)
-                await msg.remove_reaction(emoji='⬅', member=self.bot.user)
-                await msg.remove_reaction(emoji='❎', member=self.bot.user)
-                break
+            # If there are multiple pages, construct buttons for their navigation.
+            buttons = [
+                manage_components.create_button(style=ButtonStyle.green, label="الصفحة التالية", emoji="⬅",
+                                                custom_id="biography_next_page"),
+                manage_components.create_button(style=ButtonStyle.red, label="الصفحة السابقة", emoji="➡",
+                                                custom_id="biography_previous_page"),
+            ]
+            action_row = manage_components.create_actionrow(*buttons)
+            await ctx.send(embed=em, components=[action_row])
+            while True:
+                try:
+                    button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
+                                                                            timeout=600)
+                    if button_ctx.custom_id == 'biography_previous_page':
+                        if page > 1:
+                            page -= 1
+                        else:
+                            page = num_pages
+                        em.description = pages[page - 1]
+                        em.set_footer(text=f'Page {page}/{num_pages}')
+                        await button_ctx.edit_origin(embed=em)
+                    elif button_ctx.custom_id == 'biography_next_page':
+                        if page < num_pages:
+                            page += 1
+                        else:
+                            page = 1
+                        em.description = pages[page - 1]
+                        em.set_footer(text=f'Page {page}/{num_pages}')
+                        await button_ctx.edit_origin(embed=em)
 
-            if reaction.emoji == '➡':
-                page -= 1
-                if page < 1:
-                    page = num_pages
-
-            if reaction.emoji == '⬅':
-                page += 1
-                if page > num_pages:
-                    page = 1
-
-            if reaction.emoji == '❎':
-                await msg.delete()
-
-            em.description = pages[page - 1]
-            em.set_footer(text=f'Page {page}/{num_pages}')
-            await msg.edit(embed=em)
-
-            try:
-                await msg.remove_reaction(reaction.emoji, user)
-            # The above fails if the bot doesn't have the "Manage Messages" permission, but it can be safely ignored
-            # as it is not essential functionality.
-            except discord.ext.commands.errors.CommandInvokeError:
-                pass
+                except asyncio.TimeoutError:
+                    break
 
     @commands.command(name="biography")
     async def biography(self, ctx, *, name):
