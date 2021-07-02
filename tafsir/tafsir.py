@@ -35,6 +35,9 @@ name_mappings = {
 
 name_alias = {
     "saadi": "saddi", #saadi is more correct ( السعدي )
+    "jalalain": "jalalayn", # jalalaIn is AlTafsir's spelling
+    "asbabalnuzul": "wahidi", #better known name
+    "asbab": "wahidi", #better known name, shortened
 }   
 
 altafsir_sources = {
