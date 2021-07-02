@@ -34,6 +34,7 @@ name_mappings = {
 }
 
 name_alias = {
+    "saadi": "saddi", #saadi is more correct ( السعدي )
 }   
 
 altafsir_sources = {
