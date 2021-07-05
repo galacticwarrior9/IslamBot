@@ -5,6 +5,10 @@ from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
+import datetime as dt
+from datetime import date, timedelta
+from dateutil.tz import gettz
+from praytimes import PrayTimes
 
 from utils.database_utils import PrayerTimesHandler
 
@@ -51,6 +55,66 @@ class PrayerTimes(commands.Cog):
             hanafi_asr = data['data']['timings']['Asr']
 
         return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date
+    
+    async def get_prayertimes_local(self, location, calculation_method):
+        async def get_information(location):
+            url = "http://api.aladhan.com/v1/hijriCalendarByAddress"
+            params = {"address": location}
+            async with self.session.get(url, headers=headers, params=params) as resp:
+                data = await resp.json()
+                meta = data['data'][0]['meta']
+                coordinates = (meta['latitude'], meta['longitude'])
+                timezone_name = meta['timezone']
+            time = dt.datetime.now(gettz(timezone_name))
+            timezone_offset = time.utcoffset() / timedelta(hours=1)
+            return coordinates, time, timezone_offset
+        
+        def get_method_name(method_id):
+            id_to_name = {
+                3: 'MWL',
+                2: 'ISNA',
+                5: 'Egypt',
+                4: 'Makkah',
+                1: 'Karachi',
+                7: 'Tehran',
+                0: 'Jafari',
+                8: 'Gulf', #TODO add this method to praytimes.py
+                9: 'Kuwait', #TODO add this method to praytimes.py
+                10: 'Qatar', #TODO add this method to praytimes.py
+                11: 'Singapore',#TODO add this method to praytimes.py
+                12: 'France', #TODO add this method to praytimes.py
+                13: 'Turkey', #TODO add this method to praytimes.py
+                14: 'Russia', #TODO add this method to praytimes.py
+                
+                # didn't include method 'MOONSIGHTING' because it uses 'shafaq' parameter,
+                # which isn't used in praytimes.py
+            }
+            return id_to_name[method_id]
+        
+        coordinates, time, time_offset = await get_information(location)
+        date = (time.year, time.month, time.day)
+        method_name = get_method_name(calculation_method)
+        prayTimes = PrayTimes()
+        prayTimes.setMethod(method_name)
+        prayTimes.adjust({"highLats": "AngleBased"})
+        prayTimes.adjust({"asr": "Standard"})
+        times = prayTimes.getTimes(date, coordinates, time_offset)
+        prayTimes.adjust({"asr": "Hanafi"})
+        timesWithHanafiAsr = prayTimes.getTimes(date, coordinates, time_offset)
+        
+        fajr = times['fajr']
+        sunrise = times['sunrise']
+        dhuhr = times['dhuhr']
+        asr = times['asr']
+        hanafi_asr = timesWithHanafiAsr['asr']
+        maghrib = times['maghrib']
+        isha = times['isha']
+        imsak = times['imsak']
+        midnight = times['midnight']
+        sunrise = times['sunrise']
+        readable_date = time.strftime('%d %B, %Y')
+
+        return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date
 
     async def _prayertimes(self, ctx, location):
         calculation_method = await PrayerTimesHandler.get_user_calculation_method(ctx.author.id)
@@ -128,3 +192,4 @@ class PrayerTimes(commands.Cog):
 
 def setup(bot):
     bot.add_cog(PrayerTimes(bot))
+ 
