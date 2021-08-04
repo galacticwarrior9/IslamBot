@@ -24,6 +24,7 @@ class Help(commands.Cog):
                                              "• [Documentation / لتوثيق](https://github.com/galacticwarrior9/islambot/blob/master/README.md)\n"
                                              "• [Contributors / المساعدين](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)\n"
                                              "• [GitHub / غيت هاب](https://github.com/galacticwarrior9/islambot)\n"
+                                              "• [Donate](https://github.com/galacticwarrior9/islambot)\n"
                                              "• [Iqra / اقرأ بوت](https://top.gg/bot/706134327200841870)"
                          , inline=False)
             em.set_thumbnail(url='https://images-na.ssl-images-amazon.com/images/I/71CYXRJdY4L.png')
