@@ -134,8 +134,8 @@ class TafsirSpecifics:
 
         # 95% of tafsirs should be found here
         if t in name_mappings.keys():
-            self.tafsir = r
-            self.tafsir_name = name_mappings[r]
+            self.tafsir = t
+            self.tafsir_name = name_mappings[t]
             return 
 
             
