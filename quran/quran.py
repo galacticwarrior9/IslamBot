@@ -70,7 +70,7 @@ class Translation:
             'burhan': 81,  # Kurdish
             'taqiusmani': 84,  # English
             'ghali': 17, # English
-            'hilali': 18, # English
+            'hilali': 203, # English
             'maududi.en': 95, # English
             'transliteration': 57,
             'pickthall': 19,  # English
