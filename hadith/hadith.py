@@ -76,6 +76,11 @@ class InvalidCollection(commands.CommandError):
         super().__init__(*args, **kwargs)
 
 
+class InvalidHadith(commands.CommandError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 class Reference:
     def __init__(self, ref):
         self.process_ref(ref)
@@ -118,6 +123,8 @@ class HadithSpecifics:
                 if resp.status == 200:
                     hadith_list = await resp.json()
                     return self.process_hadith(hadith_list)
+                elif resp.status == 404:
+                    raise InvalidHadith
 
     def process_hadith(self, hadith_list):
 
@@ -273,7 +280,10 @@ class HadithCommands(commands.Cog):
             collection_name = collection_name + '40'
 
         hadith = HadithSpecifics(collection_name, ref, lang)
-        embed = await hadith.fetch_hadith()
+        try:
+            embed = await hadith.fetch_hadith()
+        except InvalidHadith:
+            return await channel.send("Sorry, no hadith with this number could be found.")
 
         if hadith.num_pages == 1:
             return await channel.send(embed=embed)
