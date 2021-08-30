@@ -85,8 +85,8 @@ class Reference:
             self.book_number, self.hadith_number = ref.split(':')
             self.type = 'normal'
         else:
-            self.hadith_number = int(ref)
-            self.type = 'hadith_number_only'
+            self.hadith_number = ref
+            self.type = 'hadith_number'
 
 
 class HadithSpecifics:
