@@ -1,11 +1,12 @@
 import re
+from aiohttp.client import request
 
 import discord
 import pymysql
 from discord.ext.commands import CheckFailure, MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
-
+from discord.ext import commands
 from utils.database_utils import DBHandler
 from quran.quran_info import *
 from utils.utils import convert_to_arabic_number, get_site_json
@@ -266,6 +267,18 @@ class Quran(commands.Cog):
             if translation_key is None:
                 translation_key = await Translation.get_guild_translation(ctx.guild.id)
             await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
+
+    @commands.command(name="random")
+    async def randomVerse(self, ctx, translation_key: str = None):
+        async with ctx.channel.typing():
+
+            json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
+            ref = json["verse"]["verse_key"]
+
+            if translation_key is None:
+                translation_key = await Translation.get_guild_translation(ctx.guild.id)
+            
+            await QuranRequest(ctx=ctx, is_arabic=False, ref=ref,translation_key=translation_key).process_request()
 
     @commands.command(name="aquran")
     async def aquran(self, ctx, ref: str):
