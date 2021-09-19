@@ -63,6 +63,10 @@ class Help(commands.Cog):
                                               f"\n\nExample: `{pre}settranslation khattab`"
                                               "\n\nYou must have the **Administrator** permission to use this command.")
 
+            em.add_field(name=f"{pre}random", inline=True, value="Gets a random Qur'anic verse."
+                                              f"\n\n`{pre}random <translation>`"
+                                              f"\n\nExample: `{pre}random khattab`")
+
             await ctx.send(embed=em)
 
         elif section == "tafsir":
