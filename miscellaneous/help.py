@@ -114,6 +114,10 @@ class Help(commands.Cog):
                                                             f"\n\n`{pre}biography <name of person in Arabic>`"
                                                             f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
+            em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. " 
+                                                                  "The usage is `-rhadith`.")
+
+
             await ctx.send(embed=em)
 
         elif section == "prayer times":

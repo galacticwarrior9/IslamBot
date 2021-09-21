@@ -2,7 +2,7 @@ import asyncio
 import configparser
 import re
 import textwrap
-
+import requests,json
 import aiohttp
 import discord
 import html2text
@@ -326,6 +326,16 @@ class HadithCommands(commands.Cog):
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
         await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
+
+    @commands.command(name="rhadith")
+    async def rhadith(self,ctx):
+        
+        headers = {"X-API-Key": API_KEY}
+
+        randomHadithSite = requests.get(f"https://api.sunnah.com/v1/hadiths/random",headers=headers)
+        data = json.loads(randomHadithSite.content)
+        await self.abstract_hadith(ctx,data["collection"],data["hadithNumber"],'en')
+
 
     @hadith.error
     async def hadith_error(self, ctx, error):
