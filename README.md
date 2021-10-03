@@ -53,7 +53,7 @@ The above command would quote Surah 1, Verses 1-7 (Surah al-Fatihah) using the t
   
 #### Valid translations  
   
-[Click here for a list of valid translations.](https://github.com/galacticwarrior9/islambot/blob/master/Translations.md)  
+[Click here for a list of valid translations.](https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List)  
   
   
 #### -settranslation  
@@ -72,7 +72,7 @@ For example:
 The above command would set the default Qur'an translation to Sahih International.   
   
   
-[Click here for a list of valid translations.](https://github.com/galacticwarrior9/islambot/blob/master/Translations.md)  
+[Click here for a list of valid translations.](https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List)  
   
   
 ### -aquran  
@@ -145,7 +145,7 @@ The above command would quote the tafsir of Ayatul Kursi from Tafsir al-Tabari.
   
   
 ### -tafsir  
-**-tafsir** allows you to quote from non-Arabic *tafaseer*, including 9 in English. [Click here for a list](https://github.com/galacticwarrior9/islambot/blob/master/Tafsir.md).
+**-tafsir** allows you to quote from non-Arabic *tafaseer*, including 9 in English. [Click here for a list](https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List).
 
 It works in the same manner as **-atafsir**.  
 ```  
