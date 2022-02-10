@@ -63,9 +63,9 @@ class Help(commands.Cog):
                                               f"\n\nExample: `{pre}settranslation khattab`"
                                               "\n\nYou must have the **Administrator** permission to use this command.")
 
-            em.add_field(name=f"{pre}random", inline=True, value="Gets a random Qur'anic verse."
-                                              f"\n\n`{pre}random <translation>`"
-                                              f"\n\nExample: `{pre}random khattab`")
+            em.add_field(name=f"{pre}rquran", inline=True, value="Gets a random Qur'anic verse."
+                                              f"\n\n`{pre}rquran <translation>`"
+                                              f"\n\nExample: `{pre}rquran khattab`")
 
             await ctx.send(embed=em)
 
@@ -114,6 +114,10 @@ class Help(commands.Cog):
                                                             f"\n\n`{pre}biography <name of person in Arabic>`"
                                                             f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
+            em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. " 
+                                                                  "The usage is `-rhadith`.")
+
+
             await ctx.send(embed=em)
 
         elif section == "prayer times":
@@ -133,6 +137,8 @@ class Help(commands.Cog):
                                                          f"\n\n`{pre}dua <topic>`"
                                                          f"\n\nExample: `{pre}dua forgiveness`"
                                                          "\n\nSee `-dualist` for a list of topics.")
+            em.add_field(name=f"{pre}rdua", inline=True, value="Gets a random dua. " 
+                                                                  "The usage is `-rdua`.")
             await ctx.send(embed=em)
 
         elif section == "settings":

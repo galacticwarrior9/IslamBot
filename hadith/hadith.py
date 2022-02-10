@@ -327,6 +327,15 @@ class HadithCommands(commands.Cog):
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
         await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
 
+    @commands.command(name="rhadith")
+    async def rhadith(self, ctx):
+        headers = {"X-API-Key": API_KEY}
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    await self.abstract_hadith(ctx, data["collection"], data["hadithNumber"], 'en')
+
     @hadith.error
     async def hadith_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):

@@ -114,6 +114,16 @@ For example:
 ```  
 -mushaf 112:1 tajweed  
 ```  
+
+### -rquran
+**-rquran** sends a random english translation verse of the Qur'an.
+```
+-rquran <translation>
+```
+For example:
+```
+-rquran khattab
+```
   
   
 ### -surah  
@@ -175,7 +185,10 @@ For example, to get duas for breaking fasts:
 ```  
 -dua breaking fast  
 ```  
-  
+
+### -rdua
+**-rdua** sends a random dua from *Fortress of the Muslim* (Hisn al-Muslim).
+
   
 ## Hadith   
 ### -hadith  
@@ -221,7 +234,10 @@ For example: `-hadith qudsi 32`
 ### -ahadith  
 **-ahadith** is the same as -hadith, but sends the hadith in Arabic.  
   
-  
+
+## -rhadith
+**-rhadith** sends a random hadith from sunnah.com
+
   
 ## Prayer (Salaah) Times  
 ### -prayertimes  
