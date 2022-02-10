@@ -81,7 +81,7 @@ class Dua(commands.Cog):
     async def dua(self, ctx, *, subject: str):
         await self._dua(ctx, subject)
 
-    @commands.command(name="randomdua")
+    @commands.command(name="rdua")
     async def randomdua(self, ctx):
         await self._dua(random.choice(DUAS.keys()))
 
