@@ -9,6 +9,8 @@ from discord_slash.utils.manage_commands import create_option
 from utils.slash_utils import generate_choices_from_list
 from utils.utils import get_site_source
 
+import random
+
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 DUAS = {
@@ -78,6 +80,10 @@ class Dua(commands.Cog):
     @commands.command(name='dua')
     async def dua(self, ctx, *, subject: str):
         await self._dua(ctx, subject)
+
+    @commands.command(name="randomdua")
+    async def randomdua(self, ctx):
+        await self._dua(random.choice(DUAS.keys()))
 
     @dua.error
     async def on_dua_error(self, ctx, error):
