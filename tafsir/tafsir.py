@@ -281,8 +281,9 @@ class TafsirEnglish(commands.Cog):
 
     @commands.command(name='tafsir')
     async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
-        spec = await self.process_request(ref, tafsir, page)
-        await self.send_embed(ctx, spec)
+        async with ctx.channel.typing():
+            spec = await self.process_request(ref, tafsir, page)
+            await self.send_embed(ctx, spec)
 
     @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
                        options=[

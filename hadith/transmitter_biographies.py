@@ -82,7 +82,8 @@ class Biographies(commands.Cog):
 
     @commands.command(name="biography")
     async def biography(self, ctx, *, name):
-        await self._biography(ctx, name)
+        async with ctx.channel.typing():
+            await self._biography(ctx, name)
 
     @biography.error
     async def biography_error(self, ctx, error):

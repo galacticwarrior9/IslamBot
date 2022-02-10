@@ -78,11 +78,13 @@ class Dua(commands.Cog):
 
     @commands.command(name='dua')
     async def dua(self, ctx, *, subject: str):
-        await self._dua(ctx, subject)
+        async with ctx.channel.typing():
+            await self._dua(ctx, subject)
 
     @commands.command(name="rdua")
     async def randomdua(self, ctx):
-        await self._dua(ctx, random.choice(list(DUAS.keys())))
+        async with ctx.channel.typing():
+            await self._dua(ctx, random.choice(list(DUAS.keys())))
 
     @dua.error
     async def on_dua_error(self, ctx, error):
@@ -105,14 +107,15 @@ class Dua(commands.Cog):
 
     @commands.command(name='dualist')
     async def dualist(self, ctx):
-        dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
+        async with ctx.channel.typing():
+            dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
 
-        for dua in DUAS:
-            dua_list_message.append('\n' + dua)
+            for dua in DUAS:
+                dua_list_message.append('\n' + dua)
 
-        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
-        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
-        await ctx.send(embed=em)
+            em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
+            em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
+            await ctx.send(embed=em)
 
 
 def setup(bot):

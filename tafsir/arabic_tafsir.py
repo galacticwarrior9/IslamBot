@@ -295,9 +295,10 @@ class Tafsir(commands.Cog):
 
     @commands.command(name="atafsir")
     async def atafsir(self, ctx, ref: str, tafsir: str = "tabari"):
-        quran_reference = QuranReference(ref, False)
-        tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
-        await self.send(ctx, tafsir)
+        async with ctx.channel.typing():
+            quran_reference = QuranReference(ref, False)
+            tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
+            await self.send(ctx, tafsir)
         # TODO: Re-add error handling
 
     @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
