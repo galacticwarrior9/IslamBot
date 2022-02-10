@@ -20,8 +20,8 @@ API_KEY = config['APIs']['sunnah.com']
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
-                    'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
-                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
+                          'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
+                          'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
 
 english_hadith_collections = {
     'ahmad': 'Musnad Ahmad ibn Hanbal',
@@ -60,7 +60,6 @@ arabic_hadith_collections = {
     'nawawi40': 'الأربعون النووية',
     'hisn': 'حصن المسلم'
 }
-
 
 INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
                 '\n\n**Example**: `{0}hadith bukhari 1:1`' \
@@ -305,7 +304,6 @@ class HadithCommands(commands.Cog):
         elif isinstance(error, InvalidCollection):
             await ctx.send(INVALID_COLLECTION)
 
-
     @ahadith.error
     async def ahadith_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -322,8 +320,8 @@ class HadithCommands(commands.Cog):
                                required=True,
                                choices=generate_choices_from_dict(english_hadith_collections)),
                            create_option(
-                               name = "hadith_number",
-                               description = "The number of the hadith.",
+                               name="hadith_number",
+                               description="The number of the hadith.",
                                option_type=3,
                                required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
@@ -339,8 +337,8 @@ class HadithCommands(commands.Cog):
                                required=True,
                                choices=generate_choices_from_dict(arabic_hadith_collections)),
                            create_option(
-                               name = "hadith_number",
-                               description = "The number of the hadith.",
+                               name="hadith_number",
+                               description="The number of the hadith.",
                                option_type=3,
                                required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
@@ -388,8 +386,5 @@ class HadithCommands(commands.Cog):
             await self.abstract_hadith(message.channel, collection, ref, "en")
 
 
-
 def setup(bot):
     bot.add_cog(HadithCommands(bot))
-
-

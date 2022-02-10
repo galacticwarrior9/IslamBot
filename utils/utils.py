@@ -1,17 +1,17 @@
-import aiohttp
 import configparser
-from bs4 import BeautifulSoup
-from discord import Embed
 from typing import Union
+
+import aiohttp
 import discord
 import pandas as pd
+from bs4 import BeautifulSoup
+from discord import Embed
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 
 def make_embed(**kwargs):
-
     """
     Creates an embed message with specified inputs.
     Parameters
@@ -120,17 +120,17 @@ def convert_to_arabic_number(number_string):
 
 def convert_from_arabic_number(number_string):
     dic = {
-     '۹': '9',
-     '٨': '8',
-     '٧': '7',
-     '٦': '6',
-     '٥': '5',
-     '٤': '4',
-     '۳': '3',
-     '٢': '2',
-     '١': '1',
-     '۰': '0',
-     ':': ':'
+        '۹': '9',
+        '٨': '8',
+        '٧': '7',
+        '٦': '6',
+        '٥': '5',
+        '٤': '4',
+        '۳': '3',
+        '٢': '2',
+        '١': '1',
+        '۰': '0',
+        ':': ':'
     }
     return "".join([dic[char] for char in number_string])
 
@@ -179,7 +179,7 @@ class PrefixHandler:
             cls.save()
 
     @classmethod
-    def remove_prefix(cls,guild_id : int):
+    def remove_prefix(cls, guild_id: int):
         if guild_id not in cls.df.guildID.values:
             pass
         else:

@@ -48,7 +48,7 @@ class QuranMorphology(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.session = ClientSession(loop = bot.loop)
+        self.session = ClientSession(loop=bot.loop)
         self.morphologyURL = 'http://corpus.quran.com/wordmorphology.jsp?location=({}:{}:{})'
         self.syntaxURL = 'http://corpus.quran.com/treebank.jsp?chapter={}&verse={}&token={}'
 
@@ -106,8 +106,8 @@ class QuranMorphology(commands.Cog):
                                option_type=4,
                                required=True),
                            create_option(
-                               name = "verse_number",
-                               description = "The ayah number of the word.",
+                               name="verse_number",
+                               description="The ayah number of the word.",
                                option_type=4,
                                required=True),
                            create_option(

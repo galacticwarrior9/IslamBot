@@ -1,15 +1,14 @@
+import random
+import re
+
 import discord
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-import re
-
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_list
 from utils.utils import get_site_source
-
-import random
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
@@ -66,7 +65,7 @@ class Dua(commands.Cog):
         site_source = await get_site_source(self.url.format(dua_id))
         dua_text = []
         for dua in site_source.findAll("div", {"class": 'search-item'}):
-            text = dua.get_text(separator=" ").strip()\
+            text = dua.get_text(separator=" ").strip() \
                 .replace("(saw)", "ﷺ")
             text = '\n' + text
             dua_text.append(text)
@@ -106,12 +105,12 @@ class Dua(commands.Cog):
 
     @commands.command(name='dualist')
     async def dualist(self, ctx):
-        dua_list_message = ['**Type {0}dua <topic>**. Example: `{0}dua breaking fast`\n'.format(ctx.prefix)]
+        dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
 
         for dua in DUAS:
             dua_list_message.append('\n' + dua)
 
-        em = discord.Embed(title=f'Dua List', colour=0x467f05, description=''.join(dua_list_message))
+        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
         em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
         await ctx.send(embed=em)
 

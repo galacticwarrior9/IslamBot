@@ -156,20 +156,24 @@ class ArabicTafsir:
     '''
     Gets the tafsir ID on tafsir.app.
     '''
+
     def get_tafsir_id(self):
         if self.id in ids:
             return ids[self.id]
         else:
             raise InvalidTafsir
+
     '''
     Gets the tafsir's Arabic name.
     '''
+
     def get_tafsir_name(self):
         return names[self.id]
 
     '''
     Retrieves the raw text from tafsir.app, then processes it.
     '''
+
     async def fetch_text(self):
         self.url = f'https://tafsir.app/{self.website_id}/{self.surah}/{self.ayah}'
         content = str(await get_site_source(self.url))
@@ -178,6 +182,7 @@ class ArabicTafsir:
     '''
     Gets, formats and paginates the tafsir text.
     '''
+
     def process_text(self, content):
         # Parse the website's source and find the tafsir text.
         soup = BeautifulSoup(content, 'html.parser')
@@ -186,16 +191,16 @@ class ArabicTafsir:
 
         # Discord doesn't handle text comprised from both Arabic and non-Arabic text/symbols well, so we need to fix it.
         text = (text.replace('*', '')
-                    .replace('⁕', '')
-                    .replace('}', ' ﴾')
-                    .replace('{', ' ﴿')
-                    .replace('﴾', '﴾"')
-                    .replace('﴿', '"﴿')
-                    .replace('«', '"«')
-                    .replace('»', '»"')
-                    .replace('"ayah":', '')
-                    .replace(']]', ']')
-                    .replace('[[', '['))
+                .replace('⁕', '')
+                .replace('}', ' ﴾')
+                .replace('{', ' ﴿')
+                .replace('﴾', '﴾"')
+                .replace('﴿', '"﴿')
+                .replace('«', '"«')
+                .replace('»', '»"')
+                .replace('"ayah":', '')
+                .replace(']]', ']')
+                .replace('[[', '['))
 
         cleanb = re.compile('\([^)]*\)')
         text = re.sub(cleanb, '', text)
@@ -304,8 +309,8 @@ class Tafsir(commands.Cog):
                                required=True,
                                choices=generate_choices_from_list(list(names.values()))),
                            create_option(
-                               name= "السورة_و_الآية",
-                               description = "رقم السورة:رقم الآية - على سبيل المثال: 2:255",
+                               name="السورة_و_الآية",
+                               description="رقم السورة:رقم الآية - على سبيل المثال: 2:255",
                                option_type=3,
                                required=True)
                        ])

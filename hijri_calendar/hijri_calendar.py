@@ -1,10 +1,12 @@
-import discord
 from datetime import datetime, date
+
+import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 from hijri_converter import convert
+
 from utils.utils import convert_to_arabic_number, make_embed
 
 ICON = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/512/calendar-icon.png'
@@ -38,10 +40,10 @@ class HijriCalendar(commands.Cog):
     def get_hijri(gregorian_date: date = None):
         hijri = convert.Gregorian.fromdate(gregorian_date).to_hijri()
         return f'{gregorian_date.strftime("%d %B %Y")} is **{hijri.month_name()} {hijri.day}, {hijri.year} AH**.' \
-                      f'\n\nالتاريخ الهجري: __**' \
-                      f'{hijri.day_name(language="ar")} {convert_to_arabic_number(str(hijri.day))} ' \
-                      f'{hijri.month_name(language="ar")} {convert_to_arabic_number(str(hijri.year))} ' \
-                      f'{hijri.notation(language="ar")}**__'
+               f'\n\nالتاريخ الهجري: __**' \
+               f'{hijri.day_name(language="ar")} {convert_to_arabic_number(str(hijri.day))} ' \
+               f'{hijri.month_name(language="ar")} {convert_to_arabic_number(str(hijri.year))} ' \
+               f'{hijri.notation(language="ar")}**__'
 
     @staticmethod
     def get_gregorian(hijri_date):
@@ -105,24 +107,25 @@ class HijriCalendar(commands.Cog):
     @cog_ext.cog_subcommand(base="calendar", name="to_hijri", description="Convert a Gregorian date to a Hijri date.",
                             base_description="Convert between Hijri and Gregorian dates.",
                             options=[
-                               create_option(
-                                   name="gregorian_date",
-                                   description="The Gregorian date to convert, written in the DD-MM-YYYY format, e.g. 17-12-2021",
-                                   option_type=3,
-                                   required=True)
+                                create_option(
+                                    name="gregorian_date",
+                                    description="The Gregorian date to convert, written in the DD-MM-YYYY format, e.g. 17-12-2021",
+                                    option_type=3,
+                                    required=True)
                             ])
     async def slash_converttohijri(self, ctx: SlashContext, gregorian_date: str):
         await ctx.send()
         await self._converttohijri(ctx, gregorian_date)
 
-    @cog_ext.cog_subcommand(base="calendar", name="to_gregorian", description="Convert a Hijri date to a Gregorian date.",
+    @cog_ext.cog_subcommand(base="calendar", name="to_gregorian",
+                            description="Convert a Hijri date to a Gregorian date.",
                             base_description="Convert between Hijri and Gregorian dates.",
                             options=[
-                               create_option(
-                                   name="hijri_date",
-                                   description="The Hijri date to convert, written in the DD-MM-YYYY format, e.g. 18-12-1442",
-                                   option_type=3,
-                                   required=True)
+                                create_option(
+                                    name="hijri_date",
+                                    description="The Hijri date to convert, written in the DD-MM-YYYY format, e.g. 18-12-1442",
+                                    option_type=3,
+                                    required=True)
                             ])
     async def slash_converttogregorian(self, ctx: SlashContext, hijri_date: str):
         await ctx.send()

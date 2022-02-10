@@ -1,25 +1,24 @@
 import re
-from aiohttp.client import request
 
 import discord
 import pymysql
 from discord.ext.commands import CheckFailure, MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
-from discord.ext import commands
-from utils.database_utils import DBHandler
+
 from quran.quran_info import *
+from utils.database_utils import DBHandler
 from utils.utils import convert_to_arabic_number, get_site_json
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List>"
 
 INVALID_ARGUMENTS_ARABIC = "**Invalid arguments!** Type `{0}aquran [surah]:[ayah]`. \n\nExample: `{0}aquran 1:1`" \
-                               "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                               "\n\nExample: `{0}aquran 1:1-7`"
+                           "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
+                           "\n\nExample: `{0}aquran 1:1-7`"
 
 INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah]`. \n\nExample: `{0}quran 1:1`" \
-                               "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                               "\n\nExample: `{0}quran 1:1-7`"
+                            "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
+                            "\n\nExample: `{0}quran 1:1-7`"
 
 INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
 INVALID_AYAH = "**There are only {0} verses in this surah**."
@@ -56,118 +55,118 @@ class Translation:
         translation_list = {
             'khattab': 131,  # English
             'bridges': 149,  # English
-            'sahih':  20,  # English
+            'sahih': 20,  # English
             'maarifulquran': 167,  # English
             'jalandhari': 234,  # Urdu
             'suhel': 82,  # Hindi
             'awqaf': 78,  # Russian
-            'musayev': 75, # Azeri
-            'uyghur': 76, # Uyghur
-            'haleem': 85, # English
+            'musayev': 75,  # Azeri
+            'uyghur': 76,  # Uyghur
+            'haleem': 85,  # English
             'abuadel': 79,  # Russian
             'karakunnu': 80,  # Malayalam
             'isagarcia': 83,  # Spanish
             'divehi': 86,  # Maldivian
             'burhan': 81,  # Kurdish
             'taqiusmani': 84,  # English
-            'ghali': 17, # English
-            'hilali': 203, # English
-            'maududi.en': 95, # English
+            'ghali': 17,  # English
+            'hilali': 203,  # English
+            'maududi.en': 95,  # English
             'transliteration': 57,
             'pickthall': 19,  # English
-            'yusufali': 22, # English
-            'ruwwad': 206, # English
-            'muhammadhijab': 207, # English
-            'junagarri': 54, # Urdu
-            'sayyidqutb': 156, # Urdu
-            'mahmudhasan': 151, # Urdu
-            'israrahmad': 158, # Urdu
-            'maududi': 97, # Urdu
-            'montada': 136, # French
-            'khawaja': 139, # Tajik
-            'ryoichi': 35, # Japanese
-            'fahad.in': 134, # Indonesian
-            'piccardo':  153, # Italian
-            'taisirulquran': 161, # Bengali
-            'mujibur': 163, # Bengali
-            'rawai': 162, # Bengali
-            'tagalog': 211, # Tagalog
-            'ukrainian': 217, # Ukrainian
-            'omar': 229, # Tamil
-            'serbian': 215, # Serbian
-            'bamoki': 143, # Kurdish
-            'sabiq': 141, # Indonesian
-            'telegu': 227, # Telugu
-            'marathi': 226, # Marathi
-            'hebrew': 233, # Hebrew
-            'gujarati': 225, # Gujarati
-            'abdulislam': 235, # Dutch
-            'ganda': 232, # Ganda
-            'khamis': 231, # Swahili
-            'thai': 230, # Thai
-            'kazakh': 222, # Kazakh
-            'vietnamese': 220, # Vietnamese
-            'siregar': 144, # Dutch
-            'hasanefendi': 88, # Albanian
-            'amharic': 87, # Amharic
-            'jantrust': 50, # Tamil
-            'barwani': 49, # Somali
-            'swedish': 48, # Swedish
-            'khmer': 128, # Khmer (Cambodian)
-            'kuliev': 45, # Russian
-            'diyanet': 77, # Turkish
+            'yusufali': 22,  # English
+            'ruwwad': 206,  # English
+            'muhammadhijab': 207,  # English
+            'junagarri': 54,  # Urdu
+            'sayyidqutb': 156,  # Urdu
+            'mahmudhasan': 151,  # Urdu
+            'israrahmad': 158,  # Urdu
+            'maududi': 97,  # Urdu
+            'montada': 136,  # French
+            'khawaja': 139,  # Tajik
+            'ryoichi': 35,  # Japanese
+            'fahad.in': 134,  # Indonesian
+            'piccardo': 153,  # Italian
+            'taisirulquran': 161,  # Bengali
+            'mujibur': 163,  # Bengali
+            'rawai': 162,  # Bengali
+            'tagalog': 211,  # Tagalog
+            'ukrainian': 217,  # Ukrainian
+            'omar': 229,  # Tamil
+            'serbian': 215,  # Serbian
+            'bamoki': 143,  # Kurdish
+            'sabiq': 141,  # Indonesian
+            'telegu': 227,  # Telugu
+            'marathi': 226,  # Marathi
+            'hebrew': 233,  # Hebrew
+            'gujarati': 225,  # Gujarati
+            'abdulislam': 235,  # Dutch
+            'ganda': 232,  # Ganda
+            'khamis': 231,  # Swahili
+            'thai': 230,  # Thai
+            'kazakh': 222,  # Kazakh
+            'vietnamese': 220,  # Vietnamese
+            'siregar': 144,  # Dutch
+            'hasanefendi': 88,  # Albanian
+            'amharic': 87,  # Amharic
+            'jantrust': 50,  # Tamil
+            'barwani': 49,  # Somali
+            'swedish': 48,  # Swedish
+            'khmer': 128,  # Khmer (Cambodian)
+            'kuliev': 45,  # Russian
+            'diyanet': 77,  # Turkish
             'turkish': 77,  # Turkish
-            'basmeih': 39, # Malay
-            'malay': 39, # Malay
-            'korean': 219, # Korean (Hamed Choi)
-            'finnish': 30, # Finnish
-            'czech': 26, # Czech
-            'nasr': 103, # Portuguese
-            'ayati': 74, # Tajik
-            'mansour': 101, # Uzbek
-            'tatar': 53, # Tatar
-            'romanian': 44, # Romanian
-            'polish': 42, # Polish
-            'norwegian': 41, # Norwegian
-            'amazigh': 236, # Amazigh
-            'sindhi': 238, # Sindhi
-            'chechen': 106, # Chechen
-            'bulgarian': 237, # Bulgarian
-            'yoruba': 125, # Yoruba
-            'shahin': 124, # Turkish
-            'abduh': 46, # Somali
-            'britch': 112, # Turkish
-            'maranao': 38, # Maranao
-            'ahmeti': 89, # Albanian
-            'majian': 56, # Chinese
-            'hausa': 32, # Hausa
-            'nepali': 108, # Nepali
-            'hameed': 37, # Malayalam
-            'elhayek': 43, # Portuguese
-            'cortes': 28, # Spanish
-            'oromo': 111, # Oromo
-            'french': 31, # French
-            'hamidullah': 31, # French
-            'persian': 29, # Persian
-            'farsi': 29, # Persian
-            'aburida': 208, # German
-            'othman': 209, # Italian
-            'georgian': 212, # Georgian
-            'baqavi': 133, # Tamil
-            'mehanovic': 25, # Bosnian
-            'yazir': 52, # Turkish
-            'zakaria': 213, # Bengali
-            'noor': 199, # Spanish
-            'sato': 218, # Japanese
-            'sinhalese': 228, # Sinhala/Sinhalese
-            'korkut': 126, # Bosnian
-            'umari': 122, # Hindi
-            'assamese': 120, # Assamese
-            'sodik': 127, # Uzbek
-            'pashto': 118, # Pashto
-            'makin': 109, # Chinese
-            'bubenheim': 27, # German
-            'indonesian': 33, # Indonesian
+            'basmeih': 39,  # Malay
+            'malay': 39,  # Malay
+            'korean': 219,  # Korean (Hamed Choi)
+            'finnish': 30,  # Finnish
+            'czech': 26,  # Czech
+            'nasr': 103,  # Portuguese
+            'ayati': 74,  # Tajik
+            'mansour': 101,  # Uzbek
+            'tatar': 53,  # Tatar
+            'romanian': 44,  # Romanian
+            'polish': 42,  # Polish
+            'norwegian': 41,  # Norwegian
+            'amazigh': 236,  # Amazigh
+            'sindhi': 238,  # Sindhi
+            'chechen': 106,  # Chechen
+            'bulgarian': 237,  # Bulgarian
+            'yoruba': 125,  # Yoruba
+            'shahin': 124,  # Turkish
+            'abduh': 46,  # Somali
+            'britch': 112,  # Turkish
+            'maranao': 38,  # Maranao
+            'ahmeti': 89,  # Albanian
+            'majian': 56,  # Chinese
+            'hausa': 32,  # Hausa
+            'nepali': 108,  # Nepali
+            'hameed': 37,  # Malayalam
+            'elhayek': 43,  # Portuguese
+            'cortes': 28,  # Spanish
+            'oromo': 111,  # Oromo
+            'french': 31,  # French
+            'hamidullah': 31,  # French
+            'persian': 29,  # Persian
+            'farsi': 29,  # Persian
+            'aburida': 208,  # German
+            'othman': 209,  # Italian
+            'georgian': 212,  # Georgian
+            'baqavi': 133,  # Tamil
+            'mehanovic': 25,  # Bosnian
+            'yazir': 52,  # Turkish
+            'zakaria': 213,  # Bengali
+            'noor': 199,  # Spanish
+            'sato': 218,  # Japanese
+            'sinhalese': 228,  # Sinhala/Sinhalese
+            'korkut': 126,  # Bosnian
+            'umari': 122,  # Hindi
+            'assamese': 120,  # Assamese
+            'sodik': 127,  # Uzbek
+            'pashto': 118,  # Pashto
+            'makin': 109,  # Chinese
+            'bubenheim': 27,  # German
+            'indonesian': 33,  # Indonesian
         }
         if key in translation_list.keys():
             return translation_list[key]
@@ -226,7 +225,8 @@ class QuranRequest:
             if len(text) > 1024:
                 text = text[0:1018] + " [...]"
 
-            self.verse_ayah_dict[f'{convert_to_arabic_number(str(self.ref.surah))}:{convert_to_arabic_number(str(ayah))}'] = text
+            self.verse_ayah_dict[
+                f'{convert_to_arabic_number(str(self.ref.surah))}:{convert_to_arabic_number(str(ayah))}'] = text
 
     def construct_embed(self):
         surah = Surah(self.ref.surah)
@@ -271,14 +271,13 @@ class Quran(commands.Cog):
     @commands.command(name="rquran")
     async def randomVerse(self, ctx, translation_key: str = None):
         async with ctx.channel.typing():
-
             json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
             ref = json["verse"]["verse_key"]
 
             if translation_key is None:
                 translation_key = await Translation.get_guild_translation(ctx.guild.id)
-            
-            await QuranRequest(ctx=ctx, is_arabic=False, ref=ref,translation_key=translation_key).process_request()
+
+            await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     @commands.command(name="aquran")
     async def aquran(self, ctx, ref: str):
@@ -319,7 +318,7 @@ class Quran(commands.Cog):
                                option_type=3,
                                required=True),
                            create_option(
-                               name = "translation_key",
+                               name="translation_key",
                                description="The translation to use.",
                                option_type=3,
                                required=False)])
@@ -380,7 +379,8 @@ class Quran(commands.Cog):
         async with ctx.channel.typing():
             surah = Surah(surah_num)
             em = discord.Embed(colour=0x048c28)
-            em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
+            em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}',
+                          icon_url=ICON)
             em.description = (f'\n• **Number of verses**: {surah.verses_count}'
                               f'\n• **Revelation location**: {surah.revelation_location}'
                               f'\n• **Revelation order**: {surah.revelation_order} ')

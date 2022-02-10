@@ -2,10 +2,6 @@ import asyncio
 import configparser
 
 import aiomysql
-import pandas as pd
-import pymysql
-from aiomysql.sa import create_engine
-from sqlalchemy import create_engine
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -22,7 +18,6 @@ loop = asyncio.get_event_loop()
 
 
 class DBHandler:
-
     host = config['MySQL']['host']
     user = config['MySQL']['user']
     password = config['MySQL']['password']
