@@ -83,7 +83,7 @@ class Dua(commands.Cog):
 
     @commands.command(name="rdua")
     async def randomdua(self, ctx):
-        await self._dua(random.choice(DUAS.keys()))
+        await self._dua(ctx, random.choice(list(DUAS.keys())))
 
     @dua.error
     async def on_dua_error(self, ctx, error):
