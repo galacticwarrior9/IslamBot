@@ -268,7 +268,7 @@ class Quran(commands.Cog):
                 translation_key = await Translation.get_guild_translation(ctx.guild.id)
             await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
-    @commands.command(name="random")
+    @commands.command(name="rquran")
     async def randomVerse(self, ctx, translation_key: str = None):
         async with ctx.channel.typing():
 
