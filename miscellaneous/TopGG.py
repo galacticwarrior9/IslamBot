@@ -1,4 +1,5 @@
 import configparser
+
 import dbl
 from discord.ext import commands
 
@@ -15,12 +16,12 @@ class TopGG(commands.Cog):
         self.dblpy = dbl.DBLClient(self.bot, self.token, autopost=True)
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild): # when the bot joins a server 
-        await self.dblpy.post_guild_count() # post server count
+    async def on_guild_join(self, guild):  # when the bot joins a server
+        await self.dblpy.post_guild_count()  # post server count
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, guild): # when the bot leaves a server
-        await self.dblpy.post_guild_count() # post server count
+    async def on_guild_remove(self, guild):  # when the bot leaves a server
+        await self.dblpy.post_guild_count()  # post server count
 
 
 def setup(bot):

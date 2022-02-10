@@ -1,10 +1,11 @@
+import discord
 from discord.ext import commands
 from discord.ext.commands import CheckFailure, MissingRequiredArgument
+
 from utils.utils import PrefixHandler
-import discord
 
 help_message_set = "Type `{0}prefix set <prefix>` to set a custom prefix. \n\n**Example**: To set the prefix to" \
-                " `+`, type `{0}prefix set +`."
+                   " `+`, type `{0}prefix set +`."
 
 help_message_remove = "Type `{0}prefix remove` to remove the custom prefix."
 
@@ -39,7 +40,7 @@ class Settings(commands.Cog):
             f"✅ | The prefix for **{ctx.guild.name}** has been to set to `{new_prefix}`.")
 
     @prefix.command(name="remove", cooldown_after_parsing=True)
-    @commands.has_permissions(administrator = True)
+    @commands.has_permissions(administrator=True)
     async def remove_(self, ctx):
         """
         Used to remove a custom prefix of a server

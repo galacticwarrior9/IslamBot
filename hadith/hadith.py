@@ -20,8 +20,8 @@ API_KEY = config['APIs']['sunnah.com']
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
-                    'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
-                    'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
+                          'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
+                          'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
 
 english_hadith_collections = {
     'ahmad': 'Musnad Ahmad ibn Hanbal',
@@ -60,7 +60,6 @@ arabic_hadith_collections = {
     'nawawi40': 'الأربعون النووية',
     'hisn': 'حصن المسلم'
 }
-
 
 INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
                 '\n\n**Example**: `{0}hadith bukhari 1:1`' \
@@ -214,48 +213,10 @@ class HadithSpecifics:
 
     @staticmethod
     def format_english_collection_name(collection_name):
-        english_hadith_collections = {
-            'ahmad': 'Musnad Ahmad ibn Hanbal',
-            'bukhari': 'Sahīh al-Bukhārī',
-            'muslim': 'Sahīh Muslim',
-            'tirmidhi': 'Jamiʿ at-Tirmidhī',
-            'abudawud': 'Sunan Abī Dāwūd',
-            'nasai': "Sunan an-Nāsaʿī",
-            'ibnmajah': 'Sunan Ibn Mājah',
-            'malik': 'Muwatta Mālik',
-            'riyadussalihin': 'Riyadh as-Salihīn',
-            'adab': "Al-Adab al-Mufrad",
-            'bulugh': 'Bulugh al-Maram',
-            'shamail': "Shamā'il Muhammadiyyah",
-            'mishkat': 'Mishkat al-Masabih',
-            'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
-            'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah',
-            'hisn': 'Fortress of the Muslim (Hisn al-Muslim)'
-        }
-
         return english_hadith_collections[collection_name]
 
     @staticmethod
     def format_arabic_collection_name(collection_name):
-        arabic_hadith_collections = {
-            'ahmad': 'مسند أحمد بن حنبل',
-            'bukhari': 'صحيح البخاري',
-            'muslim': 'صحيح مسلم',
-            'tirmidhi': 'جامع الترمذي',
-            'abudawud': 'سنن أبي داود',
-            'nasai': "سنن النسائي",
-            'ibnmajah': 'سنن ابن ماجه',
-            'malik': 'موطأ مالك',
-            'riyadussalihin': 'رياض الصالحين',
-            'adab': "الأدب المفرد",
-            'bulugh': 'بلوغ المرام',
-            'shamail': 'الشمائل المحمدية',
-            'mishkat': 'مشكاة المصابيح',
-            'qudsi40': 'الأربعون القدسية',
-            'nawawi40': 'الأربعون النووية',
-            'hisn': 'حصن المسلم'
-        }
-
         return arabic_hadith_collections[collection_name]
 
     @staticmethod
@@ -334,7 +295,7 @@ class HadithCommands(commands.Cog):
             async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    await self.abstract_hadith(ctx, data["collection"], data["hadithNumber"], 'en')
+                    await self.abstract_hadith(ctx, data["collection"], Reference(data["hadithNumber"]), 'en')
 
     @hadith.error
     async def hadith_error(self, ctx, error):
@@ -342,7 +303,6 @@ class HadithCommands(commands.Cog):
             await ctx.send(INVALID_INPUT.format(ctx.prefix))
         elif isinstance(error, InvalidCollection):
             await ctx.send(INVALID_COLLECTION)
-
 
     @ahadith.error
     async def ahadith_error(self, ctx, error):
@@ -360,8 +320,8 @@ class HadithCommands(commands.Cog):
                                required=True,
                                choices=generate_choices_from_dict(english_hadith_collections)),
                            create_option(
-                               name = "hadith_number",
-                               description = "The number of the hadith.",
+                               name="hadith_number",
+                               description="The number of the hadith.",
                                option_type=3,
                                required=True)])
     async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
@@ -377,8 +337,8 @@ class HadithCommands(commands.Cog):
                                required=True,
                                choices=generate_choices_from_dict(arabic_hadith_collections)),
                            create_option(
-                               name = "hadith_number",
-                               description = "The number of the hadith.",
+                               name="hadith_number",
+                               description="The number of the hadith.",
                                option_type=3,
                                required=True)])
     async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
@@ -426,8 +386,5 @@ class HadithCommands(commands.Cog):
             await self.abstract_hadith(message.channel, collection, ref, "en")
 
 
-
 def setup(bot):
     bot.add_cog(HadithCommands(bot))
-
-

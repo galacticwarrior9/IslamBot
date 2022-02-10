@@ -116,7 +116,7 @@ For example:
 ```  
 
 ### -rquran
-**-rquran** sends a random english translation verse of the Qur'an.
+**-rquran** sends a random English translation verse of the Qur'an.
 ```
 -rquran <translation>
 ```
@@ -235,7 +235,7 @@ For example: `-hadith qudsi 32`
 **-ahadith** is the same as -hadith, but sends the hadith in Arabic.  
   
 
-## -rhadith
+### -rhadith
 **-rhadith** sends a random hadith from sunnah.com
 
   

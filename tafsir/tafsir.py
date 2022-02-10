@@ -34,11 +34,11 @@ name_mappings = {
 }
 
 name_alias = {
-    "saadi": "saddi", #saadi is more correct ( السعدي )
-    "jalalain": "jalalayn", # jalalaIn is AlTafsir's spelling
-    "asbabalnuzul": "wahidi", #better known name
-    "asbab": "wahidi", #better known name, shortened
-}   
+    "saadi": "saddi",  # saadi is more correct ( السعدي )
+    "jalalain": "jalalayn",  # jalalaIn is AlTafsir's spelling
+    "asbabalnuzul": "wahidi",  # better known name
+    "asbab": "wahidi",  # better known name, shortened
+}
 
 altafsir_sources = {
     'tustari': 93,
@@ -61,7 +61,7 @@ quranCom_sources = {
 }
 
 INVALID_ARGUMENTS = '**Invalid arguments.** Type the command in this format: `{0}tafsir <surah>:<ayah> <tafsir name>`.' \
-                '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
+                    '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
 
 INVALID_TAFSIR = "**Couldn't find tafsir!** " \
                  "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
@@ -102,10 +102,10 @@ class NoText(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
 class BadAlias(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
 
 
 class TafsirSpecifics:
@@ -117,16 +117,16 @@ class TafsirSpecifics:
         self.text = None
         self.embed = None
         self.page = page
-        
+
         self.query_tafsir(tafsir)
-        
+
         self.ref = QuranReference(ref)
         self.make_url()
 
     # this is the function to implement better tafsir retrieval
     def query_tafsir(self, t):
         try:
-            assert(len(t) > 0)
+            assert (len(t) > 0)
         except:
             raise InvalidTafsir
 
@@ -136,23 +136,21 @@ class TafsirSpecifics:
         if t in name_mappings.keys():
             self.tafsir = t
             self.tafsir_name = name_mappings[t]
-            return 
+            return
 
-            
-        # if not, try aliases
+            # if not, try aliases
         if t in name_alias.keys():
             buf = name_alias[t]
             # I assume aliases are set up correctly, if not raise normally unreachable error
             if buf not in name_mappings.keys():
                 raise BadAlias
-                
+
             self.tafsir = buf
             self.tafsir_name = name_mappings[buf]
             return
-        
+
         # IF all failed, raise an error
         raise InvalidTafsir
-        
 
     def make_url(self):
         if self.tafsir in altafsir_sources.keys():
@@ -178,7 +176,6 @@ class TafsirSpecifics:
             source = await get_site_json(self.url)
             self.text = source['tafsirs'][0]['text']
             self.tafsir_author = source['meta']['author_name']
-
 
             # Replace HTML tags
             cleanr = re.compile('<(.*?)>')

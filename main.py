@@ -1,8 +1,10 @@
 import configparser
+
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from discord_slash import SlashCommand
+
 from utils.utils import PrefixHandler
 
 config = configparser.ConfigParser()
@@ -29,7 +31,8 @@ async def get_prefix(_, message):
 
 description = "A Discord bot with Islamic utilities."
 
-cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir', 'tafsir.arabic_tafsir',
+cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir',
+            'tafsir.arabic_tafsir',
             'quran.mushaf', 'dua.dua', 'miscellaneous.help', 'miscellaneous.TopGG', 'miscellaneous.settings',
             'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times', 'miscellaneous.utility'}
 

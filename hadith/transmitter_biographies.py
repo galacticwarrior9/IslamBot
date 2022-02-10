@@ -1,4 +1,7 @@
-from aiohttp import ClientSession
+import asyncio
+import textwrap
+
+import discord
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext, ButtonStyle
@@ -6,9 +9,6 @@ from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
 from utils.utils import get_site_source
-import asyncio
-import discord
-import textwrap
 
 INVALID_PERSON = "**Error**: Could not find person."
 INVALID_ARGUMENTS = "**Error**: Please specify a name (in Arabic)."

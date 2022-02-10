@@ -1,18 +1,18 @@
+import discord
+from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from aiohttp import ClientSession
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 from quran.quran_info import QuranReference
 from utils.utils import convert_to_arabic_number
-import discord
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 INVALID_INPUT = "**Type the command in this format**: `{0}mushaf <surah>:<ayah>`" \
-        "\ne.g. `{0}mushaf 112:1` \n\nFor a color-coded mushaf, added 'tajweed' to the end " \
-        "of the command\ne.g. `{0}mushaf 112:1 tajweed`"
+                "\ne.g. `{0}mushaf 112:1` \n\nFor a color-coded mushaf, added 'tajweed' to the end " \
+                "of the command\ne.g. `{0}mushaf 112:1 tajweed`"
 
 INVALID_VERSE = '**Verse not found**. Please check the verse exists, or try again later.'
 
@@ -67,8 +67,8 @@ class Mushaf(commands.Cog):
                                option_type=3,
                                required=True),
                            create_option(
-                               name = "show_tajweed",
-                               description = "Should the mushaf highlight where tajweed rules apply?",
+                               name="show_tajweed",
+                               description="Should the mushaf highlight where tajweed rules apply?",
                                option_type=5,
                                required=False
                            )])
