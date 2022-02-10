@@ -56,7 +56,7 @@ The above command would quote Surah 1, Verses 1-7 (Surah al-Fatihah) using the t
 [Click here for a list of valid translations.](https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List)  
   
   
-#### -settranslation  
+### -settranslation  
   
 **-settranslation** allows you to change the default translation of `-quran` on your server. You must have the `Administrator` permission to use this command.   
   
