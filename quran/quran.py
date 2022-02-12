@@ -384,7 +384,8 @@ class Quran(commands.Cog):
             em.description = (f'\n• **Number of verses**: {surah.verses_count}'
                               f'\n• **Revelation location**: {surah.revelation_location}'
                               f'\n• **Revelation order**: {surah.revelation_order} ')
-            await ctx.send(embed=em)
+
+        await ctx.send(embed=em)
 
     @surah.error
     async def surah_error(self, ctx, error):

@@ -115,7 +115,8 @@ class Dua(commands.Cog):
 
             em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
             em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
-            await ctx.send(embed=em)
+
+        await ctx.send(embed=em)
 
 
 def setup(bot):
