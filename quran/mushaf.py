@@ -47,12 +47,13 @@ class Mushaf(commands.Cog):
 
     @commands.command(name="mushaf")
     async def mushaf(self, ctx, ref: str, tajweed: str = None):
-        if tajweed is None:
-            await self._mushaf(ctx, ref, False)
-        elif tajweed.lower() == 'tajweed':
-            await self._mushaf(ctx, ref, True)
-        else:
-            raise MissingRequiredArgument
+        async with ctx.channel.typing():
+            if tajweed is None:
+                await self._mushaf(ctx, ref, False)
+            elif tajweed.lower() == 'tajweed':
+                await self._mushaf(ctx, ref, True)
+            else:
+                raise MissingRequiredArgument
 
     @mushaf.error
     async def on_mushaf_error(self, ctx, error):
