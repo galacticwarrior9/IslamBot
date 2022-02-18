@@ -66,7 +66,7 @@ INVALID_ARGUMENTS = '**Invalid arguments.** Type the command in this format: `{0
 INVALID_TAFSIR = "**Couldn't find tafsir!** " \
                  "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
 
-INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
+INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
 
 INVALID_AYAH = "**There are only {0} verses in this surah**."
 

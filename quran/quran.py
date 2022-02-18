@@ -20,7 +20,7 @@ INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah
                             "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
                             "\n\nExample: `{0}quran 1:1-7`"
 
-INVALID_SURAH = "**There only 114 surahs.** Please choose a surah between 1 and 114."
+INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
 INVALID_AYAH = "**There are only {0} verses in this surah**."
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
