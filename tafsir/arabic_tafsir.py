@@ -304,20 +304,20 @@ class Tafsir(commands.Cog):
     @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
                        options=[
                            create_option(
-                               name="تفسير",
-                               description="اسم التفسير.",
-                               option_type=3,
-                               required=True,
-                               choices=generate_choices_from_list(list(names.values()))),
-                           create_option(
-                               name="السورة_و_الآية",
+                               name="reference",
                                description="رقم السورة:رقم الآية - على سبيل المثال: 2:255",
                                option_type=3,
-                               required=True)
-                       ])
-    async def slash_atafsir(self, ctx: SlashContext, ref: str, tafsir: str):
+                               required=True),
+                           create_option(
+                               name="tafsir",
+                               description="اسم التفسير.",
+                               option_type=3,
+                               required=False),
+                       ],
+                       guild_ids=[817517202638372894])
+    async def slash_atafsir(self, ctx: SlashContext, reference: str, tafsir: str = 'tabari'):
         await ctx.defer()
-        quran_reference = QuranReference(ref, False)
+        quran_reference = QuranReference(reference, False)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
 
