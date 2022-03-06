@@ -11,7 +11,7 @@ from utils.utils import convert_to_arabic_number
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 INVALID_INPUT = "**Type the command in this format**: `{0}mushaf <surah>:<ayah>`" \
-                "\ne.g. `{0}mushaf 112:1` \n\nFor a color-coded mushaf, added 'tajweed' to the end " \
+                "\ne.g. `{0}mushaf 112:1` \n\nFor a color-coded mushaf, add `tajweed` to the end " \
                 "of the command\ne.g. `{0}mushaf 112:1 tajweed`"
 
 INVALID_VERSE = '**Verse not found**. Please check the verse exists, or try again later.'
