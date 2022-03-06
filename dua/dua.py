@@ -86,6 +86,19 @@ class Dua(commands.Cog):
         await ctx.channel.trigger_typing()
         await self._dua(ctx, random.choice(list(DUAS.keys())))
 
+    @commands.command(name='dualist')
+    async def dualist(self, ctx):
+        await ctx.channel.trigger_typing()
+        dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
+
+        for dua in DUAS:
+            dua_list_message.append('\n' + dua)
+
+        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
+        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
+
+        await ctx.send(embed=em)
+
     @dua.error
     async def on_dua_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
@@ -105,18 +118,6 @@ class Dua(commands.Cog):
         await ctx.defer()
         await self._dua(ctx, subject)
 
-    @commands.command(name='dualist')
-    async def dualist(self, ctx):
-        await ctx.channel.trigger_typing()
-        dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
-
-        for dua in DUAS:
-            dua_list_message.append('\n' + dua)
-
-        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
-        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
-
-        await ctx.send(embed=em)
 
 
 def setup(bot):
