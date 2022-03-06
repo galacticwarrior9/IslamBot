@@ -268,8 +268,13 @@ class Quran(commands.Cog):
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
         await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
+    @commands.command(name="aquran")
+    async def aquran(self, ctx, ref: str):
+        await ctx.channel.trigger_typing()
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
+
     @commands.command(name="rquran")
-    async def randomVerse(self, ctx, translation_key: str = None):
+    async def rquran(self, ctx, translation_key: str = None):
         await ctx.channel.trigger_typing()
         json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
         ref = json["verse"]["verse_key"]
@@ -278,11 +283,6 @@ class Quran(commands.Cog):
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
 
         await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
-
-    @commands.command(name="aquran")
-    async def aquran(self, ctx, ref: str):
-        await ctx.channel.trigger_typing()
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
 
     @quran.error
     async def quran_command_error(self, ctx, error):
@@ -355,7 +355,7 @@ class Quran(commands.Cog):
     async def settranslation_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, MissingRequiredArgument) or isinstance(error, InvalidTranslation):
+        if isinstance(error, (MissingRequiredArgument, InvalidTranslation)):
             await ctx.send(INVALID_TRANSLATION)
         if isinstance(error, pymysql.err.OperationalError):
             print(error)
