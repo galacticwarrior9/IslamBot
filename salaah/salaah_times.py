@@ -166,22 +166,29 @@ class PrayerTimes(commands.Cog):
 
     @commands.command(name="setcalculationmethod")
     async def setcalculationmethod(self, ctx, method_num: int):
-        em = discord.Embed(colour=0x467f05, description="Please select a **calculation method number**.\n\n")
+        await ctx.channel.trigger_typing()
+        calculation_methods = await self.get_calculation_methods()
+        try:
+            if method_num not in calculation_methods.keys():
+                raise TypeError
+        except:
+            return await ctx.send("❌ **Invalid calculation method number.** ")
+
+        await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method_num)
+        await ctx.send(':white_check_mark: **Successfully updated!**')
+
+    async def _methodlist(self, ctx):
+        em = discord.Embed(colour=0x467f05, description='')
         em.set_author(name='Calculation Methods', icon_url=icon)
         calculation_methods = await self.get_calculation_methods()
         for method, name in calculation_methods.items():
             em.description = f'{em.description}**{method}** - {name}\n'
         await ctx.send(embed=em)
 
-        try:
-            method = int(method)
-            if method not in calculation_methods.keys():
-                raise TypeError
-        except:
-            return await ctx.send("❌ **Invalid calculation method number.** ")
-
-        await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
-        await ctx.send(':white_check_mark: **Successfully updated!**')
+    @commands.command(name="methodlist")
+    async def methodlist(self, ctx):
+        await ctx.channel.trigger_typing()
+        await self._methodlist(ctx)
 
 
 def setup(bot):
