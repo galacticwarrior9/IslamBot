@@ -17,7 +17,9 @@ class Help(commands.Cog):
 
         if section == "main":
             em = discord.Embed(title='IslamBot Help / أمر المساعدة', colour=0xdeb949,
-                               description="**Type -ihelp <category>**, e.g. `-ihelp quran`\n")
+                               description=f"**Type {pre}ihelp <category>**, e.g. `{pre}ihelp quran`\n")
+            if pre == '/':
+                em.description = "**Type /help <category>**, e.g. `/help quran`\n"
             em.add_field(name="Categories",
                          value='\n» Quran\n» Hadith\n» Tafsir\n» Prayer Times\n» Dua\n» Calendar\n» Settings',
                          inline=False)
@@ -113,7 +115,7 @@ class Help(commands.Cog):
                                                                  f"\n\nExample: `{pre}hadith muslim 1051` for https://sunnah.com/muslim:1051")
 
             em.add_field(name=f"{pre}ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic. "
-                                                                  "The usage is the same as `-hadith`.")
+                                                                  f"The usage is the same as `{pre}hadith`.")
 
             em.add_field(name=f"{pre}biography", inline=True, value="Gets the biography of a hadith transmitter "
                                                                     "or early Muslim from al-Dhahabi's *Siyar A'lam al-"
@@ -122,7 +124,7 @@ class Help(commands.Cog):
                                                                     f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
             em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. "
-                                                                  "The usage is `-rhadith`.")
+                                                                  f"The usage is `{pre}hadith`.")
 
             await ctx.send(embed=em)
 
@@ -142,9 +144,9 @@ class Help(commands.Cog):
                                                               "\n\n__Usage__"
                                                               f"\n\n`{pre}dua <topic>`"
                                                               f"\n\nExample: `{pre}dua forgiveness`"
-                                                              "\n\nSee `-dualist` for a list of topics.")
+                                                              f"\n\nSee `{pre}dualist` for a list of topics.")
             em.add_field(name=f"{pre}rdua", inline=True, value="Gets a random dua. "
-                                                               "The usage is `-rdua`.")
+                                                               f"The usage is `{pre}rdua`.")
             await ctx.send(embed=em)
 
         elif section == "settings":
