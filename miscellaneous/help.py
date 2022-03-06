@@ -173,7 +173,7 @@ class Help(commands.Cog):
                                choices=generate_choices_from_list(SECTIONS),
                                required=False)])
     async def slash_help(self, ctx: SlashContext, section: str = "Main"):
-        await ctx.send()
+        await ctx.defer()
         await self._help(ctx, '/', section)
 
 
