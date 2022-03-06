@@ -5,7 +5,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_list
 
-SECTIONS = ['Main', 'Quran', 'Tafsir', 'Hijri Calendar', 'Hadith', 'Prayer Times', 'Dua']
+SECTIONS = ['Main', 'Quran', 'Tafsir', 'Calendar', 'Hadith', 'Prayer Times', 'Dua']
 
 
 class Help(commands.Cog):
@@ -162,7 +162,7 @@ class Help(commands.Cog):
             await ctx.send(embed=em)
 
     @commands.command(name="ihelp")
-    async def help(self, ctx, *, section: str = "main"):
+    async def help(self, ctx, *, section: str = "Main"):
         await ctx.channel.trigger_typing()
         await self._help(ctx, ctx.prefix, section)
 
@@ -176,7 +176,9 @@ class Help(commands.Cog):
                                required=False)])
     async def slash_help(self, ctx: SlashContext, section: str = "Main"):
         await ctx.defer()
-        await self._help(ctx, '/', section)
+        prefix = '/calendar ' if section.lower() == 'calendar' else '/'
+        # `/calendar ` is the prefix because it's a base command with subcommands
+        await self._help(ctx, prefix, section)
 
 
 def setup(bot):
