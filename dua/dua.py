@@ -108,8 +108,7 @@ class Dua(commands.Cog):
                                name="topic",
                                description="The topic of the dua.",
                                option_type=3,
-                               required=True,
-                               choices=generate_choices_from_list(list(DUAS.keys())))])
+                               required=True)])
     async def slash_dua(self, ctx: SlashContext, topic: str):
         await ctx.defer()
         await self._dua(ctx, topic)
