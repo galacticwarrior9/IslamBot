@@ -263,26 +263,26 @@ class Quran(commands.Cog):
 
     @commands.command(name="quran")
     async def quran(self, ctx, ref: str, translation_key: str = None):
-        async with ctx.channel.typing():
-            if translation_key is None:
-                translation_key = await Translation.get_guild_translation(ctx.guild.id)
-            await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
+        await ctx.channel.trigger_typing()
+        if translation_key is None:
+            translation_key = await Translation.get_guild_translation(ctx.guild.id)
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     @commands.command(name="rquran")
     async def randomVerse(self, ctx, translation_key: str = None):
-        async with ctx.channel.typing():
-            json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
-            ref = json["verse"]["verse_key"]
+        await ctx.channel.trigger_typing()
+        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
+        ref = json["verse"]["verse_key"]
 
-            if translation_key is None:
-                translation_key = await Translation.get_guild_translation(ctx.guild.id)
+        if translation_key is None:
+            translation_key = await Translation.get_guild_translation(ctx.guild.id)
 
-            await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     @commands.command(name="aquran")
     async def aquran(self, ctx, ref: str):
-        async with ctx.channel.typing():
-            await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
+        await ctx.channel.trigger_typing()
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
 
     @quran.error
     async def quran_command_error(self, ctx, error):
@@ -376,14 +376,14 @@ class Quran(commands.Cog):
 
     @commands.command(name="surah")
     async def surah(self, ctx, surah_num: int):
-        async with ctx.channel.typing():
-            surah = Surah(surah_num)
-            em = discord.Embed(colour=0x048c28)
-            em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}',
-                          icon_url=ICON)
-            em.description = (f'\n• **Number of verses**: {surah.verses_count}'
-                              f'\n• **Revelation location**: {surah.revelation_location}'
-                              f'\n• **Revelation order**: {surah.revelation_order} ')
+        await ctx.channel.trigger_typing()
+        surah = Surah(surah_num)
+        em = discord.Embed(colour=0x048c28)
+        em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}',
+                      icon_url=ICON)
+        em.description = (f'\n• **Number of verses**: {surah.verses_count}'
+                          f'\n• **Revelation location**: {surah.revelation_location}'
+                          f'\n• **Revelation order**: {surah.revelation_order} ')
 
         await ctx.send(embed=em)
 

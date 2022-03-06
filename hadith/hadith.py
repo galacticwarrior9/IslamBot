@@ -282,23 +282,23 @@ class HadithCommands(commands.Cog):
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
-        async with ctx.channel.typing():
-            await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
+        await ctx.channel.trigger_typing()
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        async with ctx.channel.typing():
-            await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
+        await ctx.channel.trigger_typing()
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
 
     @commands.command(name="rhadith")
     async def rhadith(self, ctx):
-        async with ctx.channel.typing():
-            headers = {"X-API-Key": API_KEY}
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        await self.abstract_hadith(ctx, data["collection"], Reference(data["hadithNumber"]), 'en')
+        await ctx.channel.trigger_typing()
+        headers = {"X-API-Key": API_KEY}
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    await self.abstract_hadith(ctx, data["collection"], Reference(data["hadithNumber"]), 'en')
 
     @hadith.error
     async def hadith_error(self, ctx, error):

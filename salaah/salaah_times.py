@@ -145,8 +145,8 @@ class PrayerTimes(commands.Cog):
 
     @commands.command(name="prayertimes")
     async def prayertimes(self, ctx, *, location):
-        async with ctx.channel.typing():
-            await self._prayertimes(ctx, location)
+        await ctx.channel.trigger_typing()
+        await self._prayertimes(ctx, location)
 
     @prayertimes.error
     async def on_prayertimes_error(self, ctx, error):

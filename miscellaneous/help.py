@@ -161,8 +161,8 @@ class Help(commands.Cog):
 
     @commands.command(name="ihelp")
     async def help(self, ctx, *, section: str = "main"):
-        async with ctx.channel.typing():
-            await self._help(ctx, ctx.prefix, section)
+        await ctx.channel.trigger_typing()
+        await self._help(ctx, ctx.prefix, section)
 
     @cog_ext.cog_slash(name="help", description="The help command for the bot.",
                        options=[
