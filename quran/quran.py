@@ -332,7 +332,7 @@ class Quran(commands.Cog):
                        description="تبعث آيات قرآنية في الشات",
                        options=[
                            create_option(
-                               name="ayat",
+                               name="reference",
                                description="اكتب رقم السورة:رقم الآية. اذا اردت ان تبعث اكثر من اية, اكتب  رقم السورة:أول آية-اخر آية",
                                option_type=3,
                                required=True)])
