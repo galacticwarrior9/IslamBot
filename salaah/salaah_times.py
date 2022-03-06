@@ -139,7 +139,6 @@ class PrayerTimes(commands.Cog):
         em.add_field(name='**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)
         em.add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
 
-
         calculation_methods = await self.get_calculation_methods()
         em.set_footer(text=f'Calculation Method: {calculation_methods[calculation_method]}')
         await ctx.send(embed=em)
@@ -166,10 +165,7 @@ class PrayerTimes(commands.Cog):
         await self._prayertimes(ctx, location)
 
     @commands.command(name="setcalculationmethod")
-    async def setcalculationmethod(self, ctx):
-        def is_user(msg):
-            return msg.author == ctx.author
-
+    async def setcalculationmethod(self, ctx, method_num: int):
         em = discord.Embed(colour=0x467f05, description="Please select a **calculation method number**.\n\n")
         em.set_author(name='Calculation Methods', icon_url=icon)
         calculation_methods = await self.get_calculation_methods()
@@ -178,20 +174,14 @@ class PrayerTimes(commands.Cog):
         await ctx.send(embed=em)
 
         try:
-            message = await self.bot.wait_for('message', timeout=120.0, check=is_user)
-            method = message.content
-            try:
-                method = int(method)
-                if method not in calculation_methods.keys():
-                    raise TypeError
-            except:
-                return await ctx.send("❌ **Invalid calculation method number.** ")
+            method = int(method)
+            if method not in calculation_methods.keys():
+                raise TypeError
+        except:
+            return await ctx.send("❌ **Invalid calculation method number.** ")
 
-            await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
-            await ctx.send(':white_check_mark: **Successfully updated!**')
-
-        except asyncio.TimeoutError:
-            await ctx.send("❌ **Timed out**. Please try again.")
+        await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
+        await ctx.send(':white_check_mark: **Successfully updated!**')
 
 
 def setup(bot):

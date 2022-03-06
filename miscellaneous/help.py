@@ -135,6 +135,12 @@ class Help(commands.Cog):
                                                                       f"\n\n`{pre}prayertimes <location>`"
                                                                       f"\n\nExample: `{pre}prayertimes Burj Khalifa, Dubai`")
 
+            em.add_field(name=f"{pre}setcalculationmethod", inline=True, value="Sets the Calculation Method"
+                                                                               "\n\n__Usage__"
+                                                                               f"\n\n`{pre}setcalculationmethod <method number>`"
+                                                                               f"\n\nExample: `{pre}setcalculationmethod 4`"
+                                                                               f"\n\nSee `{pre}methodlist` for a list of methods.")
+
             await ctx.send(embed=em)
 
         elif section == "dua":
