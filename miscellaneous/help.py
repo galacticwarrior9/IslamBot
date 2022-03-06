@@ -135,6 +135,8 @@ class Help(commands.Cog):
                                                                       f"\n\n`{pre}prayertimes <location>`"
                                                                       f"\n\nExample: `{pre}prayertimes Burj Khalifa, Dubai`")
 
+            em.add_field(name=f"{pre}methodlist", inline=True, value="Shows a list of calculation methods.")
+
             em.add_field(name=f"{pre}setcalculationmethod", inline=True, value="Sets the Calculation Method"
                                                                                "\n\n__Usage__"
                                                                                f"\n\n`{pre}setcalculationmethod <method number>`"
