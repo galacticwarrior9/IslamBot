@@ -1,4 +1,3 @@
-import asyncio
 import datetime as dt
 from datetime import timedelta
 
@@ -164,9 +163,7 @@ class PrayerTimes(commands.Cog):
         await ctx.defer()
         await self._prayertimes(ctx, location)
 
-    @commands.command(name="setcalculationmethod")
-    async def setcalculationmethod(self, ctx, method_num: int):
-        await ctx.channel.trigger_typing()
+    async def _setcalculationmethod(self, ctx, method_num: int):
         calculation_methods = await self.get_calculation_methods()
         try:
             if method_num not in calculation_methods.keys():
@@ -176,6 +173,24 @@ class PrayerTimes(commands.Cog):
 
         await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method_num)
         await ctx.send(':white_check_mark: **Successfully updated!**')
+
+    @commands.command(name="setcalculationmethod")
+    async def setcalculationmethod(self, ctx, method_num: int):
+        await ctx.channel.trigger_typing()
+        await self._setcalculationmethod(ctx, method_num)
+
+    @cog_ext.cog_slash(name="setcalculationmethod",
+                       description="Set the Prayer Times Calculation Method",
+                       options=[
+                           create_option(
+                               name="method_num",
+                               description="The number of the Method",
+                               option_type=4,
+                               required=True)],
+                       guild_ids=[817517202638372894])
+    async def slash_setcalculationmethod(self, ctx: SlashContext, method_num: int):
+        await ctx.defer()
+        await self._setcalculationmethod(ctx, method_num)
 
     async def _methodlist(self, ctx):
         em = discord.Embed(colour=0x467f05, description='')
@@ -188,6 +203,11 @@ class PrayerTimes(commands.Cog):
     @commands.command(name="methodlist")
     async def methodlist(self, ctx):
         await ctx.channel.trigger_typing()
+        await self._methodlist(ctx)
+
+    @cog_ext.cog_slash(name="methodlist", description="Send the method list.", guild_ids=[817517202638372894])
+    async def slash_methodlist(self, ctx: SlashContext):
+        await ctx.defer()
         await self._methodlist(ctx)
 
 
