@@ -76,6 +76,17 @@ class Dua(commands.Cog):
         em.set_author(name="Fortress of the Muslim", icon_url=ICON)
         await ctx.send(embed=em)
 
+    async def _dualist(self, ctx, prefix):
+        dua_list_message = [f'**Type {prefix}dua <topic>**. Example: `{prefix}dua breaking fast`\n']
+
+        for dua in DUAS:
+            dua_list_message.append('\n' + dua)
+
+        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
+        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
+
+        await ctx.send(embed=em)
+
     @commands.command(name='dua')
     async def dua(self, ctx, *, subject: str):
         await ctx.channel.trigger_typing()
@@ -89,24 +100,9 @@ class Dua(commands.Cog):
     @commands.command(name='dualist')
     async def dualist(self, ctx):
         await ctx.channel.trigger_typing()
-        dua_list_message = [f'**Type {ctx.prefix}dua <topic>**. Example: `{ctx.prefix}dua breaking fast`\n']
+        await self._dualist(ctx, ctx.prefix)
 
-        for dua in DUAS:
-            dua_list_message.append('\n' + dua)
-
-        em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
-        em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
-
-        await ctx.send(embed=em)
-
-    @dua.error
-    async def on_dua_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(f"**You need to provide a dua topic**. Type `{ctx.prefix}dualist` for a list of dua topics.")
-        if isinstance(error, KeyError):
-            await ctx.send(f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
-
-    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.",
+    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.", guild_ids=[817517202638372894],
                        options=[
                            create_option(
                                name="topic",
@@ -114,10 +110,27 @@ class Dua(commands.Cog):
                                option_type=3,
                                required=True,
                                choices=generate_choices_from_list(list(DUAS.keys())))])
-    async def slash_dua(self, ctx: SlashContext, subject: str):
+    async def slash_dua(self, ctx: SlashContext, topic: str):
         await ctx.defer()
-        await self._dua(ctx, subject)
+        await self._dua(ctx, topic)
 
+    @cog_ext.cog_slash(name="rdua", description="Send a random dua.", guild_ids=[817517202638372894])
+    async def slash_rdua(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._dua(ctx, random.choice(list(DUAS.keys())))
+
+    @cog_ext.cog_slash(name="dualist", description="Send dua list.", guild_ids=[817517202638372894])
+    async def slash_dualist(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._dualist(ctx, '/')
+
+    @dua.error
+    async def on_dua_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(f"**You need to provide a dua topic**. Type `{ctx.prefix}dualist` for a list of dua topics.")
+        if isinstance(error, KeyError):
+            await ctx.send(
+                f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
 
 
 def setup(bot):
