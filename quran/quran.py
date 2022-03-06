@@ -168,7 +168,7 @@ class Translation:
             'bubenheim': 27,  # German
             'indonesian': 33,  # Indonesian
         }
-        if key in translation_list.keys():
+        if key in translation_list:
             return translation_list[key]
         else:
             raise InvalidTranslation
@@ -290,7 +290,7 @@ class Quran(commands.Cog):
             await ctx.send(INVALID_SURAH)
         if isinstance(error, InvalidAyah):
             await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, InvalidTranslation) or isinstance(error, MissingRequiredArgument):
+        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
             await ctx.send(INVALID_TRANSLATION)
         if isinstance(error, InvalidReference):
             await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
@@ -303,12 +303,17 @@ class Quran(commands.Cog):
             await ctx.send(INVALID_SURAH)
         if isinstance(error, InvalidAyah):
             await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, InvalidTranslation) or isinstance(error, MissingRequiredArgument):
+        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
             await ctx.send(INVALID_TRANSLATION)
         if isinstance(error, InvalidReference):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
         if isinstance(error, BadArgument):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
+
+    @rquran.error
+    async def rquran_command_error(self, ctx, error):
+        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
+            await ctx.send(INVALID_TRANSLATION)
 
     @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
                        options=[
@@ -339,6 +344,24 @@ class Quran(commands.Cog):
     async def slash_aquran(self, ctx: SlashContext, reference: str):
         await ctx.defer()
         await QuranRequest(ctx=ctx, is_arabic=True, ref=reference).process_request()
+
+    @cog_ext.cog_slash(name="rquran", description="Send a random verse from the Qurʼān.",
+                       options=[
+                           create_option(
+                               name="translation_key",
+                               description="The translation to use.",
+                               option_type=3,
+                               required=False)],
+                       guild_ids=[817517202638372894])
+    async def slash_rquran(self, ctx: SlashContext, translation_key: str = None):
+        await ctx.defer()
+        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
+        ref = json["verse"]["verse_key"]
+
+        if translation_key is None:
+            translation_key = await Translation.get_guild_translation(ctx.guild.id)
+
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)
@@ -374,9 +397,7 @@ class Quran(commands.Cog):
         await ctx.defer()
         await self._settranslation(ctx, translation)
 
-    @commands.command(name="surah")
-    async def surah(self, ctx, surah_num: int):
-        await ctx.channel.trigger_typing()
+    async def _surah(self, ctx, surah_num: int):
         surah = Surah(surah_num)
         em = discord.Embed(colour=0x048c28)
         em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}',
@@ -387,6 +408,11 @@ class Quran(commands.Cog):
 
         await ctx.send(embed=em)
 
+    @commands.command(name="surah")
+    async def surah(self, ctx, surah_num: int):
+        await ctx.channel.trigger_typing()
+        await self._surah(ctx, surah_num)
+
     @surah.error
     async def surah_error(self, ctx, error):
         if isinstance(error, BadArgument):
@@ -395,6 +421,19 @@ class Quran(commands.Cog):
             await ctx.send("**Error**: You typed the command wrongly. Type `-surah <surah number>`.")
         if isinstance(error, InvalidSurah):
             await ctx.send(INVALID_SURAH)
+
+    @cog_ext.cog_slash(name="surah",
+                       description="Send information on a surah",
+                       options=[
+                           create_option(
+                               name="surah_num",
+                               description="The number of the Surah",
+                               option_type=4,
+                               required=True)],
+                       guild_ids=[817517202638372894])
+    async def slash_surah(self, ctx: SlashContext, surah_num: int):
+        await ctx.defer()
+        await self._surah(ctx, surah_num)
 
 
 def setup(bot):
