@@ -27,7 +27,7 @@ class Utility(commands.Cog):
     async def reload(self, ctx, cog_name: str):
         await self._reload(ctx, cog_name)
 
-    @cog_ext.cog_slash(name="ireload", description="🔒 Owner only command. Reloads a cog", guild_ids=[817517202638372894],
+    @cog_ext.cog_slash(name="ireload", description="🔒 Owner only command. Reloads a cog",
                        options=[
                            create_option(
                                name="cog_name",

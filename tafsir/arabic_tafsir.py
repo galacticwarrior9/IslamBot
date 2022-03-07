@@ -10,7 +10,6 @@ from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
 from quran.quran_info import QuranReference
-from utils.slash_utils import generate_choices_from_list
 from utils.utils import get_site_source, convert_to_arabic_number
 
 ICON = 'https://lh5.ggpht.com/lRz25mOFrRL42NuHtuSCneXbWV2Gtm7iYZ5eQbuA7JWUC3guWaTaQxNJ7j9rsRMCNAU=w150'
@@ -313,8 +312,7 @@ class Tafsir(commands.Cog):
                                description="اسم التفسير.",
                                option_type=3,
                                required=False),
-                       ],
-                       guild_ids=[817517202638372894])
+                       ])
     async def slash_atafsir(self, ctx: SlashContext, reference: str, tafsir: str = 'tabari'):
         await ctx.defer()
         quran_reference = QuranReference(reference, False)

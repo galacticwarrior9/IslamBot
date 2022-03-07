@@ -351,8 +351,7 @@ class Quran(commands.Cog):
                                name="translation_key",
                                description="The translation to use.",
                                option_type=3,
-                               required=False)],
-                       guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_rquran(self, ctx: SlashContext, translation_key: str = None):
         await ctx.defer()
         json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
@@ -429,8 +428,7 @@ class Quran(commands.Cog):
                                name="surah_num",
                                description="The number of the Surah",
                                option_type=4,
-                               required=True)],
-                       guild_ids=[817517202638372894])
+                               required=True)])
     async def slash_surah(self, ctx: SlashContext, surah_num: int):
         await ctx.defer()
         await self._surah(ctx, surah_num)

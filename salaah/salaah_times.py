@@ -186,8 +186,7 @@ class PrayerTimes(commands.Cog):
                                name="method_num",
                                description="The number of the Method",
                                option_type=4,
-                               required=True)],
-                       guild_ids=[817517202638372894])
+                               required=True)])
     async def slash_setcalculationmethod(self, ctx: SlashContext, method_num: int):
         await ctx.defer()
         await self._setcalculationmethod(ctx, method_num)
@@ -205,7 +204,7 @@ class PrayerTimes(commands.Cog):
         await ctx.channel.trigger_typing()
         await self._methodlist(ctx)
 
-    @cog_ext.cog_slash(name="methodlist", description="Send the method list.", guild_ids=[817517202638372894])
+    @cog_ext.cog_slash(name="methodlist", description="Send the method list.")
     async def slash_methodlist(self, ctx: SlashContext):
         await ctx.defer()
         await self._methodlist(ctx)

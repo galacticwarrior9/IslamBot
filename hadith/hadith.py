@@ -353,8 +353,7 @@ class HadithCommands(commands.Cog):
         await ctx.defer()
         await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'ar')
 
-    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.",
-                       guild_ids=[817517202638372894])
+    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.")
     async def slash_rhadith(self, ctx: SlashContext):
         await ctx.defer()
         await self._rhadith(ctx)
@@ -375,8 +374,7 @@ class HadithCommands(commands.Cog):
         return manage_components.create_actionrow(*original_link_button)
 
     @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE,
-                              name="Get Hadith Text",
-                              guild_ids=[817517202638372894])
+                              name="Get Hadith Text")
     async def get_hadith_text(self, ctx: MenuContext):
         content = ctx.target_message.content
         url = self.findURL(content)

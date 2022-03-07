@@ -110,7 +110,7 @@ class HijriCalendar(commands.Cog):
             await ctx.send(DATE_INVALID)
 
     @cog_ext.cog_subcommand(base="calendar", name="to_hijri", description="Convert a Gregorian date to a Hijri date.",
-                            base_description="Convert between Hijri and Gregorian dates.", guild_ids=[817517202638372894],
+                            base_description="Convert between Hijri and Gregorian dates.",
                             options=[
                                 create_option(
                                     name="gregorian_date",
@@ -124,8 +124,7 @@ class HijriCalendar(commands.Cog):
 
     @cog_ext.cog_subcommand(base="calendar", name="to_gregorian",
                             description="Convert a Hijri date to a Gregorian date.",
-                            base_description="Convert between Hijri and Gregorian dates.", guild_ids=[817517202638372894],
-
+                            base_description="Convert between Hijri and Gregorian dates.",
                             options=[
                                 create_option(
                                     name="hijri_date",
@@ -138,7 +137,7 @@ class HijriCalendar(commands.Cog):
         await self._converttogregorian(ctx, hijri_date)
 
     @cog_ext.cog_subcommand(base='calendar', name="hijri_date", description="Send current hijri date.",
-                            base_description='Send current hijri date', guild_ids=[817517202638372894])
+                            base_description='Send current hijri date')
     async def slash_hijridate(self, ctx: SlashContext):
         await ctx.defer()
         await self._hijridate(ctx)

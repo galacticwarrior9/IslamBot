@@ -7,7 +7,6 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-from utils.slash_utils import generate_choices_from_list
 from utils.utils import get_site_source
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
@@ -102,7 +101,7 @@ class Dua(commands.Cog):
         await ctx.channel.trigger_typing()
         await self._dualist(ctx, ctx.prefix)
 
-    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.", guild_ids=[817517202638372894],
+    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.",
                        options=[
                            create_option(
                                name="topic",
@@ -113,12 +112,12 @@ class Dua(commands.Cog):
         await ctx.defer()
         await self._dua(ctx, topic)
 
-    @cog_ext.cog_slash(name="rdua", description="Send a random dua.", guild_ids=[817517202638372894])
+    @cog_ext.cog_slash(name="rdua", description="Send a random dua.")
     async def slash_rdua(self, ctx: SlashContext):
         await ctx.defer()
         await self._dua(ctx, random.choice(list(DUAS.keys())))
 
-    @cog_ext.cog_slash(name="dualist", description="Send dua list.", guild_ids=[817517202638372894])
+    @cog_ext.cog_slash(name="dualist", description="Send dua list.")
     async def slash_dualist(self, ctx: SlashContext):
         await ctx.defer()
         await self._dualist(ctx, '/')
