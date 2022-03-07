@@ -375,9 +375,9 @@ class HadithCommands(commands.Cog):
         return manage_components.create_actionrow(*original_link_button)
 
     @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE,
-                              name="Send Hadith Text",
+                              name="Get Hadith Text",
                               guild_ids=[817517202638372894])
-    async def hadith_text(self, ctx: MenuContext):
+    async def get_hadith_text(self, ctx: MenuContext):
         content = ctx.target_message.content
         url = self.findURL(content)
         if url:
