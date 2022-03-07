@@ -256,7 +256,10 @@ For example:
 ..would send prayer times in the general area of the Burj Khalifa in Dubai.   
   
 ### -setcalculationmethod  
-Allows you to change the calculation method for `-prayertimes`.  
+Allows you to change the calculation method for `-prayertimes`. 
+
+### -methodlist
+Displays the calculation methods for `-prayertimes` 
   
 ### -addprayerreminder  
 Allows you to set a channel where the bot will send prayer time reminders.  
