@@ -23,8 +23,8 @@ class Mushaf(commands.Cog):
         self.bot = bot
         self.session = ClientSession(loop=bot.loop)
 
-    async def _mushaf(self, ctx, ref, show_tajweed):
-        reference = QuranReference(ref)
+    async def _mushaf(self, ctx, ref, show_tajweed: bool, reveal_order: bool = False):
+        reference = QuranReference(ref=ref, reveal_order=reveal_order)
         async with self.session.get(f'https://api.alquran.cloud/ayah/{reference.surah}:{reference.ayat_list}') as resp:
             if resp.status != 200:
                 return await ctx.send(INVALID_VERSE)
@@ -76,11 +76,15 @@ class Mushaf(commands.Cog):
                                name="show_tajweed",
                                description="Should the mushaf highlight where tajweed rules apply?",
                                option_type=5,
-                               required=False
-                           )])
-    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False):
+                               required=False),
+                           create_option(
+                               name="reveal_order",
+                               description="Is the surah referenced the revelation order number?",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False, reveal_order: bool = False):
         await ctx.defer()
-        await self._mushaf(ctx, f'{surah_num}:{verse_num}', show_tajweed)
+        await self._mushaf(ctx=ctx, ref=f'{surah_num}:{verse_num}', show_tajweed=show_tajweed, reveal_order=reveal_order)
 
 
 def setup(bot):

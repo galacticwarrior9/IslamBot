@@ -186,9 +186,9 @@ class Translation:
 
 
 class QuranRequest:
-    def __init__(self, ctx, ref: str, is_arabic: bool, translation_key: str = None):
+    def __init__(self, ctx, ref: str, is_arabic: bool, translation_key: str = None, reveal_order: bool = False):
         self.ctx = ctx
-        self.ref = QuranReference(ref, True)
+        self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=reveal_order)
         self.is_arabic = is_arabic
         if translation_key is not None:
             self.translation = Translation(translation_key)
@@ -336,13 +336,20 @@ class Quran(commands.Cog):
                                name="translation_key",
                                description="The translation to use.",
                                option_type=3,
-                               required=False)])
-    async def slash_quran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None, translation_key: str = None):
+                               required=False),
+                           create_option(
+                               name="reveal_order",
+                               description="Is the surah referenced the revelation order number?",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_quran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None,
+                          translation_key: str = None, reveal_order: bool = False):
         await ctx.defer()
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation_key is None:
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah_num}:{ref}', translation_key=translation_key).process_request()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah_num}:{ref}', translation_key=translation_key,
+                           reveal_order=reveal_order).process_request()
 
     @cog_ext.cog_slash(name="aquran",
                        description="تبعث آيات قرآنية في الشات",
@@ -361,11 +368,18 @@ class Quran(commands.Cog):
                                name="end_verse",
                                description="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
                                option_type=4,
-                               required=False)])
-    async def slash_aquran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None):
+                               required=False),
+                           create_option(
+                               name="reveal_order",
+                               description="هل السورة تشير إلى رقم أمر الوحي؟",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_aquran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None,
+                           reveal_order: bool = False):
         await ctx.defer()
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah_num}:{ref}').process_request()
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah_num}:{ref}',
+                           reveal_order=reveal_order).process_request()
 
     @cog_ext.cog_slash(name="rquran", description="Send a random verse from the Qurʼān.",
                        options=[
@@ -418,12 +432,12 @@ class Quran(commands.Cog):
         await ctx.defer()
         await self._settranslation(ctx, translation)
 
-    async def _surah(self, ctx, surah_num: int):
-        surah = Surah(surah_num)
+    async def _surah(self, ctx, surah_num: int, reveal_order: bool = False):
+        surah = Surah(num=surah_num, reveal_order=reveal_order)
         em = discord.Embed(colour=0x048c28)
-        em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}',
-                      icon_url=ICON)
-        em.description = (f'\n• **Number of verses**: {surah.verses_count}'
+        em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
+        em.description = (f'\n• **Surah number**: {surah.num}'
+                          f'\n• **Number of verses**: {surah.verses_count}'
                           f'\n• **Revelation location**: {surah.revelation_location}'
                           f'\n• **Revelation order**: {surah.revelation_order} ')
 
@@ -450,10 +464,15 @@ class Quran(commands.Cog):
                                name="surah_num",
                                description="The number of the Surah",
                                option_type=4,
-                               required=True)])
-    async def slash_surah(self, ctx: SlashContext, surah_num: int):
+                               required=True),
+                           create_option(
+                               name="reveal_order",
+                               description="Is the surah referenced the revelation order number?",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_surah(self, ctx: SlashContext, surah_num: int, reveal_order: bool = False):
         await ctx.defer()
-        await self._surah(ctx, surah_num)
+        await self._surah(ctx=ctx, surah_num=surah_num, reveal_order=reveal_order)
 
 
 def setup(bot):

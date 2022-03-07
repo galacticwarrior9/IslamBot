@@ -295,7 +295,7 @@ class Tafsir(commands.Cog):
     @commands.command(name="atafsir")
     async def atafsir(self, ctx, ref: str, tafsir: str = "tabari"):
         await ctx.channel.trigger_typing()
-        quran_reference = QuranReference(ref, False)
+        quran_reference = QuranReference(ref=ref)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
         # TODO: Re-add error handling
@@ -316,10 +316,15 @@ class Tafsir(commands.Cog):
                                name="tafsir",
                                description="اسم التفسير.",
                                option_type=3,
-                               required=False)])
-    async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari'):
+                               required=False),
+                           create_option(
+                               name="reveal_order",
+                               description="هل السورة تشير إلى رقم أمر الوحي؟",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari', reveal_order: bool = False):
         await ctx.defer()
-        quran_reference = QuranReference(f'{surah_num}:{verse_num}', False)
+        quran_reference = QuranReference(ref=f'{surah_num}:{verse_num}', reveal_order=reveal_order)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
 

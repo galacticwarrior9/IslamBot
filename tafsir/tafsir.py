@@ -109,7 +109,7 @@ class BadAlias(commands.CommandError):
 
 
 class TafsirSpecifics:
-    def __init__(self, tafsir, ref, page):
+    def __init__(self, tafsir, ref, page, reveal_order: bool = False):
         self.pages = None
         self.num_pages = None
         self.url = None
@@ -120,7 +120,7 @@ class TafsirSpecifics:
 
         self.query_tafsir(tafsir)
 
-        self.ref = QuranReference(ref)
+        self.ref = QuranReference(ref=ref, reveal_order=reveal_order)
         self.make_url()
 
     # this is the function to implement better tafsir retrieval
@@ -138,7 +138,7 @@ class TafsirSpecifics:
             self.tafsir_name = name_mappings[t]
             return
 
-            # if not, try aliases
+        # if not, try aliases
         if t in name_alias.keys():
             buf = name_alias[t]
             # I assume aliases are set up correctly, if not raise normally unreachable error
@@ -262,14 +262,14 @@ class TafsirEnglish(commands.Cog):
             except asyncio.TimeoutError:
                 break
 
-    async def process_request(self, ref: str, tafsir: str, page: int):
-        spec = TafsirSpecifics(tafsir, ref, page)
+    async def process_request(self, ref: str, tafsir: str, page: int, reveal_order: bool = False):
+        spec = TafsirSpecifics(tafsir=tafsir, ref=ref, page=page, reveal_order=reveal_order)
         try:
             await spec.get_text()
         except IndexError:
             # If no entry was found in the default tafsir (Maarif-ul-Quran), fall back to Tafsir al-Jalalayn.
             if tafsir == 'maarifulquran':
-                return await self.process_request(ref, 'jalalayn', page)
+                return await self.process_request(ref=ref, tafsir='jalalayn', page=page, reveal_order=reveal_order)
             else:
                 raise NoText
 
@@ -302,10 +302,15 @@ class TafsirEnglish(commands.Cog):
                                description="The name of the tafsir.",
                                option_type=3,
                                required=False,
-                               choices=generate_choices_from_dict(name_mappings))])
-    async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran"):
+                               choices=generate_choices_from_dict(name_mappings)),
+                           create_option(
+                               name="reveal_order",
+                               description="Is the surah referenced the revelation order number?",
+                               option_type=5,
+                               required=False)], guild_ids=[817517202638372894])
+    async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran", reveal_order: bool = False):
         await ctx.defer()
-        spec = await self.process_request(f'{surah_num}:{verse_num}', tafsir, 1)
+        spec = await self.process_request(ref=f'{surah_num}:{verse_num}', tafsir=tafsir, page=1, reveal_order=reveal_order)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
