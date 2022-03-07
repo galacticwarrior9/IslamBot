@@ -61,7 +61,7 @@ http://praytimes.org/calculation
 
 # ----------------------- PrayTimes Class ------------------------
 
-class PrayTimes():
+class PrayTimes:
     # ------------------------ Constants --------------------------
 
     # Time Names
@@ -200,7 +200,7 @@ class PrayTimes():
         minutes = math.floor((time - hours) * 60)
         suffix = suffixes[0 if hours < 12 else 1] if format == '12h' else ''
         formattedTime = "%02d:%02d" % (hours, minutes) if format == "24h" else "%d:%02d" % (
-        (hours + 11) % 12 + 1, minutes)
+            (hours + 11) % 12 + 1, minutes)
         return formattedTime + suffix
 
     # ---------------------- Calculation Functions -----------------------
