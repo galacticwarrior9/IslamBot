@@ -40,7 +40,7 @@ class Mushaf(commands.Cog):
         arabic_page_number = convert_to_arabic_number(str(page))
         em = discord.Embed(title=f'Page {page}'
                                  f'\n  الصفحة{arabic_page_number}', colour=0x006400)
-        em.set_author(name=f'Mushaf / مصحف', icon_url=ICON)
+        em.set_author(name='Mushaf / مصحف', icon_url=ICON)
         em.set_image(url=url)
 
         await ctx.send(embed=em)
@@ -63,9 +63,14 @@ class Mushaf(commands.Cog):
     @cog_ext.cog_slash(name="mushaf", description="View an ayah on the mushaf.",
                        options=[
                            create_option(
-                               name="reference",
-                               description="The verse show on the mushaf, e.g. 1:4 or 2:255.",
-                               option_type=3,
+                               name="surah_num",
+                               description="The surah number to show on the mushaf, e.g. 112.",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="verse_num",
+                               description="The verse number to show on the mushaf, e.g. 255.",
+                               option_type=4,
                                required=True),
                            create_option(
                                name="show_tajweed",
@@ -73,9 +78,9 @@ class Mushaf(commands.Cog):
                                option_type=5,
                                required=False
                            )])
-    async def slash_mushaf(self, ctx: SlashContext, reference: str, show_tajweed: bool = False):
+    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False):
         await ctx.defer()
-        await self._mushaf(ctx, reference, show_tajweed)
+        await self._mushaf(ctx, f'{surah_num}:{verse_num}', show_tajweed)
 
 
 def setup(bot):
