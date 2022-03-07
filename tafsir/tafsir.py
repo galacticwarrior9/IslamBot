@@ -298,8 +298,9 @@ class TafsirEnglish(commands.Cog):
                                option_type=3,
                                required=False,
                                choices=generate_choices_from_dict(name_mappings))])
-    async def slash_tafsir(self, ctx: SlashContext, ref: str, tafsir: str = "maarifulquran"):
-        spec = await self.process_request(ref, tafsir, 1)
+    async def slash_tafsir(self, ctx: SlashContext, reference: str, tafsir: str = "maarifulquran"):
+        await ctx.defer()
+        spec = await self.process_request(reference, tafsir, 1)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
