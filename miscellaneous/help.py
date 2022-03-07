@@ -178,7 +178,7 @@ class Help(commands.Cog):
                        options=[
                            create_option(
                                name="section",
-                               description="NOTE: Not all commands have slash equivalents yet!",
+                               description="The section topic of help",
                                option_type=3,
                                choices=generate_choices_from_list(SECTIONS),
                                required=False)])
