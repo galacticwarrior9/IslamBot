@@ -8,6 +8,8 @@ import discord
 import html2text
 from discord.ext import commands
 from discord_slash import SlashContext, cog_ext, ButtonStyle
+from discord_slash.context import MenuContext
+from discord_slash.model import ContextMenuType
 from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
@@ -351,7 +353,8 @@ class HadithCommands(commands.Cog):
         await ctx.defer()
         await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'ar')
 
-    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.", guild_ids=[817517202638372894])
+    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.",
+                       guild_ids=[817517202638372894])
     async def slash_rhadith(self, ctx: SlashContext):
         await ctx.defer()
         await self._rhadith(ctx)
@@ -370,6 +373,34 @@ class HadithCommands(commands.Cog):
                                                                url=hadith.url)
 
         return manage_components.create_actionrow(*original_link_button)
+
+    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE,
+                              name="Send Hadith Text",
+                              guild_ids=[817517202638372894])
+    async def hadith_text(self, ctx: MenuContext):
+        content = ctx.target_message.content
+        url = self.findURL(content)
+        if url:
+            meta = url.split("/")
+            collection = meta[3]
+            if collection in self.FORTY_HADITH_COLLECTIONS:
+                collection = collection[:-2]
+            if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
+                if collection[-1] == "/":  # if url ended with /
+                    collection = collection[:-1]
+                ref = collection.split(":")[1]  # getting hadith number
+                ref = Reference(ref)
+                collection = collection.split(":")[0]  # getting book name
+            else:
+                book = meta[4]
+                try:
+                    hadith = meta[5]
+                    ref = f"{book}:{hadith}"
+                    ref = Reference(ref)
+                except:
+                    ref = Reference(
+                        book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+            await self.abstract_hadith(ctx, collection, ref, "en")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -393,7 +424,8 @@ class HadithCommands(commands.Cog):
                     ref = f"{book}:{hadith}"
                     ref = Reference(ref)
                 except:
-                    ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+                    ref = Reference(
+                        book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
             await self.abstract_hadith(message.channel, collection, ref, "en")
 
 
