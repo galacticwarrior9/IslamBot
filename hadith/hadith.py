@@ -378,26 +378,31 @@ class HadithCommands(commands.Cog):
         content = ctx.target_message.content
         url = self.findURL(content)
         if url:
-            meta = url.split("/")
-            collection = meta[3]
-            if collection in self.FORTY_HADITH_COLLECTIONS:
-                collection = collection[:-2]
-            if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
-                if collection[-1] == "/":  # if url ended with /
-                    collection = collection[:-1]
-                ref = collection.split(":")[1]  # getting hadith number
-                ref = Reference(ref)
-                collection = collection.split(":")[0]  # getting book name
-            else:
-                book = meta[4]
-                try:
-                    hadith = meta[5]
-                    ref = f"{book}:{hadith}"
+            try:
+                meta = url.split("/")
+                collection = meta[3]
+                if collection in self.FORTY_HADITH_COLLECTIONS:
+                    collection = collection[:-2]
+                if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
+                    if collection[-1] == "/":  # if url ended with /
+                        collection = collection[:-1]
+                    ref = collection.split(":")[1]  # getting hadith number
                     ref = Reference(ref)
-                except:
-                    ref = Reference(
-                        book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
-            await self.abstract_hadith(ctx, collection, ref, "en")
+                    collection = collection.split(":")[0]  # getting book name
+                else:
+                    book = meta[4]
+                    try:
+                        hadith = meta[5]
+                        ref = f"{book}:{hadith}"
+                        ref = Reference(ref)
+                    except:
+                        ref = Reference(
+                            book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+                await self.abstract_hadith(ctx, collection, ref, "en")
+            except InvalidHadith:
+                await ctx.send("**There is no valid sunnah.com link here**")
+        else:
+            await ctx.send("**There is no valid sunnah.com link here**")
 
     @commands.Cog.listener()
     async def on_message(self, message):
