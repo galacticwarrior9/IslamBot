@@ -124,7 +124,7 @@ class Help(commands.Cog):
                                                                     f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
             em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. "
-                                                                  f"The usage is `{pre}hadith`.")
+                                                                  f"The usage is `{pre}rhadith`.")
 
             await ctx.send(embed=em)
 
