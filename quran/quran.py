@@ -318,32 +318,56 @@ class Quran(commands.Cog):
     @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
                        options=[
                            create_option(
-                               name="reference",
-                               description="The verse(s) to fetch, e.g. 1:1, 2:255, 1:1-7, 2:255-260",
-                               option_type=3,
+                               name="surah_num",
+                               description="The surah number to fetch, e.g. 112",
+                               option_type=4,
                                required=True),
+                           create_option(
+                               name="start_verse",
+                               description="The start verse to fetch, e.g. 255",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="end_verse",
+                               description="If you want to send multiple verses - the end verse to fetch, e.g. 260",
+                               option_type=4,
+                               required=False),
                            create_option(
                                name="translation_key",
                                description="The translation to use.",
                                option_type=3,
-                               required=False)])
-    async def slash_quran(self, ctx: SlashContext, reference: str, translation_key: str = None):
+                               required=False)],
+                       guild_ids=[817517202638372894])
+    async def slash_quran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None, translation_key: str = None):
         await ctx.defer()
+        ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation_key is None:
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=reference, translation_key=translation_key).process_request()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah_num}:{ref}', translation_key=translation_key).process_request()
 
     @cog_ext.cog_slash(name="aquran",
                        description="تبعث آيات قرآنية في الشات",
                        options=[
                            create_option(
-                               name="reference",
-                               description="اكتب رقم السورة:رقم الآية. اذا اردت ان تبعث اكثر من اية, اكتب  رقم السورة:أول آية-اخر آية",
-                               option_type=3,
-                               required=True)])
-    async def slash_aquran(self, ctx: SlashContext, reference: str):
+                               name="surah_num",
+                               description="اكتب رقم السورة",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="start_verse",
+                               description="اكتب رقم أول آية",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="end_verse",
+                               description="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
+                               option_type=4,
+                               required=False)],
+                       guild_ids=[817517202638372894])
+    async def slash_aquran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None):
         await ctx.defer()
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=reference).process_request()
+        ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah_num}:{ref}').process_request()
 
     @cog_ext.cog_slash(name="rquran", description="Send a random verse from the Qurʼān.",
                        options=[
