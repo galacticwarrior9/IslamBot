@@ -302,7 +302,7 @@ class TafsirEnglish(commands.Cog):
                                description="The name of the tafsir.",
                                option_type=3,
                                required=False,
-                               choices=generate_choices_from_dict(name_mappings))], guild_ids=[817517202638372894])
+                               choices=generate_choices_from_dict(name_mappings))])
     async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran"):
         await ctx.defer()
         spec = await self.process_request(f'{surah_num}:{verse_num}', tafsir, 1)

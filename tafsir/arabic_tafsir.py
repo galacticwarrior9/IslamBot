@@ -316,8 +316,7 @@ class Tafsir(commands.Cog):
                                name="tafsir",
                                description="اسم التفسير.",
                                option_type=3,
-                               required=False),
-                       ],guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari'):
         await ctx.defer()
         quran_reference = QuranReference(f'{surah_num}:{verse_num}', False)

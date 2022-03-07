@@ -336,8 +336,7 @@ class Quran(commands.Cog):
                                name="translation_key",
                                description="The translation to use.",
                                option_type=3,
-                               required=False)],
-                       guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_quran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None, translation_key: str = None):
         await ctx.defer()
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
@@ -362,8 +361,7 @@ class Quran(commands.Cog):
                                name="end_verse",
                                description="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
                                option_type=4,
-                               required=False)],
-                       guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_aquran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None):
         await ctx.defer()
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
