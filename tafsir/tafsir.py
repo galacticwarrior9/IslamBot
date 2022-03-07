@@ -288,19 +288,24 @@ class TafsirEnglish(commands.Cog):
     @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
                        options=[
                            create_option(
-                               name="reference",
-                               description="The verse to get the tafsir of, e.g. 1:4 or 2:255.",
-                               option_type=3,
+                               name="surah_num",
+                               description="The surah number to fetch, e.g. 112",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="verse_num",
+                               description="The verse number to fetch, e.g. 255",
+                               option_type=4,
                                required=True),
                            create_option(
                                name="tafsir",
                                description="The name of the tafsir.",
                                option_type=3,
                                required=False,
-                               choices=generate_choices_from_dict(name_mappings))])
-    async def slash_tafsir(self, ctx: SlashContext, reference: str, tafsir: str = "maarifulquran"):
+                               choices=generate_choices_from_dict(name_mappings))], guild_ids=[817517202638372894])
+    async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran"):
         await ctx.defer()
-        spec = await self.process_request(reference, tafsir, 1)
+        spec = await self.process_request(f'{surah_num}:{verse_num}', tafsir, 1)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
