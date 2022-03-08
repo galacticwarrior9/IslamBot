@@ -95,7 +95,16 @@ For example:
 -morphology 1:2:4  
 ```  
 The above would analyse the morphology of the 4th word of the 2nd verse of the 1st chapter of the Qur'an. The bot will also show the syntax of the verse the word is in, if the data is available.  
-  
+
+### -rquran
+**-rquran** sends a random English translation verse of the Qur'an.
+```
+-rquran <translation>
+```
+For example:
+```
+-rquran khattab
+```
   
 ### -mushaf  
 **-mushaf** sends the page containing a Qur'anic verse on a standard mushaf.  
@@ -113,18 +122,21 @@ If you want a page with color-coded *tajweed* rules, add 'tajweed' to the end of
 For example:  
 ```  
 -mushaf 112:1 tajweed  
-```  
+```
 
-### -rquran
-**-rquran** sends a random English translation verse of the Qur'an.
+### -rmushaf
+**-rmushaf** sends a random page containing a Qur'anic verse on a standard mushaf.
 ```
--rquran <translation>
+-rmushaf
 ```
-For example:
-```
--rquran khattab
-```
+The above would send an image of the random page containing Qur'an on a *Medina Mushaf*.   
   
+If you want a page with color-coded *tajweed* rules, add 'tajweed' to the end of the command.  
+  
+For example:  
+```  
+-rmushaf tajweed  
+```
   
 ### -surah  
 **-surah** sends basic information about a surah.  

@@ -6,7 +6,7 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 from quran.quran_info import QuranReference
-from utils.utils import convert_to_arabic_number
+from utils.utils import convert_to_arabic_number, get_site_json
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
@@ -55,8 +55,25 @@ class Mushaf(commands.Cog):
         else:
             raise MissingRequiredArgument
 
+    @commands.command(name="rmushaf")
+    async def rmushaf(self, ctx, tajweed: str = None):
+        await ctx.channel.trigger_typing()
+        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
+        ref = json["verse"]["verse_key"]
+        if tajweed is None:
+            await self._mushaf(ctx, ref, False)
+        elif tajweed.lower() == 'tajweed':
+            await self._mushaf(ctx, ref, True)
+        else:
+            raise MissingRequiredArgument
+
     @mushaf.error
     async def on_mushaf_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_INPUT.format(ctx.prefix))
+
+    @rmushaf.error
+    async def on_rmushaf_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_INPUT.format(ctx.prefix))
 
@@ -82,9 +99,25 @@ class Mushaf(commands.Cog):
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
                                required=False)], guild_ids=[817517202638372894])
-    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False, reveal_order: bool = False):
+    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False,
+                           reveal_order: bool = False):
         await ctx.defer()
-        await self._mushaf(ctx=ctx, ref=f'{surah_num}:{verse_num}', show_tajweed=show_tajweed, reveal_order=reveal_order)
+        await self._mushaf(ctx=ctx, ref=f'{surah_num}:{verse_num}', show_tajweed=show_tajweed,
+                           reveal_order=reveal_order)
+
+    @cog_ext.cog_slash(name="rmushaf", description="View a random page of the mushaf.",
+                       options=[
+                           create_option(
+                               name="show_tajweed",
+                               description="Should the mushaf highlight where tajweed rules apply?",
+                               option_type=5,
+                               required=False)]
+        , guild_ids=[817517202638372894])
+    async def slash_rmushaf(self, ctx: SlashContext, show_tajweed: bool = False):
+        await ctx.defer()
+        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
+        ref = json["verse"]["verse_key"]
+        await self._mushaf(ctx=ctx, ref=ref, show_tajweed=show_tajweed)
 
 
 def setup(bot):
