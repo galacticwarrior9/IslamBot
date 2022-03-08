@@ -307,7 +307,7 @@ class TafsirEnglish(commands.Cog):
                                name="reveal_order",
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran", reveal_order: bool = False):
         await ctx.defer()
         spec = await self.process_request(ref=f'{surah_num}:{verse_num}', tafsir=tafsir, page=1, reveal_order=reveal_order)

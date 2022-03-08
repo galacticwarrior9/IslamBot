@@ -98,7 +98,7 @@ class Mushaf(commands.Cog):
                                name="reveal_order",
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False,
                            reveal_order: bool = False):
         await ctx.defer()
@@ -112,7 +112,7 @@ class Mushaf(commands.Cog):
                                description="Should the mushaf highlight where tajweed rules apply?",
                                option_type=5,
                                required=False)]
-        , guild_ids=[817517202638372894])
+        )
     async def slash_rmushaf(self, ctx: SlashContext, show_tajweed: bool = False):
         await ctx.defer()
         json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")

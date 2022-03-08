@@ -321,7 +321,7 @@ class Tafsir(commands.Cog):
                                name="reveal_order",
                                description="هل السورة تشير إلى رقم أمر الوحي؟",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari', reveal_order: bool = False):
         await ctx.defer()
         quran_reference = QuranReference(ref=f'{surah_num}:{verse_num}', reveal_order=reveal_order)

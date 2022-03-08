@@ -341,7 +341,7 @@ class Quran(commands.Cog):
                                name="reveal_order",
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_quran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None,
                           translation_key: str = None, reveal_order: bool = False):
         await ctx.defer()
@@ -373,7 +373,7 @@ class Quran(commands.Cog):
                                name="reveal_order",
                                description="هل السورة تشير إلى رقم أمر الوحي؟",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_aquran(self, ctx: SlashContext, surah_num: int, start_verse: int, end_verse: int = None,
                            reveal_order: bool = False):
         await ctx.defer()
@@ -469,7 +469,7 @@ class Quran(commands.Cog):
                                name="reveal_order",
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
-                               required=False)], guild_ids=[817517202638372894])
+                               required=False)])
     async def slash_surah(self, ctx: SlashContext, surah_num: int, reveal_order: bool = False):
         await ctx.defer()
         await self._surah(ctx=ctx, surah_num=surah_num, reveal_order=reveal_order)
