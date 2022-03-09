@@ -100,12 +100,8 @@ class HijriCalendar(commands.Cog):
         await self._converttogregorian(ctx, hijri_date)
 
     @converttohijri.error
-    async def on_converttohijri_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(DATE_INVALID)
-
     @converttogregorian.error
-    async def on_converttogregorian_error(self, ctx, error):
+    async def on_convert_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(DATE_INVALID)
 

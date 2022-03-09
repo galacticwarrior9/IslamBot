@@ -310,11 +310,6 @@ class Quran(commands.Cog):
         if isinstance(error, BadArgument):
             await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
 
-    @rquran.error
-    async def rquran_command_error(self, ctx, error):
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await ctx.send(INVALID_TRANSLATION)
-
     @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
                        options=[
                            create_option(
