@@ -285,6 +285,7 @@ class Quran(commands.Cog):
         await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
 
     @quran.error
+    @rquran.error
     async def quran_command_error(self, ctx, error):
         if isinstance(error, InvalidSurah):
             await ctx.send(INVALID_SURAH)
