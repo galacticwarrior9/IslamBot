@@ -1,5 +1,6 @@
 import asyncio
 import configparser
+import random
 import re
 import textwrap
 
@@ -283,12 +284,7 @@ class HadithCommands(commands.Cog):
                 break
 
     async def _rhadith(self, ctx):
-        headers = {"X-API-Key": API_KEY}
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    await self.abstract_hadith(ctx, data["collection"], Reference(data["hadithNumber"]), 'en')
+        await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
 
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
