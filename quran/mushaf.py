@@ -1,3 +1,5 @@
+import random
+
 import discord
 from aiohttp import ClientSession
 from discord.ext import commands
@@ -5,8 +7,8 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
-from quran.quran_info import QuranReference
-from utils.utils import convert_to_arabic_number, get_site_json
+from quran.quran_info import QuranReference, quranInfo
+from utils.utils import convert_to_arabic_number
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
@@ -58,12 +60,12 @@ class Mushaf(commands.Cog):
     @commands.command(name="rmushaf")
     async def rmushaf(self, ctx, tajweed: str = None):
         await ctx.channel.trigger_typing()
-        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
-        ref = json["verse"]["verse_key"]
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
         if tajweed is None:
-            await self._mushaf(ctx, ref, False)
+            await self._mushaf(ctx, f'{surah}:{verse}', False)
         elif tajweed.lower() == 'tajweed':
-            await self._mushaf(ctx, ref, True)
+            await self._mushaf(ctx, f'{surah}:{verse}', True)
         else:
             raise MissingRequiredArgument
 
@@ -71,7 +73,6 @@ class Mushaf(commands.Cog):
     async def on_mushaf_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_INPUT.format(ctx.prefix))
-
 
     @cog_ext.cog_slash(name="mushaf", description="View an ayah on the mushaf.",
                        options=[
@@ -108,12 +109,12 @@ class Mushaf(commands.Cog):
                                description="Should the mushaf highlight where tajweed rules apply?",
                                option_type=5,
                                required=False)]
-        )
+                       )
     async def slash_rmushaf(self, ctx: SlashContext, show_tajweed: bool = False):
         await ctx.defer()
-        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
-        ref = json["verse"]["verse_key"]
-        await self._mushaf(ctx=ctx, ref=ref, show_tajweed=show_tajweed)
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
+        await self._mushaf(ctx=ctx, ref=f'{surah}:{verse}', show_tajweed=show_tajweed)
 
 
 def setup(bot):

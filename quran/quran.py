@@ -1,4 +1,5 @@
 import re
+import random
 
 import discord
 import pymysql
@@ -276,13 +277,13 @@ class Quran(commands.Cog):
     @commands.command(name="rquran")
     async def rquran(self, ctx, translation_key: str = None):
         await ctx.channel.trigger_typing()
-        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
-        ref = json["verse"]["verse_key"]
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
 
         if translation_key is None:
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
 
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}', translation_key=translation_key).process_request()
 
     @quran.error
     @rquran.error
@@ -386,13 +387,13 @@ class Quran(commands.Cog):
                                required=False)])
     async def slash_rquran(self, ctx: SlashContext, translation_key: str = None):
         await ctx.defer()
-        json = await get_site_json("https://api.quran.com/api/v4/verses/random?language=en&words=false")
-        ref = json["verse"]["verse_key"]
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
 
         if translation_key is None:
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
 
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
+        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}', translation_key=translation_key).process_request()
 
     async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)
