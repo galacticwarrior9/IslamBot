@@ -5,7 +5,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_list
 
-SECTIONS = ['Main', 'Quran', 'Tafsir', 'Hijri Calendar', 'Hadith', 'Prayer Times', 'Dua']
+SECTIONS = ['Main', 'Quran', 'Tafsir', 'Calendar', 'Hadith', 'Prayer Times', 'Dua']
 
 
 class Help(commands.Cog):
@@ -17,7 +17,9 @@ class Help(commands.Cog):
 
         if section == "main":
             em = discord.Embed(title='IslamBot Help / أمر المساعدة', colour=0xdeb949,
-                               description="**Type -ihelp <category>**, e.g. `-ihelp quran`\n")
+                               description=f"**Type {pre}ihelp <category>**, e.g. `{pre}ihelp quran`\n")
+            if pre == '/':
+                em.description = "**Type /help <category>**, e.g. `/help quran`\n"
             em.add_field(name="Categories",
                          value='\n» Quran\n» Hadith\n» Tafsir\n» Prayer Times\n» Dua\n» Calendar\n» Settings',
                          inline=False)
@@ -113,7 +115,7 @@ class Help(commands.Cog):
                                                                  f"\n\nExample: `{pre}hadith muslim 1051` for https://sunnah.com/muslim:1051")
 
             em.add_field(name=f"{pre}ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic. "
-                                                                  "The usage is the same as `-hadith`.")
+                                                                  f"The usage is the same as `{pre}hadith`.")
 
             em.add_field(name=f"{pre}biography", inline=True, value="Gets the biography of a hadith transmitter "
                                                                     "or early Muslim from al-Dhahabi's *Siyar A'lam al-"
@@ -122,7 +124,7 @@ class Help(commands.Cog):
                                                                     f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
             em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. "
-                                                                  "The usage is `-rhadith`.")
+                                                                  f"The usage is `{pre}rhadith`.")
 
             await ctx.send(embed=em)
 
@@ -133,6 +135,14 @@ class Help(commands.Cog):
                                                                       f"\n\n`{pre}prayertimes <location>`"
                                                                       f"\n\nExample: `{pre}prayertimes Burj Khalifa, Dubai`")
 
+            em.add_field(name=f"{pre}methodlist", inline=True, value="Shows a list of calculation methods.")
+
+            em.add_field(name=f"{pre}setcalculationmethod", inline=True, value="Sets the Calculation Method"
+                                                                               "\n\n__Usage__"
+                                                                               f"\n\n`{pre}setcalculationmethod <method number>`"
+                                                                               f"\n\nExample: `{pre}setcalculationmethod 4`"
+                                                                               f"\n\nSee `{pre}methodlist` for a list of methods.")
+
             await ctx.send(embed=em)
 
         elif section == "dua":
@@ -142,9 +152,9 @@ class Help(commands.Cog):
                                                               "\n\n__Usage__"
                                                               f"\n\n`{pre}dua <topic>`"
                                                               f"\n\nExample: `{pre}dua forgiveness`"
-                                                              "\n\nSee `-dualist` for a list of topics.")
+                                                              f"\n\nSee `{pre}dualist` for a list of topics.")
             em.add_field(name=f"{pre}rdua", inline=True, value="Gets a random dua. "
-                                                               "The usage is `-rdua`.")
+                                                               f"The usage is `{pre}rdua`.")
             await ctx.send(embed=em)
 
         elif section == "settings":
@@ -160,21 +170,23 @@ class Help(commands.Cog):
             await ctx.send(embed=em)
 
     @commands.command(name="ihelp")
-    async def help(self, ctx, *, section: str = "main"):
-        async with ctx.channel.typing():
-            await self._help(ctx, ctx.prefix, section)
+    async def help(self, ctx, *, section: str = "Main"):
+        await ctx.channel.trigger_typing()
+        await self._help(ctx, ctx.prefix, section)
 
     @cog_ext.cog_slash(name="help", description="The help command for the bot.",
                        options=[
                            create_option(
                                name="section",
-                               description="NOTE: Not all commands have slash equivalents yet!",
+                               description="The section topic of help",
                                option_type=3,
                                choices=generate_choices_from_list(SECTIONS),
                                required=False)])
     async def slash_help(self, ctx: SlashContext, section: str = "Main"):
-        await ctx.send()
-        await self._help(ctx, '/', section)
+        await ctx.defer()
+        prefix = '/calendar ' if section.lower() == 'calendar' else '/'
+        # `/calendar ` is the prefix because it's a base command with subcommands
+        await self._help(ctx, prefix, section)
 
 
 def setup(bot):

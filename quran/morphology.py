@@ -91,8 +91,8 @@ class QuranMorphology(commands.Cog):
 
     @commands.command(name="morphology")
     async def morphology(self, ctx, ref: str):
-        async with ctx.channel.typing():
-            await self._morphology(ctx, ref)
+        await ctx.channel.trigger_typing()
+        await self._morphology(ctx, ref)
 
     @morphology.error
     async def on_morphology_error(self, ctx, error):

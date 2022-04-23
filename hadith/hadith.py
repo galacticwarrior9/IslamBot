@@ -1,5 +1,6 @@
 import asyncio
 import configparser
+import random
 import re
 import textwrap
 
@@ -8,6 +9,8 @@ import discord
 import html2text
 from discord.ext import commands
 from discord_slash import SlashContext, cog_ext, ButtonStyle
+from discord_slash.context import MenuContext
+from discord_slash.model import ContextMenuType
 from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
@@ -280,25 +283,23 @@ class HadithCommands(commands.Cog):
             except asyncio.TimeoutError:
                 break
 
+    async def _rhadith(self, ctx):
+        await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
+
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
-        async with ctx.channel.typing():
-            await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
+        await ctx.channel.trigger_typing()
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
 
     @commands.command(name='ahadith')
     async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        async with ctx.channel.typing():
-            await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
+        await ctx.channel.trigger_typing()
+        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
 
     @commands.command(name="rhadith")
     async def rhadith(self, ctx):
-        async with ctx.channel.typing():
-            headers = {"X-API-Key": API_KEY}
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get("https://api.sunnah.com/v1/hadiths/random") as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        await self.abstract_hadith(ctx, data["collection"], Reference(data["hadithNumber"]), 'en')
+        await ctx.channel.trigger_typing()
+        await self._rhadith(ctx)
 
     @hadith.error
     async def hadith_error(self, ctx, error):
@@ -348,6 +349,11 @@ class HadithCommands(commands.Cog):
         await ctx.defer()
         await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'ar')
 
+    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.")
+    async def slash_rhadith(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._rhadith(ctx)
+
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
         for link in urls:
@@ -362,6 +368,37 @@ class HadithCommands(commands.Cog):
                                                                url=hadith.url)
 
         return manage_components.create_actionrow(*original_link_button)
+
+    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Get Hadith Text")
+    async def get_hadith_text(self, ctx: MenuContext):
+        content = ctx.target_message.content
+        url = self.findURL(content)
+        if url:
+            try:
+                meta = url.split("/")
+                collection = meta[3]
+                if collection in self.FORTY_HADITH_COLLECTIONS:
+                    collection = collection[:-2]
+                if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
+                    if collection[-1] == "/":  # if url ended with /
+                        collection = collection[:-1]
+                    ref = collection.split(":")[1]  # getting hadith number
+                    ref = Reference(ref)
+                    collection = collection.split(":")[0]  # getting book name
+                else:
+                    book = meta[4]
+                    try:
+                        hadith = meta[5]
+                        ref = f"{book}:{hadith}"
+                        ref = Reference(ref)
+                    except:
+                        ref = Reference(
+                            book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+                await self.abstract_hadith(ctx, collection, ref, "en")
+            except InvalidHadith:
+                await ctx.send("**There is no valid sunnah.com link here**")
+        else:
+            await ctx.send("**There is no valid sunnah.com link here**")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -385,7 +422,8 @@ class HadithCommands(commands.Cog):
                     ref = f"{book}:{hadith}"
                     ref = Reference(ref)
                 except:
-                    ref = Reference(book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+                    ref = Reference(
+                        book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
             await self.abstract_hadith(message.channel, collection, ref, "en")
 
 

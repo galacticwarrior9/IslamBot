@@ -10,7 +10,6 @@ from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
 from quran.quran_info import QuranReference
-from utils.slash_utils import generate_choices_from_list
 from utils.utils import get_site_source, convert_to_arabic_number
 
 ICON = 'https://lh5.ggpht.com/lRz25mOFrRL42NuHtuSCneXbWV2Gtm7iYZ5eQbuA7JWUC3guWaTaQxNJ7j9rsRMCNAU=w150'
@@ -295,29 +294,37 @@ class Tafsir(commands.Cog):
 
     @commands.command(name="atafsir")
     async def atafsir(self, ctx, ref: str, tafsir: str = "tabari"):
-        async with ctx.channel.typing():
-            quran_reference = QuranReference(ref, False)
-            tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
-            await self.send(ctx, tafsir)
+        await ctx.channel.trigger_typing()
+        quran_reference = QuranReference(ref=ref)
+        tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
+        await self.send(ctx, tafsir)
         # TODO: Re-add error handling
 
     @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
                        options=[
                            create_option(
-                               name="تفسير",
+                               name="surah_num",
+                               description="اكتب رقم السورة",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="verse_num",
+                               description="اكتب رقم آية",
+                               option_type=4,
+                               required=True),
+                           create_option(
+                               name="tafsir",
                                description="اسم التفسير.",
                                option_type=3,
-                               required=True,
-                               choices=generate_choices_from_list(list(names.values()))),
+                               required=False),
                            create_option(
-                               name="السورة_و_الآية",
-                               description="رقم السورة:رقم الآية - على سبيل المثال: 2:255",
-                               option_type=3,
-                               required=True)
-                       ])
-    async def slash_atafsir(self, ctx: SlashContext, ref: str, tafsir: str):
+                               name="reveal_order",
+                               description="هل السورة تشير إلى رقم أمر الوحي؟",
+                               option_type=5,
+                               required=False)])
+    async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari', reveal_order: bool = False):
         await ctx.defer()
-        quran_reference = QuranReference(ref, False)
+        quran_reference = QuranReference(ref=f'{surah_num}:{verse_num}', reveal_order=reveal_order)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
 

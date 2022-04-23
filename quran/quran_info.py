@@ -464,9 +464,12 @@ class InvalidSurah(commands.CommandError):
 
 
 class Surah:
-    def __init__(self, num):
+    def __init__(self, num, reveal_order: bool = False):
         if not 1 <= num <= 114:
             raise InvalidSurah
+        if reveal_order:
+            num = QuranReference.convert_revelation_to_surah_num(num)
+
         self.num = num
         self.name = quranInfo['surah'][num][5]
         self.arabic_name = quranInfo['surah'][num][4]
@@ -484,8 +487,9 @@ class InvalidAyah(commands.CommandError):
 
 
 class QuranReference:
-    def __init__(self, ref: str, allow_multiple_verses: bool = False):
+    def __init__(self, ref: str, allow_multiple_verses: bool = False, reveal_order: bool = False):
         self.multiple_verses = allow_multiple_verses
+        self.reveal_order = reveal_order
         self.surah = None
         self.ayat_list = self.process_ref(ref)
 
@@ -497,6 +501,9 @@ class QuranReference:
 
         if not 1 <= self.surah <= 114:
             raise InvalidSurah
+
+        if self.reveal_order:
+            self.surah = self.convert_revelation_to_surah_num(self.surah)
 
         if self.multiple_verses:
             try:
@@ -530,7 +537,15 @@ class QuranReference:
 
             return ayah
 
-    def check_ayat_num(self, surah_num: int, max_ayah: int):
+    @staticmethod
+    def check_ayat_num(surah_num: int, max_ayah: int):
         num_ayat = quranInfo['surah'][surah_num][1]
         if max_ayah > num_ayat:
             raise InvalidAyah(num_ayat)
+
+    @staticmethod
+    def convert_revelation_to_surah_num(surah_num: int):
+        """If user references the surah by revelation number then convert that input to the mushaf order number"""
+        for surah_number in range(len(quranInfo['surah'][:-2])):
+            if quranInfo['surah'][surah_number + 1][2] == surah_num:
+                return surah_number + 1

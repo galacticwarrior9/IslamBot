@@ -50,12 +50,6 @@ class HijriCalendar(commands.Cog):
         gregorian = convert.Hijri(hijri_date.year, hijri_date.month, hijri_date.day).to_gregorian()
         return f'{hijri_date.strftime("%d-%m-%Y")} AH is **{gregorian.strftime("%d %B %Y")}**'
 
-    @commands.command(name='hijridate')
-    async def hijridate(self, ctx):
-        hijri = self.get_current_hijri()
-        em = make_embed(colour=0x72bcd4, author="Today's Hijri Date", description=hijri, author_icon=ICON)
-        await ctx.send(embed=em)
-
     async def _converttohijri(self, ctx, gregorian_date: str):
         try:
             gregorian_date = datetime.strptime(gregorian_date, "%d-%m-%Y").date()
@@ -86,6 +80,17 @@ class HijriCalendar(commands.Cog):
         em.set_author(name="Hijri → Gregorian Conversion", icon_url=ICON)
         await ctx.send(embed=em)
 
+    async def _hijridate(self, ctx):
+        hijri = self.get_current_hijri()
+        em = make_embed(colour=0x72bcd4, author="Today's Hijri Date", description=hijri, author_icon=ICON)
+        em.set_footer(text='')  # fixes some weird error when this is called from the slash command
+        await ctx.send(embed=em)
+
+    @commands.command(name='hijridate')
+    async def hijridate(self, ctx):
+        await ctx.channel.trigger_typing()
+        await self._hijridate(ctx)
+
     @commands.command(name='converttohijri')
     async def converttohijri(self, ctx, gregorian_date: str):
         await self._converttohijri(ctx, gregorian_date)
@@ -95,12 +100,8 @@ class HijriCalendar(commands.Cog):
         await self._converttogregorian(ctx, hijri_date)
 
     @converttohijri.error
-    async def on_converttohijri_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(DATE_INVALID)
-
     @converttogregorian.error
-    async def on_converttogregorian_error(self, ctx, error):
+    async def on_convert_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(DATE_INVALID)
 
@@ -114,7 +115,7 @@ class HijriCalendar(commands.Cog):
                                     required=True)
                             ])
     async def slash_converttohijri(self, ctx: SlashContext, gregorian_date: str):
-        await ctx.send()
+        await ctx.defer()
         await self._converttohijri(ctx, gregorian_date)
 
     @cog_ext.cog_subcommand(base="calendar", name="to_gregorian",
@@ -128,8 +129,14 @@ class HijriCalendar(commands.Cog):
                                     required=True)
                             ])
     async def slash_converttogregorian(self, ctx: SlashContext, hijri_date: str):
-        await ctx.send()
+        await ctx.defer()
         await self._converttogregorian(ctx, hijri_date)
+
+    @cog_ext.cog_subcommand(base='calendar', name="hijri_date", description="Send current hijri date.",
+                            base_description='Send current hijri date')
+    async def slash_hijridate(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._hijridate(ctx)
 
 
 def setup(bot):

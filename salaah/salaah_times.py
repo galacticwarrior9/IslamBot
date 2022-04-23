@@ -1,4 +1,3 @@
-import asyncio
 import datetime as dt
 from datetime import timedelta
 
@@ -129,15 +128,15 @@ class PrayerTimes(commands.Cog):
 
         em = discord.Embed(colour=0x2186d3, title=date)
         em.set_author(name=f'Prayer Times for {location.title()}', icon_url=icon)
-        em.add_field(name=f'**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)
-        em.add_field(name=f'**Fajr (صلاة الفجر)**', value=f'{fajr}', inline=True)
-        em.add_field(name=f'**Sunrise (طلوع الشمس)**', value=f'{sunrise}', inline=True)
-        em.add_field(name=f'**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr}', inline=True)
-        em.add_field(name=f'**Asr (صلاة العصر)**', value=f'{asr}', inline=True)
-        em.add_field(name=f'**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{hanafi_asr}', inline=True)
-        em.add_field(name=f'**Maghrib (صلاة المغرب)**', value=f'{maghrib}', inline=True)
-        em.add_field(name=f'**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)
-        em.add_field(name=f'**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
+        em.add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)
+        em.add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr}', inline=True)
+        em.add_field(name='**Sunrise (طلوع الشمس)**', value=f'{sunrise}', inline=True)
+        em.add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr}', inline=True)
+        em.add_field(name='**Asr (صلاة العصر)**', value=f'{asr}', inline=True)
+        em.add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{hanafi_asr}', inline=True)
+        em.add_field(name='**Maghrib (صلاة المغرب)**', value=f'{maghrib}', inline=True)
+        em.add_field(name='**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)
+        em.add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
 
         calculation_methods = await self.get_calculation_methods()
         em.set_footer(text=f'Calculation Method: {calculation_methods[calculation_method]}')
@@ -145,8 +144,8 @@ class PrayerTimes(commands.Cog):
 
     @commands.command(name="prayertimes")
     async def prayertimes(self, ctx, *, location):
-        async with ctx.channel.typing():
-            await self._prayertimes(ctx, location)
+        await ctx.channel.trigger_typing()
+        await self._prayertimes(ctx, location)
 
     @prayertimes.error
     async def on_prayertimes_error(self, ctx, error):
@@ -164,33 +163,51 @@ class PrayerTimes(commands.Cog):
         await ctx.defer()
         await self._prayertimes(ctx, location)
 
-    @commands.command(name="setcalculationmethod")
-    async def setcalculationmethod(self, ctx):
-        def is_user(msg):
-            return msg.author == ctx.author
+    async def _setcalculationmethod(self, ctx, method_num: int):
+        calculation_methods = await self.get_calculation_methods()
+        try:
+            if method_num not in calculation_methods.keys():
+                raise TypeError
+        except:
+            return await ctx.send("❌ **Invalid calculation method number.** ")
 
-        em = discord.Embed(colour=0x467f05, description="Please select a **calculation method number**.\n\n")
+        await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method_num)
+        await ctx.send(':white_check_mark: **Successfully updated!**')
+
+    @commands.command(name="setcalculationmethod")
+    async def setcalculationmethod(self, ctx, method_num: int):
+        await ctx.channel.trigger_typing()
+        await self._setcalculationmethod(ctx, method_num)
+
+    @cog_ext.cog_slash(name="setcalculationmethod",
+                       description="Set the Prayer Times Calculation Method",
+                       options=[
+                           create_option(
+                               name="method_num",
+                               description="The number of the Method",
+                               option_type=4,
+                               required=True)])
+    async def slash_setcalculationmethod(self, ctx: SlashContext, method_num: int):
+        await ctx.defer()
+        await self._setcalculationmethod(ctx, method_num)
+
+    async def _methodlist(self, ctx):
+        em = discord.Embed(colour=0x467f05, description='')
         em.set_author(name='Calculation Methods', icon_url=icon)
         calculation_methods = await self.get_calculation_methods()
         for method, name in calculation_methods.items():
             em.description = f'{em.description}**{method}** - {name}\n'
         await ctx.send(embed=em)
 
-        try:
-            message = await self.bot.wait_for('message', timeout=120.0, check=is_user)
-            method = message.content
-            try:
-                method = int(method)
-                if method not in calculation_methods.keys():
-                    raise TypeError
-            except:
-                return await ctx.send("❌ **Invalid calculation method number.** ")
+    @commands.command(name="methodlist")
+    async def methodlist(self, ctx):
+        await ctx.channel.trigger_typing()
+        await self._methodlist(ctx)
 
-            await PrayerTimesHandler.update_user_calculation_method(ctx.author.id, method)
-            await ctx.send(':white_check_mark: **Successfully updated!**')
-
-        except asyncio.TimeoutError:
-            await ctx.send("❌ **Timed out**. Please try again.")
+    @cog_ext.cog_slash(name="methodlist", description="Send the method list.")
+    async def slash_methodlist(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._methodlist(ctx)
 
 
 def setup(bot):
