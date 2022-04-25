@@ -363,14 +363,6 @@ class HadithCommands(commands.Cog):
             if "sunnah.com/" in link:
                 return link
 
-    @staticmethod
-    def make_buttons(hadith: HadithSpecifics):
-        original_link_button = manage_components.create_button(style=ButtonStyle.URL,
-                                                               label="View on sunnah.com",
-                                                               url=hadith.url)
-
-        return manage_components.create_actionrow(*original_link_button)
-
     @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Get Hadith Text")
     async def get_hadith_text(self, ctx: MenuContext):
         content = ctx.target_message.content
