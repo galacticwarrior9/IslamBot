@@ -75,11 +75,13 @@ NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir."
 
 BAD_ALIAS = "This is normally unreachable error! Developer, please check aliases for tafsir!"
 
-altafsir_url = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSoraNo={}&tAyahNo={}&tDisplay=yes&Page={}&Size=1&LanguageId=2'
+ALTAFSIR_URL = 'https://www.altafsir.com/Tafasir.asp?tMadhNo=0&tTafsirNo={}&tSoraNo={}&tAyahNo={}&tDisplay=yes&Page={}&Size=1&LanguageId=2'
 
-quranCom_url = 'https://api.quran.com/api/v4/quran/tafsirs/{}?verse_key={}'
+QURAN_COM_URL = 'https://api.quran.com/api/v4/tafsirs/{}/by_ayah/{}'
 
-jalalayn_url = 'https://raw.githubusercontent.com/galacticwarrior9/islambot/master/tafsir/tafsir_jalalayn.txt'
+JALALAYN_URL = 'https://raw.githubusercontent.com/galacticwarrior9/islambot/master/tafsir/tafsir_jalalayn.txt'
+
+CLEAN_HTML_REGEX = re.compile('<(.*?)>')
 
 
 class InvalidReference(commands.CommandError):
@@ -155,12 +157,12 @@ class TafsirSpecifics:
     def make_url(self):
         if self.tafsir in altafsir_sources.keys():
             tafsir_id = altafsir_sources[self.tafsir]
-            self.url = altafsir_url.format(tafsir_id, self.ref.surah, self.ref.ayat_list, 1)
+            self.url = ALTAFSIR_URL.format(tafsir_id, self.ref.surah, self.ref.ayat_list, 1)
         elif self.tafsir == 'jalalayn':
-            self.url = jalalayn_url
+            self.url = JALALAYN_URL
         elif self.tafsir in quranCom_sources.keys():
             tafsir_id = quranCom_sources[self.tafsir]
-            self.url = quranCom_url.format(tafsir_id, f'{self.ref.surah}:{self.ref.ayat_list}')
+            self.url = QURAN_COM_URL.format(tafsir_id, f'{self.ref.surah}:{self.ref.ayat_list}')
 
     async def get_text(self):
         if self.tafsir in altafsir_sources.keys():
@@ -174,12 +176,11 @@ class TafsirSpecifics:
 
         elif self.tafsir in quranCom_sources.keys():
             source = await get_site_json(self.url)
-            self.text = source['tafsirs'][0]['text']
-            self.tafsir_author = source['meta']['author_name']
+            self.text = source['tafsir']['text']
+            self.tafsir_author = source['tafsir']['translated_name']['name']
 
             # Replace HTML tags
-            cleanr = re.compile('<(.*?)>')
-            self.text = re.sub(cleanr, ' ', self.text)
+            self.text = re.sub(CLEAN_HTML_REGEX, ' ', self.text)
             self.text = self.text.replace('`', "ʿ")
 
         elif self.tafsir == 'jalalayn':
