@@ -59,7 +59,9 @@ class Help(commands.Cog):
                                                                  "\n\nAdd 'tajweed' to the end of the command for color-coded tajweed rules."
                                                                  f"\n\nExample: `{pre}mushaf 1:1 tajweed`")
 
-            em.add_field(name=f"{pre}rmushaf", inline=True, value="Gets a random page of a standard *mushaf*.")
+            em.add_field(name=f"{pre}rmushaf", inline=True, value="Gets a random page of a standard *mushaf*."
+                                                                  "\n\nAdd 'tajweed' to the end of the command for color-coded tajweed rules."
+                                                                  f"\n\nExample: `{pre}rmushaf tajweed`")
 
             em.add_field(name=f"{pre}surah", inline=True, value="Get information about a surah."
                                                                 f"\n\n`{pre}surah <surah number>`"
