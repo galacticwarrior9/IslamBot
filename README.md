@@ -234,7 +234,6 @@ Alternatively, you can simply type the sunnah.com link in chat. The bot will the
 | Riyadh as-Saliheen | `riyadussalihin `
 | Al-Adab al-Mufrad | `adab ` 
 | Bulugh al-Maram | `bulugh ` 
-| 40 Hadith Qudsi | `qudsi ` 
 | 40 Hadith Nawawi | `nawawi ` 
 | Hisn al-Muslim (Fortress of the Muslim) | `hisn ` 
   
