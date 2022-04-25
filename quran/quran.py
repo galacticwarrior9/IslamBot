@@ -30,6 +30,7 @@ TOO_LONG = "This passage was too long to send."
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
+CLEAN_HTML_REGEX = re.compile('<[^<]+?>\d*')
 
 class InvalidReference(commands.CommandError):
     def __init__(self, *args, **kwargs):
@@ -204,9 +205,7 @@ class QuranRequest:
             text = json['translations'][0]['text']
 
             # Clear HTML tags
-            clean_footnotes = re.compile('<sup\s+foot_note=\d+>\d+<\/sup>')
-            text = re.sub(clean_footnotes, '', text)
-            text = text.replace("<span>", "").replace("</span>", "").replace("<br>", "").replace("</br>", "")
+            text = re.sub(CLEAN_HTML_REGEX, ' ', text)
 
             # Truncate verses longer than 1024 characters
             if len(text) > 1024:
