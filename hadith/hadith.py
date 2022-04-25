@@ -24,7 +24,7 @@ ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
                           'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
-                          'qudsi', 'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
+                          'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
 
 english_hadith_collections = {
     'ahmad': 'Musnad Ahmad ibn Hanbal',
@@ -40,8 +40,7 @@ english_hadith_collections = {
     'bulugh': 'Bulugh al-Maram',
     'shamail': "Shamā'il Muhammadiyyah",
     'mishkat': 'Mishkat al-Masabih',
-    'qudsi40': 'Al-Arbaʿīn al-Qudsiyyah',
-    'nawawi40': 'Al-Arbaʿīn al-Nawawiyyah',
+    'forty': 'Al-Arbaʿīn al-Nawawiyyah',
     'hisn': 'Fortress of the Muslim'
 }
 
@@ -59,9 +58,12 @@ arabic_hadith_collections = {
     'bulugh': 'بلوغ المرام',
     'shamail': 'الشمائل المحمدية',
     'mishkat': 'مشكاة المصابيح',
-    'qudsi40': 'الأربعون القدسية',
-    'nawawi40': 'الأربعون النووية',
+    'forty': 'الأربعون النووية',
     'hisn': 'حصن المسلم'
+}
+
+hadith_collection_aliases = {
+    'nawawi': 'forty'
 }
 
 INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
@@ -71,6 +73,8 @@ INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <b
                 f'\n\nValid collection names are `{HADITH_COLLECTION_LIST}`'
 
 INVALID_COLLECTION = f'**Invalid hadith collection.**\nValid collection names are `{HADITH_COLLECTION_LIST}`'
+
+HEADERS = {"X-API-Key": API_KEY}
 
 
 class InvalidCollection(commands.CommandError):
@@ -119,8 +123,7 @@ class HadithSpecifics:
         else:
             self.url = f'https://api.sunnah.com/v1/collections/{self.collection}/hadiths/{self.ref.hadith_number}'
 
-        headers = {"X-API-Key": API_KEY}
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=HEADERS) as session:
             async with session.get(self.url) as resp:
                 if resp.status == 200:
                     hadith_list = await resp.json()
@@ -189,7 +192,9 @@ class HadithSpecifics:
         page = self.pages[self.page - 1]
         self.num_pages = len(self.pages)
 
-        em = discord.Embed(title=self.chapter_name, colour=0x467f05, description=page)
+        em = discord.Embed(colour=0x467f05, description=page)
+        if self.chapter_name is not None:
+            em.title = self.chapter_name
         em.set_author(name=f'{self.formatted_collection}', icon_url=ICON)
 
         if self.num_pages > 1:
@@ -233,15 +238,13 @@ class HadithCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    FORTY_HADITH_COLLECTIONS = {'qudsi40', 'nawawi40'}
-
     async def abstract_hadith(self, channel, collection_name, ref, lang):
 
         if collection_name not in HADITH_COLLECTION_LIST:
             raise InvalidCollection
 
-        if f'{collection_name}40' in self.FORTY_HADITH_COLLECTIONS:
-            collection_name = collection_name + '40'
+        if collection_name in hadith_collection_aliases:
+            collection_name = hadith_collection_aliases[collection_name]
 
         hadith = HadithSpecifics(collection_name, ref, lang)
         try:
@@ -364,7 +367,6 @@ class HadithCommands(commands.Cog):
     def make_buttons(hadith: HadithSpecifics):
         original_link_button = manage_components.create_button(style=ButtonStyle.URL,
                                                                label="View on sunnah.com",
-                                                               emoji=emojis["MOUSE"],
                                                                url=hadith.url)
 
         return manage_components.create_actionrow(*original_link_button)
@@ -377,8 +379,8 @@ class HadithCommands(commands.Cog):
             try:
                 meta = url.split("/")
                 collection = meta[3]
-                if collection in self.FORTY_HADITH_COLLECTIONS:
-                    collection = collection[:-2]
+                if collection in hadith_collection_aliases:
+                    collection = hadith_collection_aliases[collection]
                 if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
                     if collection[-1] == "/":  # if url ended with /
                         collection = collection[:-1]
@@ -407,8 +409,8 @@ class HadithCommands(commands.Cog):
         if url:
             meta = url.split("/")
             collection = meta[3]
-            if collection in self.FORTY_HADITH_COLLECTIONS:
-                collection = collection[:-2]
+            if collection in hadith_collection_aliases:
+                collection = hadith_collection_aliases[collection]
             if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
                 if collection[-1] == "/":  # if url ended with /
                     collection = collection[:-1]
