@@ -85,7 +85,7 @@ class Mushaf(commands.Cog):
                                name="verse_num",
                                description="The verse number to show on the mushaf, e.g. 255.",
                                option_type=4,
-                               required=True),
+                               required=False),
                            create_option(
                                name="show_tajweed",
                                description="Should the mushaf highlight where tajweed rules apply?",
@@ -96,7 +96,7 @@ class Mushaf(commands.Cog):
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
                                required=False)])
-    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int, show_tajweed: bool = False,
+    async def slash_mushaf(self, ctx: SlashContext, surah_num: int, verse_num: int = 1, show_tajweed: bool = False,
                            reveal_order: bool = False):
         await ctx.defer()
         await self._mushaf(ctx=ctx, ref=f'{surah_num}:{verse_num}', show_tajweed=show_tajweed,
