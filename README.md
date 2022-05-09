@@ -244,10 +244,14 @@ For example: `-hadith qudsi 32`
   
 ### -ahadith  
 **-ahadith** is the same as -hadith, but sends the hadith in Arabic.  
-  
+
 
 ### -rhadith
-**-rhadith** sends a random hadith from sunnah.com
+**-rhadith** sends a random hadith from sunnah.com in English from Riyadh as-Saliheen
+
+
+### -rahadith
+**-rahadith** sends a random hadith from sunnah.com in Arabic from Riyadh as-Saliheen
 
   
 ## Prayer (Salaah) Times  
