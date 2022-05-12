@@ -97,13 +97,18 @@ For example:
 The above would analyse the morphology of the 4th word of the 2nd verse of the 1st chapter of the Qur'an. The bot will also show the syntax of the verse the word is in, if the data is available.  
 
 ### -rquran
-**-rquran** sends a random English translation verse of the Qur'an.
+**-rquran** sends a random translated verse of the Qur'an.
 ```
 -rquran <translation>
 ```
 For example:
 ```
 -rquran khattab
+```
+### -raquran
+**-raquran** sends a random verse of the Qur'an in Arabic.
+```
+-raquran
 ```
   
 ### -mushaf  
@@ -244,10 +249,14 @@ For example: `-hadith qudsi 32`
   
 ### -ahadith  
 **-ahadith** is the same as -hadith, but sends the hadith in Arabic.  
-  
+
 
 ### -rhadith
-**-rhadith** sends a random hadith from sunnah.com
+**-rhadith** sends a random sunnah.com hadith in English from Riyadh as-Saliheen.
+
+
+### -rahadith
+**-rahadith** sends a random sunnah.com hadith in Arabic from Riyadh as-Saliheen.
 
   
 ## Prayer (Salaah) Times  

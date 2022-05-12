@@ -72,9 +72,12 @@ class Help(commands.Cog):
                                                                          f"\n\nExample: `{pre}settranslation khattab`"
                                                                          "\n\nYou must have the **Administrator** permission to use this command.")
 
-            em.add_field(name=f"{pre}rquran", inline=True, value="Gets a random Qur'anic verse."
+            em.add_field(name=f"{pre}rquran", inline=True, value="Gets a random translated Qur'anic verse."
                                                                  f"\n\n`{pre}rquran <translation>`"
                                                                  f"\n\nExample: `{pre}rquran khattab`")
+
+            em.add_field(name=f"{pre}raquran", inline=True, value="Gets a random Qur'anic verse in Arabic."
+                                                                 f"\n\n`{pre}raquran <translation>`")
 
             await ctx.send(embed=em)
 
@@ -127,8 +130,11 @@ class Help(commands.Cog):
                                                                     f"\n\n`{pre}biography <name of person in Arabic>`"
                                                                     f"\n\nExample: `{pre}biography عبد الله بن عباس`")
 
-            em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English. "
+            em.add_field(name=f"{pre}rhadith", inline=True, value="Gets a random sunnah.com hadith in English from Riyadh as-Saliheen."
                                                                   f"The usage is `{pre}rhadith`.")
+
+            em.add_field(name=f"{pre}rahadith", inline=True, value="Gets a random sunnah.com hadith in Arabic from Riyadh as-Saliheen."
+                                                                  f"The usage is `{pre}rahadith`.")
 
             await ctx.send(embed=em)
 

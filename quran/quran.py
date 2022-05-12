@@ -284,6 +284,14 @@ class Quran(commands.Cog):
 
         await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}', translation_key=translation_key).process_request()
 
+    @commands.command(name="raquran")
+    async def raquran(self, ctx):
+        await ctx.channel.trigger_typing()
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
+
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
+
     @quran.error
     @rquran.error
     async def quran_command_error(self, ctx, error):
@@ -377,7 +385,7 @@ class Quran(commands.Cog):
         await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah_num}:{ref}',
                            reveal_order=reveal_order).process_request()
 
-    @cog_ext.cog_slash(name="rquran", description="Send a random verse from the Qurʼān.",
+    @cog_ext.cog_slash(name="rquran", description="Send a random translated verse from the Qurʼān.",
                        options=[
                            create_option(
                                name="translation_key",
@@ -393,6 +401,14 @@ class Quran(commands.Cog):
             translation_key = await Translation.get_guild_translation(ctx.guild.id)
 
         await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}', translation_key=translation_key).process_request()
+
+    @cog_ext.cog_slash(name="raquran", description="Send a random verse from the Qurʼān in Arabic.")
+    async def slash_raquran(self, ctx: SlashContext):
+        await ctx.defer()
+        surah = random.randint(1, 114)
+        verse = random.randint(1, quranInfo['surah'][surah][1])
+
+        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
 
     async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)

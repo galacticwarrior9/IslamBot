@@ -289,6 +289,9 @@ class HadithCommands(commands.Cog):
     async def _rhadith(self, ctx):
         await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
 
+    async def _rahadith(self, ctx):
+        await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'ar')
+
     @commands.command(name='hadith')
     async def hadith(self, ctx, collection_name: str, ref: Reference):
         await ctx.channel.trigger_typing()
@@ -303,6 +306,11 @@ class HadithCommands(commands.Cog):
     async def rhadith(self, ctx):
         await ctx.channel.trigger_typing()
         await self._rhadith(ctx)
+
+    @commands.command(name="rahadith")
+    async def rahadith(self, ctx):
+        await ctx.channel.trigger_typing()
+        await self._rahadith(ctx)
 
     @hadith.error
     async def hadith_error(self, ctx, error):
@@ -356,6 +364,11 @@ class HadithCommands(commands.Cog):
     async def slash_rhadith(self, ctx: SlashContext):
         await ctx.defer()
         await self._rhadith(ctx)
+
+    @cog_ext.cog_slash(name="rahadith", description="Send a random hadith in Arabic from sunnah.com.")
+    async def slash_rahadith(self, ctx: SlashContext):
+        await ctx.defer()
+        await self._rahadith(ctx)
 
     def findURL(self, message):
         urls = re.findall(r'(https?://\S+)', message)
