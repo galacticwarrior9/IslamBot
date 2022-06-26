@@ -238,8 +238,14 @@ class QuranRequest:
             em.set_author(name=f"Surah {surah.name} ({surah.translated_name})", icon_url=ICON)
             em.set_footer(text=f"Translation: {self.translation_name} | {surah.revelation_location}")
 
-        for key, text in self.verse_ayah_dict.items():
-            em.add_field(name=key, value=text, inline=False)
+        if len(self.verse_ayah_dict) > 1:
+            for key, text in self.verse_ayah_dict.items():
+                em.add_field(name=key, value=text, inline=False)
+
+            return em
+
+        em.title = list(self.verse_ayah_dict)[0]
+        em.description = list(self.verse_ayah_dict.values())[0]
 
         return em
 
