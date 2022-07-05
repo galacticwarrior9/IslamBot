@@ -5,7 +5,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_list
 
-SECTIONS = ['Main', 'Quran', 'Tafsir', 'Calendar', 'Hadith', 'Prayer Times', 'Dua']
+SECTIONS = ['Main', 'Quran', 'Tafsir', 'Calendar', 'Hadith', 'Prayer Times', 'Dua', 'Settings']
 
 
 class Help(commands.Cog):
