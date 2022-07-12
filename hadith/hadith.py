@@ -178,7 +178,7 @@ class HadithSpecifics:
                 except IndexError:
                     pass
 
-        self.text = self.format_hadith_text(self.text)
+        self.text = self.format_hadith_text(self.text, self.lang)
         self.pages = textwrap.wrap(self.text, 1024)
 
         if self.lang == 'en':
