@@ -76,6 +76,8 @@ INVALID_COLLECTION = f'**Invalid hadith collection.**\nValid collection names ar
 
 HEADERS = {"X-API-Key": API_KEY}
 
+CLEAN_ARABIC_REGEXP = re.compile(r'(\[+?[^\[]+?\])')
+
 
 class InvalidCollection(commands.CommandError):
     def __init__(self, *args, **kwargs):
@@ -228,10 +230,12 @@ class HadithSpecifics:
         return arabic_hadith_collections[collection_name]
 
     @staticmethod
-    def format_hadith_text(html):
+    def format_hadith_text(html, lang):
+        if lang != "en":
+            html =  re.sub(CLEAN_ARABIC_REGEXP, '', html)
         h = html2text.HTML2Text()
         h.baseurl = "https://sunnah.com/"
-        return h.handle(html.replace('`', 'ʿ').replace("</b>", '').replace("<i>", '*').replace("</i>", '*'))
+        return h.handle(html.replace('`', 'ʿ').replace("<b>", '').replace("</b>", '').replace("<i>", '*').replace("</i>", '*'))
 
 
 class HadithCommands(commands.Cog):
