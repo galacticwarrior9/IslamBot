@@ -76,7 +76,7 @@ INVALID_COLLECTION = f'**Invalid hadith collection.**\nValid collection names ar
 
 HEADERS = {"X-API-Key": API_KEY}
 
-CLEAN_ARABIC_REGEXP = re.compile(r'(\[+?[^\[]+?\])')
+CLEAN_ARABIC_REGEXP = re.compile(r'\[+?[^\[]+?\]')
 
 
 class InvalidCollection(commands.CommandError):
