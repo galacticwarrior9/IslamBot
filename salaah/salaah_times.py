@@ -21,8 +21,8 @@ class PrayerTimes(commands.Cog):
     def __init__(self, bot):
         self.session = ClientSession(loop=bot.loop)
         self.bot = bot
-        self.methods_url = 'https://api.aladhan.com/methods'
-        self.prayertimes_url = 'http://api.aladhan.com/timingsByAddress?address={}&method={}&school={}'
+        self.methods_url = 'https://api.aladhan.com/v1/methods'
+        self.prayertimes_url = 'http://api.aladhan.com/v1/timingsByAddress?address={}&method={}&school={}'
 
     async def get_calculation_methods(self):
         async with self.session.get(self.methods_url, headers=headers) as resp:
