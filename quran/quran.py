@@ -37,12 +37,6 @@ class InvalidReference(commands.CommandError):
         super().__init__(*args, **kwargs)
 
 
-class InvalidAyah(commands.CommandError):
-    def __init__(self, num_verses, *args, **kwargs):
-        self.num_verses = num_verses
-        super().__init__(*args, **kwargs)
-
-
 class InvalidTranslation(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
