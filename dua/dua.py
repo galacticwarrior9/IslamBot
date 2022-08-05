@@ -7,7 +7,6 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-from utils.slash_utils import generate_choices_from_list, generate_choices_from_dict
 from utils.utils import get_site_source
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
