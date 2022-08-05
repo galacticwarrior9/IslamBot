@@ -298,33 +298,6 @@ class Quran(commands.Cog):
 
         await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
 
-    @quran.error
-    @rquran.error
-    async def quran_command_error(self, ctx, error):
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, InvalidReference):
-            await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
-        if isinstance(error, BadArgument):
-            await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
-
-    @aquran.error
-    async def aquran_command_error(self, ctx, error):
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, InvalidReference):
-            await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
-        if isinstance(error, BadArgument):
-            await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
-
     @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
                        options=[
                            create_option(
@@ -416,6 +389,45 @@ class Quran(commands.Cog):
 
         await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
 
+    @quran.error
+    @rquran.error
+    @slash_quran.error
+    @slash_rquran.error
+    async def quran_command_error(self, ctx, error):
+        if isinstance(error, InvalidSurah):
+            await ctx.send(INVALID_SURAH)
+        if isinstance(error, InvalidAyah):
+            await ctx.send(INVALID_AYAH.format(error.num_verses))
+        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
+            await ctx.send(INVALID_TRANSLATION)
+        if isinstance(error, InvalidReference):
+            try:
+                await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
+            except AttributeError:
+                await ctx.send(INVALID_ARGUMENTS_ENGLISH.format('/'))
+        if isinstance(error, BadArgument):
+            await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
+
+    @aquran.error
+    @raquran.error
+    @slash_aquran.error
+    @slash_raquran.error
+    async def aquran_command_error(self, ctx, error):
+        if isinstance(error, InvalidSurah):
+            await ctx.send(INVALID_SURAH)
+        if isinstance(error, InvalidAyah):
+            await ctx.send(INVALID_AYAH.format(error.num_verses))
+        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
+            await ctx.send(INVALID_TRANSLATION)
+        if isinstance(error, InvalidReference):
+            try:
+                await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
+            except AttributeError:
+                await ctx.send(INVALID_ARGUMENTS_ARABIC.format('/'))
+                # SlashContext doesn't have the attribute `prefix`
+        if isinstance(error, BadArgument):
+            await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
+
     async def _settranslation(self, ctx, translation):
         Translation.get_translation_id(translation)
         await DBHandler.create_connection()
@@ -426,16 +438,6 @@ class Quran(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def settranslation(self, ctx, translation: str):
         await self._settranslation(ctx, translation)
-
-    @settranslation.error
-    async def settranslation_error(self, ctx, error):
-        if isinstance(error, CheckFailure):
-            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, (MissingRequiredArgument, InvalidTranslation)):
-            await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, pymysql.err.OperationalError):
-            print(error)
-            await ctx.send(DATABASE_UNREACHABLE)
 
     @cog_ext.cog_slash(name="settranslation",
                        description="🔒 Administrator only command. Changes the default translation for /quran.",
@@ -449,6 +451,17 @@ class Quran(commands.Cog):
     async def slash_settranslation(self, ctx: SlashContext, translation: str):
         await ctx.defer()
         await self._settranslation(ctx, translation)
+
+    @settranslation.error
+    @slash_settranslation.error
+    async def settranslation_error(self, ctx, error):
+        if isinstance(error, CheckFailure):
+            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
+        if isinstance(error, (MissingRequiredArgument, InvalidTranslation)):
+            await ctx.send(INVALID_TRANSLATION)
+        if isinstance(error, pymysql.err.OperationalError):
+            print(error)
+            await ctx.send(DATABASE_UNREACHABLE)
 
     async def _surah(self, ctx, surah_num: int, reveal_order: bool = False):
         surah = Surah(num=surah_num, reveal_order=reveal_order)
@@ -466,15 +479,6 @@ class Quran(commands.Cog):
         await ctx.channel.trigger_typing()
         await self._surah(ctx, surah_num)
 
-    @surah.error
-    async def surah_error(self, ctx, error):
-        if isinstance(error, BadArgument):
-            await ctx.send("**Error**: Invalid surah number.")
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send("**Error**: You typed the command wrongly. Type `-surah <surah number>`.")
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-
     @cog_ext.cog_slash(name="surah",
                        description="Send information on a surah",
                        options=[
@@ -491,6 +495,16 @@ class Quran(commands.Cog):
     async def slash_surah(self, ctx: SlashContext, surah_num: int, reveal_order: bool = False):
         await ctx.defer()
         await self._surah(ctx=ctx, surah_num=surah_num, reveal_order=reveal_order)
+
+    @surah.error
+    @slash_surah.error
+    async def surah_error(self, ctx, error):
+        if isinstance(error, BadArgument):
+            await ctx.send("**Error**: Invalid surah number.")
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send("**Error**: You typed the command wrongly. Type `-surah <surah number>`.")
+        if isinstance(error, InvalidSurah):
+            await ctx.send(INVALID_SURAH)
 
 
 def setup(bot):

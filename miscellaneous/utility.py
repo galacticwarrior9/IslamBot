@@ -46,6 +46,7 @@ class Utility(commands.Cog):
             await ctx.send("🔒 **You do not have permission to use this command**.")
 
     @reload.error
+    @slash_reload.error
     async def reload_error(self, ctx, error):
         if isinstance(error, CheckFailure):
             await ctx.send("🔒 **You do not have permission to use this command**.")

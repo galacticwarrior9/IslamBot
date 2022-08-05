@@ -7,6 +7,7 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
+from utils.slash_utils import generate_choices_from_list, generate_choices_from_dict
 from utils.utils import get_site_source
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
@@ -123,12 +124,18 @@ class Dua(commands.Cog):
         await self._dualist(ctx, '/')
 
     @dua.error
+    @slash_dua.error
     async def on_dua_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(f"**You need to provide a dua topic**. Type `{ctx.prefix}dualist` for a list of dua topics.")
         if isinstance(error, KeyError):
-            await ctx.send(
-                f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
+            try:
+                await ctx.send(
+                    f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
+            except AttributeError:
+                await ctx.send(
+                    f"**Could not find dua for this topic.** Type `/dualist` for a list of dua topics.")
+                # SlashContext doesn't attribute `prefix`
 
 
 def setup(bot):

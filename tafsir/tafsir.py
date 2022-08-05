@@ -315,11 +315,15 @@ class TafsirEnglish(commands.Cog):
         await self.send_embed(ctx, spec)
 
     @tafsir.error
+    @slash_tafsir.error
     async def on_tafsir_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
         elif isinstance(error, InvalidReference):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            try:
+                await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            except AttributeError:
+                await ctx.send(INVALID_ARGUMENTS.format('/'))
         elif isinstance(error, InvalidAyah):
             await ctx.send(INVALID_AYAH.format(error.num_verses))
         elif isinstance(error, InvalidSurah):

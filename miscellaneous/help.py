@@ -5,7 +5,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_list
 
-SECTIONS = ['Quran', 'Hadith', 'Tafsir', 'Prayer Times', 'Dua', 'Calendar', 'Settings']
+SECTIONS = ['Main', 'Quran', 'Hadith', 'Tafsir', 'Prayer Times', 'Dua', 'Calendar', 'Settings']
 
 
 class Help(commands.Cog):
@@ -190,7 +190,7 @@ class Help(commands.Cog):
                                name="section",
                                description="The section topic of help",
                                option_type=3,
-                               choices=generate_choices_from_list(SECTIONS),
+                               choices=generate_choices_from_list(list(SECTIONS)),
                                required=False)])
     async def slash_help(self, ctx: SlashContext, section: str = "Main"):
         await ctx.defer()
