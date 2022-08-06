@@ -6,6 +6,7 @@ from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
+from fuzzywuzzy import process, fuzz
 
 from utils.utils import get_site_source
 
@@ -53,13 +54,17 @@ class Dua(commands.Cog):
         self.bot = bot
         self.url = 'https://ahadith.co.uk/hisnulmuslim-dua-{}'
 
-    @staticmethod
-    def get_dua_id(subject):
-        return DUAS[subject]
-
     async def _dua(self, ctx, subject: str):
         subject = subject.title()
-        dua_id = self.get_dua_id(subject)
+        try:
+            dua_id = DUAS[subject]
+        except KeyError:
+            subject = process.extract(subject, DUAS.keys(), scorer=fuzz.partial_ratio, limit=1)
+            if subject is None:
+                raise KeyError
+
+            subject = subject[0][0].title()
+            dua_id = DUAS[subject]
 
         site_source = await get_site_source(self.url.format(dua_id))
         dua_text = []
@@ -71,7 +76,7 @@ class Dua(commands.Cog):
         dua_text = ''.join(dua_text)
         dua_text = re.sub(r'\d+', '', dua_text)
 
-        em = discord.Embed(title=f'Duas for {subject.title()}', colour=0x467f05, description=dua_text)
+        em = discord.Embed(title=f'Duas for {subject}', colour=0x467f05, description=dua_text)
         em.set_author(name="Fortress of the Muslim", icon_url=ICON)
         await ctx.send(embed=em)
 

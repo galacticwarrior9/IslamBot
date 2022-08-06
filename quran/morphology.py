@@ -7,11 +7,13 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
+from quran.quran_info import InvalidSurahName, QuranReference
 from utils.utils import get_site_source
 
 ICON = 'https://www.stickpng.com/assets/images/580b585b2edbce24c47b2abb.png'
 INVALID_ARGUMENTS = "**Invalid arguments!**\n\n**Type**: `{0}morphology <surah>:<verse>:<word number>`" \
                     "\n\n**Example**: `{0}morphology 1:1:2`"
+INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
 
 
 def has_syntax_image(surah):
@@ -99,17 +101,12 @@ class QuranMorphology(commands.Cog):
         await ctx.channel.trigger_typing()
         await self._morphology(ctx, ref)
 
-    @morphology.error
-    async def on_morphology_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
-
     @cog_ext.cog_slash(name="morphology", description="View the morphology of a Quranic word.",
                        options=[
                            create_option(
-                               name="surah_number",
-                               description="The surah number of the word.",
-                               option_type=4,
+                               name="surah",
+                               description="The surah name/number of the word.",
+                               option_type=3,
                                required=True),
                            create_option(
                                name="verse_number",
@@ -121,10 +118,19 @@ class QuranMorphology(commands.Cog):
                                description="The word number of the word.",
                                option_type=4,
                                required=True)])
-    async def slash_morphology(self, ctx: SlashContext, surah_number: int, verse_number: int, word_number: int):
+    async def slash_morphology(self, ctx: SlashContext, surah: str, verse_number: int, word_number: int):
         await ctx.defer()
+        surah_number = QuranReference.parse_surah_number(surah)
         ref = f'{surah_number}:{verse_number}:{word_number}'
         await self._morphology(ctx, ref)
+
+    @morphology.error
+    @slash_morphology.error
+    async def on_morphology_error(self, ctx, error):
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+        if isinstance(error, InvalidSurahName):
+            await ctx.send(INVALID_SURAH_NAME)
 
 
 def setup(bot):
