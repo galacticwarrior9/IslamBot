@@ -53,14 +53,19 @@ class QuranMorphology(commands.Cog):
         self.syntaxURL = 'http://corpus.quran.com/treebank.jsp?chapter={}&verse={}&token={}'
 
     async def _morphology(self, ctx, ref: str):
+        try:
+            prefix = ctx.prefix
+        except AttributeError:
+            prefix = '/'
+
         if not in_correct_format(ref):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            await ctx.send(INVALID_ARGUMENTS.format(prefix))
             return
 
         try:
             surah, verse, word = ref.split(':')
         except:
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            await ctx.send(INVALID_ARGUMENTS.format(prefix))
             return
 
         word_source = await get_site_source(self.morphologyURL.format(surah, verse, word))
