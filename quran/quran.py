@@ -443,7 +443,6 @@ class Quran(commands.Cog):
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
-        await DBHandler.create_connection()
         await DBHandler.update_guild_translation(ctx.guild.id, translation)
         await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
 
