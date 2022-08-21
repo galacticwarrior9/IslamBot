@@ -13,7 +13,7 @@ An Islamic bot for Discord with the following features:
 * *Qur'an*, with support for 100+ translations.  
 * *Tafsir*, with 9 available in English and 37 in Arabic.  
 * *Hadith* in English and Arabic, from [sunnah.com](https://sunnah.com).  
-* Prayer times for any location in the world, with the ability to set reminders and change the calculation method.  
+* Prayer times for any location in the world, with the ability to change the calculation method.
 * The ability to view the morphology of every word in the Qur'an.   
 * Conversions between the Hijri and Gregorian calendars.  
 * Visualisation of Qur'anic verses on a *mushaf*.   
