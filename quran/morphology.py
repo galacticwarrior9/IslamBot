@@ -84,7 +84,7 @@ class QuranMorphology(commands.Cog):
         word_number="The order in which this word appears in the verse, e.g. 2 for the second word."
     )
     async def morphology(self, interaction: discord.Interaction, surah: str, verse: int, word_number: int):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
         ref = f'{surah_number}:{verse}:{word_number}'
         await self._morphology(interaction, ref)

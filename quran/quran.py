@@ -3,8 +3,7 @@ import re
 
 import discord
 import pymysql
-from discord.app_commands import Choice
-from discord.ext.commands import CheckFailure, MissingRequiredArgument
+from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
 from utils.database_utils import DBHandler
@@ -247,11 +246,13 @@ class Quran(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
-    @discord.app_commands.describe(surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas or 112",
-                                   start_verse="The first verse to fetch, e.g. 255.",
-                                   end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
-                                   translation="The translation to use",
-                                   reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order.")
+    @discord.app_commands.describe(
+        surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas or 112",
+        start_verse="The first verse to fetch, e.g. 255.",
+        end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
+        translation="The translation to use",
+        reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
+    )
     async def quran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
                           translation: str = None, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
@@ -326,8 +327,10 @@ class Quran(commands.Cog):
             await interaction.followup.send(DATABASE_UNREACHABLE)
 
     @discord.app_commands.command(name="surah", description="View information about a surah.")
-    @discord.app_commands.describe(surah="The name or number of the surah, e.g. al-Baqarah or 2.",
-                                   reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order.")
+    @discord.app_commands.describe(
+        surah="The name or number of the surah, e.g. al-Baqarah or 2.",
+        reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
+    )
     async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         surah_num = QuranReference.parse_surah_number(surah)
