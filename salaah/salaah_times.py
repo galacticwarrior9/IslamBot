@@ -9,7 +9,7 @@ from discord.ext.commands import MissingRequiredArgument
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-from praytimes import PrayTimes
+from salaah.praytimes import PrayTimes
 from utils.database_utils import PrayerTimesHandler
 
 icon = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'

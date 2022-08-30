@@ -54,6 +54,7 @@ async def main():
     async with bot:
         await bot.load_extension("quran.quran")
         await bot.load_extension("quran.mushaf")
+        await bot.load_extension("quran.morphology")
         await bot.start(token)
 
 
