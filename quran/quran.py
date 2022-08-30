@@ -8,21 +8,10 @@ from discord.ext.commands import CheckFailure, MissingRequiredArgument
 
 from quran.quran_info import *
 from utils.database_utils import DBHandler
+from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List>"
-
-INVALID_ARGUMENTS_ARABIC = "**Invalid arguments!** Type `{0}aquran [surah]:[ayah]`. \n\nExample: `{0}aquran 1:1`" \
-                           "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                           "\n\nExample: `{0}aquran 1:1-7`"
-
-INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah]`. \n\nExample: `{0}quran 1:1`" \
-                            "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                            "\n\nExample: `{0}quran 1:1-7`"
-
-INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
-INVALID_AYAH = "**There are only {0} verses in this surah**."
-INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
@@ -148,11 +137,6 @@ translation_list = {
     'bubenheim': 27,  # German
     'indonesian': 33,  # Indonesian
 }
-
-
-class InvalidTranslation(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 class Translation:
@@ -288,7 +272,7 @@ class Quran(commands.Cog):
     )
     async def aquran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
                            reveal_order: bool = False):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         surah_number = QuranReference.parse_surah_number(surah)
         await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah_number}:{ref}',
@@ -297,7 +281,7 @@ class Quran(commands.Cog):
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
     @discord.app_commands.describe(translation="The translation to use.")
     async def rquran(self, interaction: discord.Interaction, translation: str = None) -> None:
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
@@ -309,33 +293,12 @@ class Quran(commands.Cog):
 
     @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
     async def raquran(self, interaction: discord.Interaction):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
         await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{verse}').process_request()
 
-    @quran.error
-    @rquran.error
-    async def quran_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-        if isinstance(error, InvalidSurah):
-            await interaction.followup.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await interaction.followup.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await interaction.followup.send(INVALID_TRANSLATION)
-        if isinstance(error, InvalidSurahName):
-            await interaction.followup.send(INVALID_SURAH_NAME)
-
-    @aquran.error
-    @raquran.error
-    async def aquran_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-        if isinstance(error, InvalidSurah):
-            await interaction.followup.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await interaction.followup.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, InvalidTranslation):
-            await interaction.followup.send(INVALID_TRANSLATION)
 
     @discord.app_commands.command(name="settranslation",
                                   description="Changes the default Qur'an translation for this server.")
@@ -343,7 +306,7 @@ class Quran(commands.Cog):
     @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.guild_only()
     async def set_translation(self, interaction: discord.Interaction, translation: str):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
 
         translation_id = Translation.get_translation_id(translation)
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
@@ -366,7 +329,7 @@ class Quran(commands.Cog):
     @discord.app_commands.describe(surah="The name or number of the surah, e.g. al-Baqarah or 2.",
                                    reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order.")
     async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah_num = QuranReference.parse_surah_number(surah)
         surah = Surah(num=surah_num, reveal_order=reveal_order)
         em = discord.Embed(colour=0x048c28)
@@ -377,10 +340,13 @@ class Quran(commands.Cog):
                           f'\n• **Revelation order**: {surah.revelation_order} ')
         await interaction.followup.send(embed=em)
 
+    @quran.error
+    @aquran.error
+    @rquran.error
+    @raquran.error
     @surah.error
-    async def surah_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-        if isinstance(error, InvalidSurah):
-            await interaction.followup.send(INVALID_SURAH)
+    async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        await respond_to_interaction_error(interaction, error)
 
 
 async def setup(bot: commands.Bot) -> None:

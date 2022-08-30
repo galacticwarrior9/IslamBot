@@ -3,6 +3,8 @@ from discord.ext import commands
 from discord.ext.commands import BadArgument
 from fuzzywuzzy import process, fuzz
 
+from utils.errors import InvalidSurahNumber, InvalidAyah
+
 quranInfo = {'surah': [
     # [start, ayas, order, rukus, name, tname, ename, type]
     [],
@@ -586,7 +588,7 @@ class InvalidSurah(discord.app_commands.AppCommandError):
 class Surah:
     def __init__(self, num, reveal_order: bool = False):
         if not 1 <= num <= 114:
-            raise InvalidSurah
+            raise InvalidSurahNumber
         if reveal_order:
             num = QuranReference.convert_revelation_to_surah_num(num)
 
@@ -600,15 +602,8 @@ class Surah:
         # TODO: Re-add pages.
 
 
-class InvalidAyah(discord.app_commands.AppCommandError):
-    def __init__(self, num_verses, *args, **kwargs):
-        self.num_verses = num_verses
-        super().__init__(*args)
-
-
 class InvalidSurahName(discord.app_commands.AppCommandError):
-    def __init__(self, num_verses, *args, **kwargs):
-        self.num_verses = num_verses
+    def __init__(self, *args, **kwargs):
         super().__init__(*args)
 
 
@@ -623,7 +618,7 @@ class QuranReference:
         self.surah = int(ref.split(':', 1)[0])
 
         if not 1 <= self.surah <= 114:
-            raise InvalidSurah
+            raise InvalidSurahNumber
 
         if self.reveal_order:
             self.surah = self.convert_revelation_to_surah_num(self.surah)

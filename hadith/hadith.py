@@ -8,11 +8,6 @@ import aiohttp
 import discord
 import html2text
 from discord.ext import commands
-from discord_slash import SlashContext, cog_ext, ButtonStyle
-from discord_slash.context import MenuContext
-from discord_slash.model import ContextMenuType
-from discord_slash.utils import manage_components
-from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_dict
 
