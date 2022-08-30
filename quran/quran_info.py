@@ -1,3 +1,4 @@
+import discord.app_commands
 from discord.ext import commands
 from discord.ext.commands import BadArgument
 from fuzzywuzzy import process, fuzz
@@ -577,9 +578,9 @@ surah_names: list = [
 ]
 
 
-class InvalidSurah(commands.CommandError):
+class InvalidSurah(discord.app_commands.AppCommandError):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
 
 
 class Surah:
@@ -599,16 +600,16 @@ class Surah:
         # TODO: Re-add pages.
 
 
-class InvalidAyah(commands.CommandError):
+class InvalidAyah(discord.app_commands.AppCommandError):
     def __init__(self, num_verses, *args, **kwargs):
         self.num_verses = num_verses
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
 
 
-class InvalidSurahName(commands.CommandError):
+class InvalidSurahName(discord.app_commands.AppCommandError):
     def __init__(self, num_verses, *args, **kwargs):
         self.num_verses = num_verses
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
 
 
 class QuranReference:
@@ -619,10 +620,7 @@ class QuranReference:
         self.ayat_list = self.process_ref(ref)
 
     def process_ref(self, ref):
-        try:
-            self.surah = int(ref.split(':', 1)[0])
-        except:
-            raise BadArgument
+        self.surah = int(ref.split(':', 1)[0])
 
         if not 1 <= self.surah <= 114:
             raise InvalidSurah
@@ -631,11 +629,7 @@ class QuranReference:
             self.surah = self.convert_revelation_to_surah_num(self.surah)
 
         if self.multiple_verses:
-            try:
-                min_ayah = int(ref.split(':')[1].split('-')[0])
-            except:
-                raise BadArgument
-
+            min_ayah = int(ref.split(':')[1].split('-')[0])
             if min_ayah <= 0:
                 min_ayah = 1
 

@@ -1,9 +1,9 @@
+import asyncio
 import configparser
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
-from discord_slash import SlashCommand
 
 from utils.utils import PrefixHandler
 
@@ -38,25 +38,27 @@ cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology'
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
-bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True,
-                              intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
 
-bot.remove_command('help')
+class IslamBot(commands.AutoShardedBot):
+    def __init__(self) -> None:
+        super().__init__(command_prefix=get_prefix, description=description, case_insensitive=True, intents=intents)
 
-for cog in cog_list:
-    bot.load_extension(cog)
+    #async def setup_hook(self):
+    #    print(f'Logged in as {self.user.name} ({self.user.id}) on {len(self.guilds)} servers')
+
+
+bot = IslamBot()
+
+
+async def main():
+    async with bot:
+        await bot.load_extension("quran.quran")
+        await bot.start(token)
 
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
+    await bot.tree.sync(guild=discord.Object(308241121165967362))
 
-
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, CommandNotFound):
-        return
-
-
-bot.run(token)
+asyncio.run(main())
