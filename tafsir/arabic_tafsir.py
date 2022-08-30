@@ -8,6 +8,7 @@ from discord.ext import commands
 from discord_slash import cog_ext, SlashContext, ButtonStyle
 from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
+from fuzzywuzzy import process, fuzz
 
 from quran.quran_info import QuranReference
 from utils.utils import get_site_source, convert_to_arabic_number
@@ -159,8 +160,13 @@ class ArabicTafsir:
     def get_tafsir_id(self):
         if self.id in ids:
             return ids[self.id]
-        else:
+
+        tafsir = process.extract(self.id, ids.keys(), scorer=fuzz.partial_ratio, limit=1)
+        if tafsir is None:
             raise InvalidTafsir
+
+        self.id = tafsir[0][0]
+        return ids[self.id]
 
     '''
     Gets the tafsir's Arabic name.
@@ -303,12 +309,12 @@ class Tafsir(commands.Cog):
     @cog_ext.cog_slash(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية",
                        options=[
                            create_option(
-                               name="surah_num",
-                               description="اكتب رقم السورة",
-                               option_type=4,
+                               name="surah",
+                               description="اكتب رقم أو اسم السورة",
+                               option_type=3,
                                required=True),
                            create_option(
-                               name="verse_num",
+                               name="verse_number",
                                description="اكتب رقم آية",
                                option_type=4,
                                required=True),
@@ -322,9 +328,11 @@ class Tafsir(commands.Cog):
                                description="هل السورة تشير إلى رقم أمر الوحي؟",
                                option_type=5,
                                required=False)])
-    async def slash_atafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = 'tabari', reveal_order: bool = False):
+    async def slash_atafsir(self, ctx: SlashContext, surah: str, verse_number: int, tafsir: str = 'tabari',
+                            reveal_order: bool = False):
         await ctx.defer()
-        quran_reference = QuranReference(ref=f'{surah_num}:{verse_num}', reveal_order=reveal_order)
+        surah_number = QuranReference.parse_surah_number(surah)
+        quran_reference = QuranReference(ref=f'{surah_number}:{verse_number}', reveal_order=reveal_order)
         tafsir = ArabicTafsir(quran_reference.surah, quran_reference.ayat_list, tafsir)
         await self.send(ctx, tafsir)
 

@@ -9,7 +9,7 @@ from discord_slash import cog_ext, SlashContext, ButtonStyle
 from discord_slash.utils import manage_components
 from discord_slash.utils.manage_commands import create_option
 
-from quran.quran_info import Surah, InvalidSurah, QuranReference
+from quran.quran_info import Surah, InvalidSurah, QuranReference, InvalidSurahName
 from utils.slash_utils import generate_choices_from_dict
 from utils.utils import get_site_source, get_site_json
 
@@ -69,6 +69,8 @@ INVALID_TAFSIR = "**Couldn't find tafsir!** " \
 INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
 
 INVALID_AYAH = "**There are only {0} verses in this surah**."
+
+INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
 
 NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir." \
           "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
@@ -289,12 +291,12 @@ class TafsirEnglish(commands.Cog):
     @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
                        options=[
                            create_option(
-                               name="surah_num",
-                               description="The surah number to fetch, e.g. 112",
-                               option_type=4,
+                               name="surah",
+                               description="The surah name/number to fetch, e.g. Al-Ikhlaas, 112",
+                               option_type=3,
                                required=True),
                            create_option(
-                               name="verse_num",
+                               name="verse_number",
                                description="The verse number to fetch, e.g. 255",
                                option_type=4,
                                required=True),
@@ -309,23 +311,32 @@ class TafsirEnglish(commands.Cog):
                                description="Is the surah referenced the revelation order number?",
                                option_type=5,
                                required=False)])
-    async def slash_tafsir(self, ctx: SlashContext, surah_num: int, verse_num: int, tafsir: str = "maarifulquran", reveal_order: bool = False):
+    async def slash_tafsir(self, ctx: SlashContext, surah: str, verse_number: int, tafsir: str = "maarifulquran",
+                           reveal_order: bool = False):
         await ctx.defer()
-        spec = await self.process_request(ref=f'{surah_num}:{verse_num}', tafsir=tafsir, page=1, reveal_order=reveal_order)
+        surah_number = QuranReference.parse_surah_number(surah)
+        spec = await self.process_request(ref=f'{surah_number}:{verse_number}', tafsir=tafsir, page=1,
+                                          reveal_order=reveal_order)
         await self.send_embed(ctx, spec)
 
     @tafsir.error
+    @slash_tafsir.error
     async def on_tafsir_error(self, ctx, error):
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
         elif isinstance(error, InvalidReference):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            try:
+                await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
+            except AttributeError:
+                await ctx.send(INVALID_ARGUMENTS.format('/'))
         elif isinstance(error, InvalidAyah):
             await ctx.send(INVALID_AYAH.format(error.num_verses))
         elif isinstance(error, InvalidSurah):
             await ctx.send(INVALID_SURAH)
         elif isinstance(error, InvalidTafsir):
             await ctx.send(INVALID_TAFSIR)
+        elif isinstance(error, InvalidSurahName):
+            await ctx.send(INVALID_SURAH_NAME)
         elif isinstance(error, NoText):
             await ctx.send(NO_TEXT)
         elif isinstance(error, BadAlias):

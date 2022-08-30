@@ -18,14 +18,6 @@ loop = asyncio.get_event_loop()
 
 
 class DBHandler:
-    host = config['MySQL']['host']
-    user = config['MySQL']['user']
-    password = config['MySQL']['password']
-    database = config['MySQL']['database']
-    server_translations_table_name = config['MySQL']['server_translations_table_name']
-    server_prayer_times_table_name = config['MySQL']['server_prayer_times_table_name']
-    user_prayer_times_table_name = config['MySQL']['user_prayer_times_table_name']
-
     @classmethod
     async def create_connection(cls):
         connection = await aiomysql.connect(host=host, user=user, password=password, db=database,

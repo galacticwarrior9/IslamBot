@@ -1,5 +1,6 @@
 from discord.ext import commands
 from discord.ext.commands import BadArgument
+from fuzzywuzzy import process, fuzz
 
 quranInfo = {'surah': [
     # [start, ayas, order, rukus, name, tname, ename, type]
@@ -457,6 +458,124 @@ quranInfo = {'surah': [
     [96, 19, 'obligatory'],
 ]}
 
+surah_names: list = [
+    "",  # index 0 so everything is accessed like al-faatihah is 1 etc.
+    "Al-Faatiha",
+    "Al-Baqara",
+    "Aal-i-Imraan",
+    "An-Nisaa",
+    "Al-Maaida",
+    "Al-An'aam",
+    "Al-A'raaf",
+    "Al-Anfaal",
+    "At-Tawba",
+    "Yunus",
+    "Hud",
+    "Yusuf",
+    "Ar-Ra'd",
+    "Ibrahim",
+    "Al-Hijr",
+    "An-Nahl",
+    "Al-Israa",
+    "Al-Kahf",
+    "Maryam",
+    "Taa-Haa",
+    "Al-Anbiyaa",
+    "Al-Hajj",
+    "Al-Muminoon",
+    "An-Noor",
+    "Al-Furqaan",
+    "Ash-Shu'araa",
+    "An-Naml",
+    "Al-Qasas",
+    "Al-Ankaboot",
+    "Ar-Room",
+    "Luqman",
+    "As-Sajda",
+    "Al-Ahzaab",
+    "Saba",
+    "Faatir",
+    "Yaseen",
+    "As-Saaffaat",
+    "Saad",
+    "Az-Zumar",
+    "Al-Ghaafir",
+    "Fussilat",
+    "Ash-Shura",
+    "Az-Zukhruf",
+    "Ad-Dukhaan",
+    "Al-Jaathiya",
+    "Al-Ahqaf",
+    "Muhammad",
+    "Al-Fath",
+    "Al-Hujuraat",
+    "Qaaf",
+    "Adh-Dhaariyat",
+    "At-Tur",
+    "An-Najm",
+    "Al-Qamar",
+    "Ar-Rahmaan",
+    "Al-Waaqia",
+    "Al-Hadid",
+    "Al-Mujaadila",
+    "Al-Hashr",
+    "Al-Mumtahana",
+    "As-Saff",
+    "AL-Jumu'a",
+    "Al-Munaafiqoon",
+    "At-Taghaabun",
+    "At-Talaaq",
+    "At-Tahrim",
+    "Al-Mulk",
+    "Al-Qalam",
+    "Al-Haaqqa",
+    "Al-Ma'aarij",
+    "Nooh",
+    "Al-Jinn",
+    "Al-Muzzammil",
+    "Al-Muddaththir",
+    "Al-Qiyaama",
+    "Al-Insaan",
+    "Al-Mursalaat",
+    "An-Naba",
+    "An-Naazi'aat",
+    "Abasa",
+    "At-Takwir",
+    "Al-Infitaar",
+    "Al-Mutaffifin",
+    "Al-Inshiqaaq",
+    "Al-Burooj",
+    "At-Taariq",
+    "Al-A'laa",
+    "Al-Ghaashiya",
+    "Al-Fajr",
+    "Al-Balad",
+    "Ash-Shams",
+    "Al-Lail",
+    "Ad-Dhuhaa",
+    "Ash-Sharh",
+    "At-Tin",
+    "Al-Alaq",
+    "Al-Qadr",
+    "Al-Bayyina",
+    "Az-Zalzala",
+    "Al-Aadiyaat",
+    "Al-Qaari'a",
+    "At-Takaathur",
+    "Al-Asr",
+    "Al-Humaza",
+    "Al-Fil",
+    "Quraish",
+    "Al-Maa'un",
+    "Al-Kawthar",
+    "Al-Kaafiroon",
+    "An-Nasr",
+    "Al-Masad",
+    "Al-Ikhlaas",
+    "Al-Falaq",
+    "An-Naas",
+]
+
 
 class InvalidSurah(commands.CommandError):
     def __init__(self, *args, **kwargs):
@@ -481,6 +600,12 @@ class Surah:
 
 
 class InvalidAyah(commands.CommandError):
+    def __init__(self, num_verses, *args, **kwargs):
+        self.num_verses = num_verses
+        super().__init__(*args, **kwargs)
+
+
+class InvalidSurahName(commands.CommandError):
     def __init__(self, num_verses, *args, **kwargs):
         self.num_verses = num_verses
         super().__init__(*args, **kwargs)
@@ -549,3 +674,15 @@ class QuranReference:
         for surah_number in range(len(quranInfo['surah'][:-2])):
             if quranInfo['surah'][surah_number + 1][2] == surah_num:
                 return surah_number + 1
+
+    @staticmethod
+    def parse_surah_number(surah: str) -> int:
+        try:
+            return int(surah)
+        except ValueError:
+            surah_name = process.extract(surah, surah_names, scorer=fuzz.partial_ratio, limit=1)
+            if surah_name is None:
+                raise InvalidSurahName
+
+            surah_name = surah_name[0][0]
+            return surah_names.index(surah_name)
