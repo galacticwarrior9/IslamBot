@@ -2,9 +2,9 @@ import asyncio
 import configparser
 
 import discord
-from discord.ext import commands
-from discord.ext.commands import CommandNotFound
+from discord.ext import commands, tasks
 
+from hijri_calendar.hijri_calendar import HijriCalendar
 from utils.utils import PrefixHandler
 
 config = configparser.ConfigParser()
@@ -39,13 +39,24 @@ cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology'
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
 
+@tasks.loop(hours=1)
+async def update_presence():
+    hijri = HijriCalendar.get_current_hijri()
+    game = discord.Game(f"/help | {hijri}")
+    await bot.change_presence(activity=game)
+
+
+@update_presence.before_loop
+async def before_presence_update():
+    await bot.wait_until_ready()
+
+
 class IslamBot(commands.AutoShardedBot):
     def __init__(self) -> None:
         super().__init__(command_prefix=get_prefix, description=description, case_insensitive=True, intents=intents)
 
     #async def setup_hook(self):
-    #    print(f'Logged in as {self.user.name} ({self.user.id}) on {len(self.guilds)} servers')
-
+    #    placeholder()
 
 bot = IslamBot()
 
@@ -55,6 +66,11 @@ async def main():
         await bot.load_extension("quran.quran")
         await bot.load_extension("quran.mushaf")
         await bot.load_extension("quran.morphology")
+        await bot.load_extension("hijri_calendar.hijri_calendar")
+
+        # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
+        update_presence.start()
+
         await bot.start(token)
 
 

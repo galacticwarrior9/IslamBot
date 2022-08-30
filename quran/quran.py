@@ -349,6 +349,6 @@ class Quran(commands.Cog):
         await respond_to_interaction_error(interaction, error)
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot):
     await bot.add_cog(Quran(bot), guild=discord.Object(308241121165967362))
 

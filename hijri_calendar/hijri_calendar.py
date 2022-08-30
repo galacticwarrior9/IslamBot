@@ -2,34 +2,20 @@ from datetime import datetime, date
 
 import discord
 from discord.ext import commands, tasks
-from discord.ext.commands import MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
 from hijri_converter import convert
 
 from utils.utils import convert_to_arabic_number, make_embed
 
 ICON = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/512/calendar-icon.png'
-DATE_INVALID = '**Invalid date**. Dates must be in this format: DD-MM-YYYY.\n\n**Example**: 01-12-2020'
-GREGORIAN_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The minimum year is 1924; the maximum year is 2077.'
-HIJRI_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The minimum year is 1343; the maximum year is 1500.'
+DATE_INVALID = ':warning: You provided an invalid date!'
+GREGORIAN_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The year must be between 1924 and 2077.'
+HIJRI_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The year must be between 1343 and 1500.'
 
 
 class HijriCalendar(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.update_hijri_date.start()
-
-    @tasks.loop(hours=1)
-    async def update_hijri_date(self):
-        hijri = self.get_current_hijri()
-        game = discord.Game(f"-ihelp | {hijri}")
-        await self.bot.change_presence(activity=game)
-
-    @update_hijri_date.before_loop
-    async def before_hijri_update(self):
-        await self.bot.wait_until_ready()
 
     @staticmethod
     def get_current_hijri():
@@ -50,94 +36,73 @@ class HijriCalendar(commands.Cog):
         gregorian = convert.Hijri(hijri_date.year, hijri_date.month, hijri_date.day).to_gregorian()
         return f'{hijri_date.strftime("%d-%m-%Y")} AH is **{gregorian.strftime("%d %B %Y")}**'
 
-    async def _converttohijri(self, ctx, gregorian_date: str):
+    async def _convert_to_hijri(self, interaction: discord.Interaction, gregorian_date: str):
+        response = interaction.response
         try:
             gregorian_date = datetime.strptime(gregorian_date, "%d-%m-%Y").date()
         except:
-            return await ctx.send(DATE_INVALID)
+            return await response.send_message(DATE_INVALID)
 
         try:
             hijri = self.get_hijri(gregorian_date=gregorian_date)
         except OverflowError:
-            return await ctx.send(GREGORIAN_DATE_OUT_OF_RANGE)
+            return await response.send_message(GREGORIAN_DATE_OUT_OF_RANGE)
 
         em = discord.Embed(colour=0x72bcd4, description=hijri)
         em.set_author(name="Gregorian → Hijri Conversion", icon_url=ICON)
-        await ctx.send(embed=em)
+        await response.send_message(embed=em)
 
-    async def _converttogregorian(self, ctx, hijri_date: str):
+    async def _convert_to_gregorian(self, interaction: discord.Interaction, hijri_date: str):
+        response = interaction.response
         try:
             hijri_date = datetime.strptime(hijri_date, "%d-%m-%Y").date()
         except:
-            return await ctx.send(DATE_INVALID)
+            return await response.send_message(DATE_INVALID)
 
         try:
             gregorian = self.get_gregorian(hijri_date=hijri_date)
         except OverflowError:
-            return await ctx.send(HIJRI_DATE_OUT_OF_RANGE)
+            return await response.send_message(HIJRI_DATE_OUT_OF_RANGE)
 
         em = discord.Embed(colour=0x72bcd4, description=gregorian)
         em.set_author(name="Hijri → Gregorian Conversion", icon_url=ICON)
-        await ctx.send(embed=em)
+        await response.send_message(embed=em)
 
-    async def _hijridate(self, ctx):
+    async def _hijridate(self, interaction: discord.Interaction):
         hijri = self.get_current_hijri()
-        em = make_embed(colour=0x72bcd4, author="Today's Hijri Date", description=hijri, author_icon=ICON)
-        em.set_footer(text='')  # fixes some weird error when this is called from the slash command
-        await ctx.send(embed=em)
+        em = discord.Embed(colour=0x72bcd4, description=hijri).set_author(name="Today's Hijri Date", icon_url=ICON)
+        await interaction.response.send_message(embed=em)
 
-    @commands.command(name='hijridate')
-    async def hijridate(self, ctx):
-        await ctx.channel.trigger_typing()
-        await self._hijridate(ctx)
+    group = discord.app_commands.Group(name="calendar", description="Convert between Gregorian and Hijri dates.")
 
-    @commands.command(name='converttohijri')
-    async def converttohijri(self, ctx, gregorian_date: str):
-        await self._converttohijri(ctx, gregorian_date)
+    @group.command(name="to_hijri", description="Convert a Gregorian date to a Hijri date.")
+    @discord.app_commands.describe(
+        day="The day of the Gregorian date to convert, e.g. 1, 31",
+        month="The month of the Gregorian date to convert, e.g. 1 for January; 12 for December",
+        year="The year of the Gregorian date to convert, e.g. 2023. Must be between 1924 and 2077."
+    )
+    async def convert_to_hijri(self, interaction: discord.Interaction, day: int, month: int, year: int):
+        await self._convert_to_hijri(interaction, f"{day}-{month}-{year}")
 
-    @commands.command(name="converttogregorian", aliases=["convertfromhijri"])
-    async def converttogregorian(self, ctx, hijri_date: str):
-        await self._converttogregorian(ctx, hijri_date)
+    @group.command(name="to_gregorian", description="Convert a Hijri date to a Gregorian date.")
+    @discord.app_commands.describe(
+        day="The day of the Hijri date to convert, e.g. 1, 29",
+        month="The month of the Hijri date to convert, e.g. 1 for Muḥarram, 9 for Ramaḍān",
+        year="The year of the Hijri date to convert, e.g. 1444. Must be between 1343 and 1500."
+    )
+    async def convert_to_gregorian(self, interaction: discord.Interaction, day: int, month: int, year: int):
+        await self._convert_to_gregorian(interaction, f"{day}-{month}-{year}")
 
-    @converttohijri.error
-    @converttogregorian.error
-    async def on_convert_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(DATE_INVALID)
+    @group.command(name="hijri_date", description="Get the current Hijri date.")
+    async def hijri_date(self, interaction: discord.Interaction):
+        await self._hijridate(interaction)
 
-    @cog_ext.cog_subcommand(base="calendar", name="to_hijri", description="Convert a Gregorian date to a Hijri date.",
-                            base_description="Convert between Hijri and Gregorian dates.",
-                            options=[
-                                create_option(
-                                    name="gregorian_date",
-                                    description="The Gregorian date to convert, written in the DD-MM-YYYY format, e.g. 17-12-2021",
-                                    option_type=3,
-                                    required=True)
-                            ])
-    async def slash_converttohijri(self, ctx: SlashContext, gregorian_date: str):
-        await ctx.defer()
-        await self._converttohijri(ctx, gregorian_date)
-
-    @cog_ext.cog_subcommand(base="calendar", name="to_gregorian",
-                            description="Convert a Hijri date to a Gregorian date.",
-                            base_description="Convert between Hijri and Gregorian dates.",
-                            options=[
-                                create_option(
-                                    name="hijri_date",
-                                    description="The Hijri date to convert, written in the DD-MM-YYYY format, e.g. 18-12-1442",
-                                    option_type=3,
-                                    required=True)
-                            ])
-    async def slash_converttogregorian(self, ctx: SlashContext, hijri_date: str):
-        await ctx.defer()
-        await self._converttogregorian(ctx, hijri_date)
-
-    @cog_ext.cog_subcommand(base='calendar', name="hijri_date", description="Send current hijri date.",
-                            base_description='Send current hijri date')
-    async def slash_hijridate(self, ctx: SlashContext):
-        await ctx.defer()
-        await self._hijridate(ctx)
+    @hijri_date.error
+    @convert_to_hijri.error
+    @convert_to_gregorian.error
+    async def on_convert_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        await interaction.response.send_message(f":warning: **Error!** `{error}`")
 
 
-def setup(bot):
-    bot.add_cog(HijriCalendar(bot))
+async def setup(bot):
+    await bot.add_cog(HijriCalendar(bot), guild=discord.Object(308241121165967362))
