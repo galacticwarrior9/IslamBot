@@ -313,7 +313,7 @@ class Quran(commands.Cog):
     @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.guild_only()
     async def set_translation(self, interaction: discord.Interaction, translation: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
 
         translation_id = Translation.get_translation_id(translation)
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos

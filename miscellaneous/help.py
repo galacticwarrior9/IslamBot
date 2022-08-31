@@ -50,9 +50,16 @@ class HelpMenu(discord.ui.View):
                                                             f"\n\n`/quran <surah> <first verse> <last verse>`"
                                                             f"\n\nExample: `/aquran 2 255 287`")
 
-            em.add_field(name="/morphology", inline=True, value="View the morphology of a Qur'anic word."
-                                                                "\n\n`/morphology <surah> <verse> <word number>`"
-                                                                "\n\nExample: `/aquran 2 255 1`")
+            em.add_field(name="/rquran", inline=True, value="Gets a random translated Qur'anic verse."
+                                                            "\n\n`/rquran <translation>`"
+                                                            "\n\nExample: `/rquran khattab`")
+
+            em.add_field(name="/raquran", inline=True, value="Gets a random Qur'anic verse in Arabic.")
+
+            em.add_field(name="/settranslation", inline=True, value="Changes the default Qur'an translation."
+                                                                    "\n\n`/settranslation <translation>`"
+                                                                    "\n\nExample: `/settranslation khattab`"
+                                                                    "\n\nYou must have the **Administrator** permission to use this command.")
 
             em.add_field(name="/mushaf", inline=True, value="View a Qur'anic verse on a standard *mushaf*."
                                                             "\n\n`/mushaf <surah> <verse>`"
@@ -64,20 +71,12 @@ class HelpMenu(discord.ui.View):
                                                              "\n\nExample: `/rmushaf tajweed`")
 
             em.add_field(name="/surah", inline=True, value="Get information about a surah."
-                                                           "\n\n`/surah <surah number>`"
+                                                           "\n\n`/surah <surah number or namer>`"
                                                            "\n\nExample: `/surah 1`")
 
-            em.add_field(name="/settranslation", inline=True, value="Changes the default Qur'an translation."
-                                                                    "\n\n`/settranslation <translation>`"
-                                                                    "\n\nExample: `/settranslation khattab`"
-                                                                    "\n\nYou must have the **Administrator** permission to use this command.")
-
-            em.add_field(name="/rquran", inline=True, value="Gets a random translated Qur'anic verse."
-                                                            "\n\n`/rquran <translation>`"
-                                                            "\n\nExample: `/rquran khattab`")
-
-            em.add_field(name="/raquran", inline=True, value="Gets a random Qur'anic verse in Arabic."
-                                                             "\n\n`/raquran <translation>`")
+            em.add_field(name="/morphology", inline=True, value="View the morphology of a Qur'anic word."
+                                                                "\n\n`/morphology <surah> <verse> <word number>`"
+                                                                "\n\nExample: `/aquran 2 255 1`")
 
             await interaction.response.edit_message(embed=em)
 
@@ -124,10 +123,6 @@ class HelpMenu(discord.ui.View):
             em.add_field(name="/ahadith", inline=True, value="Gets a sunnah.com hadith in Arabic. "
                                                              "The usage is the same as `/hadith`.")
 
-            em.add_field(name="/biography", inline=True, value="Gets the biography of a hadith transmitter "
-                                                               "or early Muslim from al-Dhahabi's *Siyar A'lam al-"
-                                                               "al-Nubala*.")
-
             em.add_field(name="/rhadith", inline=True,
                          value="Gets a random sunnah.com hadith in English from Riyadh as-Saliheen. "
                                "The usage is `/rhadith`.")
@@ -135,6 +130,10 @@ class HelpMenu(discord.ui.View):
             em.add_field(name="/rahadith", inline=True,
                          value="Gets a random sunnah.com hadith in Arabic from Riyadh as-Saliheen. "
                                "The usage is `/rahadith`.")
+
+            em.add_field(name="/biography", inline=True, value="Gets the biography of a hadith transmitter "
+                                                               "or early Muslim from al-Dhahabi's *Siyar A'lam al-"
+                                                               "al-Nubala*.")
 
             await interaction.response.edit_message(embed=em)
 
@@ -180,13 +179,14 @@ class Help(commands.Cog):
                          "\n\nIf you benefit from the bot, please consider [donating](https://ko-fi.com/zaify)."
         em.add_field(name="Links", inline=False,
                      value="• [Vote / تصويت](https://top.gg/bot/352815253828141056/vote)\n"
+                           "• [Support Server / سيرفر المساعدة](https://discord.gg/Ud3MHJR)\n" 
                            "• [Documentation / لتوثيق](https://github.com/galacticwarrior9/islambot/blob/master/README.md)\n"
                            "• [Contributors / المساعدين](https://github.com/galacticwarrior9/IslamBot/graphs/contributors)\n"
                            "• [Iqra / اقرأ بوت](https://top.gg/bot/706134327200841870)")
 
         em.set_thumbnail(url='https://images-na.ssl-images-amazon.com/images/I/71CYXRJdY4L.png')
 
-        await interaction.response.send_message(embed=em, view=HelpMenu(interaction=interaction))
+        await interaction.response.send_message(embed=em, view=HelpMenu(interaction=interaction), ephemeral=True)
 
 
 async def setup(bot):
