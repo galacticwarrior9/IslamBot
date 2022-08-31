@@ -48,11 +48,11 @@ class Mushaf(commands.Cog):
     @discord.app_commands.command(name="mushaf", description="Displays an ayah on its page on the mushaf.")
     @discord.app_commands.describe(
         surah="The name or number of the surah, e.g. Al-Ikhlaas or 112",
-        verse="The verse within the surah to display, e.g. 225.",
+        verse="The verse within the surah to display, e.g. 225. Defaults to the first verse.",
         show_tajweed="Should the mushaf highlight where tajweed rules apply?",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def mushaf(self, interaction: discord.Interaction, surah: str, verse: int,
+    async def mushaf(self, interaction: discord.Interaction, surah: str, verse: int = 1,
                      show_tajweed: bool = False, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
