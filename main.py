@@ -13,11 +13,6 @@ token = config['IslamBot']['token']
 
 description = "A Discord bot with Islamic utilities."
 
-cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir',
-            'tafsir.arabic_tafsir',
-            'quran.mushaf', 'dua.dua', 'miscellaneous.help', 'miscellaneous.TopGG', 'miscellaneous.settings',
-            'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times', 'miscellaneous.utility'}
-
 intents = discord.Intents(messages=True, guilds=True, reactions=True)
 
 
@@ -46,7 +41,9 @@ class IslamBot(commands.AutoShardedBot):
             "hadith.hadith",
             "hadith.transmitter_biographies",
             "tafsir.arabic_tafsir",
-            "tafsir.tafsir"
+            "tafsir.tafsir",
+            "miscellaneous.reload",
+            "miscellaneous.TopGG"
         ]
 
     async def setup_hook(self):
@@ -60,6 +57,7 @@ class IslamBot(commands.AutoShardedBot):
 
         # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
         update_presence.start()
+
 
 bot = IslamBot()
 bot.run(token)

@@ -24,5 +24,5 @@ class TopGG(commands.Cog):
         await self.dblpy.post_guild_count()  # post server count
 
 
-def setup(bot):
-    bot.add_cog(TopGG(bot))
+async def setup(bot):
+    await bot.add_cog(TopGG(bot))

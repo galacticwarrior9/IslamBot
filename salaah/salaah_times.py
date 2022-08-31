@@ -2,7 +2,6 @@ import datetime as dt
 from datetime import timedelta
 
 import discord
-from aiohttp import ClientSession
 from dateutil.tz import gettz
 from discord.ext import commands
 
@@ -18,11 +17,10 @@ headers = {'content-type': 'application/json'}
 
 class PrayerTimes(commands.Cog):
     def __init__(self, bot):
-        self.session = ClientSession(loop=bot.loop)
         self.bot = bot
 
     async def get_calculation_methods(self):
-        async with self.session.get(METHODS_URL, headers=headers) as resp:
+        async with self.bot.session.get(METHODS_URL, headers=headers) as resp:
             data = await resp.json()
             data = data['data'].values()
 
@@ -33,7 +31,7 @@ class PrayerTimes(commands.Cog):
     async def get_prayertimes(self, location, calculation_method):
         url = PRAYER_TIMES_URL.format(location, calculation_method, '0')
 
-        async with self.session.get(url, headers=headers) as resp:
+        async with self.bot.session.get(url, headers=headers) as resp:
             data = await resp.json()
             fajr = data['data']['timings']['Fajr']
             sunrise = data['data']['timings']['Sunrise']
@@ -47,7 +45,7 @@ class PrayerTimes(commands.Cog):
 
         url = PRAYER_TIMES_URL.format(location, calculation_method, '1')
 
-        async with self.session.get(url, headers=headers) as resp:
+        async with self.bot.session.get(url, headers=headers) as resp:
             data = await resp.json()
             hanafi_asr = data['data']['timings']['Asr']
 
@@ -57,7 +55,7 @@ class PrayerTimes(commands.Cog):
         async def get_information(location):
             url = "http://api.aladhan.com/v1/hijriCalendarByAddress"
             params = {"address": location}
-            async with self.session.get(url, headers=headers, params=params) as resp:
+            async with self.bot.session.get(url, headers=headers, params=params) as resp:
                 data = await resp.json()
                 meta = data['data'][0]['meta']
                 coordinates = (meta['latitude'], meta['longitude'])
