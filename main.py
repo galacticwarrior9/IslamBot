@@ -68,6 +68,7 @@ async def main():
         await bot.load_extension("quran.morphology")
         await bot.load_extension("hijri_calendar.hijri_calendar")
         await bot.load_extension("salaah.salaah_times")
+        await bot.load_extension("dua.dua")
 
         # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
         update_presence.start()
