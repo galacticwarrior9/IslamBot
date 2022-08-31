@@ -1,20 +1,33 @@
 import datetime as dt
+from dataclasses import dataclass
 from datetime import timedelta
 
 import discord
 from dateutil.tz import gettz
 from discord.ext import commands, tasks
-from fuzzywuzzy import fuzz, process
 
 from salaah.praytimes import PrayTimes
 from utils.database_utils import PrayerTimesHandler
-from utils.slash_utils import get_key_from_value
 
 ICON = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
 METHODS_URL = 'https://api.aladhan.com/v1/methods'
 PRAYER_TIMES_URL = 'http://api.aladhan.com/v1/timingsByAddress?address={}&method={}&school={}'
 
 headers = {'content-type': 'application/json'}
+
+
+@dataclass
+class PrayerTimesResponse:
+    fajr: str
+    sunrise: str
+    dhuhr: str
+    asr: str
+    asr_hanafi: str
+    maghrib: str
+    isha: str
+    imsak: str
+    midnight: str
+    date: str
 
 
 class PrayerTimes(commands.Cog):
@@ -37,7 +50,7 @@ class PrayerTimes(commands.Cog):
             # There's an entry ('CUSTOM') with no 'name' value, so we need to ignore it:
             self.calculation_methods = {method['id']: method['name'] for method in data if int(method['id']) != 99}
 
-    async def get_prayertimes(self, location, calculation_method):
+    async def get_prayertimes(self, location, calculation_method) -> PrayerTimesResponse:
         url = PRAYER_TIMES_URL.format(location, calculation_method, '0')
 
         async with self.bot.session.get(url, headers=headers) as resp:
@@ -56,11 +69,11 @@ class PrayerTimes(commands.Cog):
 
         async with self.bot.session.get(url, headers=headers) as resp:
             data = await resp.json()
-            hanafi_asr = data['data']['timings']['Asr']
+            asr_hanafi = data['data']['timings']['Asr']
 
-        return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date
+        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, asr_hanafi, maghrib, isha, imsak, midnight, date)
 
-    async def get_prayertimes_local(self, location, calculation_method):
+    async def get_prayertimes_local(self, location, calculation_method) -> PrayerTimesResponse:
         async def get_information(location):
             url = "http://api.aladhan.com/v1/hijriCalendarByAddress"
             params = {"address": location}
@@ -118,29 +131,28 @@ class PrayerTimes(commands.Cog):
         sunrise = times['sunrise']
         readable_date = time.strftime('%d %B, %Y')
 
-        return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date
+        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date)
 
     async def _prayer_times(self, interaction: discord.Interaction, location: str, calculation_method: int = None):
         if calculation_method is None:
             calculation_method = await PrayerTimesHandler.get_user_calculation_method(interaction.user.id)
 
         try:
-            fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await \
-                self.get_prayertimes(location, calculation_method)
+            response = await self.get_prayertimes(location, calculation_method)
         except:
             return await interaction.followup.send(":warning: **Location not found**.")
 
-        em = discord.Embed(colour=0x558a25, title=date)
+        em = discord.Embed(colour=0x558a25, title=response.date)
         em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
-            .add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)\
-            .add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr}', inline=True)\
-            .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{sunrise}', inline=True)\
-            .add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr}', inline=True)\
-            .add_field(name='**Asr (صلاة العصر)**', value=f'{asr}', inline=True)\
-            .add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{hanafi_asr}', inline=True)\
-            .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{maghrib}', inline=True)\
-            .add_field(name='**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)\
-            .add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
+            .add_field(name='**Imsak (إِمْسَاك)**', value=f'{response.imsak}', inline=True)\
+            .add_field(name='**Fajr (صلاة الفجر)**', value=f'{response.fajr}', inline=True)\
+            .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{response.sunrise}', inline=True)\
+            .add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{response.dhuhr}', inline=True)\
+            .add_field(name='**Asr (صلاة العصر)**', value=f'{response.asr}', inline=True)\
+            .add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{response.asr_hanafi}', inline=True)\
+            .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{response.maghrib}', inline=True)\
+            .add_field(name='**Isha (صلاة العشاء)**', value=f'{response.isha}', inline=True)\
+            .add_field(name='**Midnight (منتصف الليل)**', value=f'{response.midnight}', inline=True)
 
         em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
         await interaction.followup.send(embed=em)
