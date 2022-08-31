@@ -9,6 +9,7 @@ from fuzzywuzzy import process, fuzz
 
 from quran.quran_info import QuranReference
 from utils.errors import InvalidArabicTafsir, respond_to_interaction_error
+from utils.slash_utils import get_key_from_value
 from utils.utils import get_site_source, convert_to_arabic_number
 
 ICON = 'https://lh5.ggpht.com/lRz25mOFrRL42NuHtuSCneXbWV2Gtm7iYZ5eQbuA7JWUC3guWaTaQxNJ7j9rsRMCNAU=w150'
@@ -267,14 +268,20 @@ class ArabicTafsir(commands.Cog):
     @discord.app_commands.describe(
         surah="اكتب رقم أو اسم السورة",
         verse_number="اكتب رقم آية",
-        tafsir="اسم التفسير."
+        tafsir_name="اسم التفسير."
     )
-    async def atafsir(self, interaction: discord.Interaction, surah: str, verse_number: int, tafsir: str = 'tabari'):
+    async def atafsir(self, interaction: discord.Interaction, surah: str, verse_number: int, tafsir_name: str = 'tabari'):
         await interaction.response.defer()
         surah_number = QuranReference.parse_surah_number(surah)
         quran_reference = QuranReference(ref=f'{surah_number}:{verse_number}')
-        tafsir = ArabicTafsirRequest(quran_reference.surah, quran_reference.ayat_list, tafsir)
+        tafsir = ArabicTafsirRequest(quran_reference.surah, quran_reference.ayat_list, tafsir_name)
         await self.send(interaction, tafsir)
+
+    @atafsir.autocomplete('tafsir_name')
+    async def atafsir_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        closest_matches = [match[0] for match in process.extract(current, TAFSIR_NAMES.values(), scorer=fuzz.token_sort_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=get_key_from_value(match, TAFSIR_NAMES)) for match in closest_matches]
+        return choices
 
     @atafsir.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):

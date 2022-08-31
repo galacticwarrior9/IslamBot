@@ -292,6 +292,13 @@ class Quran(commands.Cog):
         await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
                            translation_key=translation).process_request()
 
+    @quran.autocomplete('translation')
+    @rquran.autocomplete('translation')
+    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
+        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
+        return choices
+
     @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
     async def raquran(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
@@ -299,7 +306,6 @@ class Quran(commands.Cog):
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
         await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{verse}').process_request()
-
 
     @discord.app_commands.command(name="settranslation",
                                   description="Changes the default Qur'an translation for this server.")

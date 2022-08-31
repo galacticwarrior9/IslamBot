@@ -1,9 +1,7 @@
 import re
-import re
 import textwrap
 
 import discord
-import fuzzywuzzy
 from discord.ext import commands
 from fuzzywuzzy import process, fuzz
 
