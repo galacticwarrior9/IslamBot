@@ -104,6 +104,18 @@ class Dua(commands.Cog):
     async def dua_list(self, interaction: discord.Interaction):
         await self._dua_list(interaction)
 
+    @dua.autocomplete('topic')
+    async def dua_topic_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        if len(current) == 0:  # User has not started typing, so don't send anything
+            return []
+        choices = [
+            discord.app_commands.Choice(name=k, value=k)
+            for k, v in DUAS.items() if current.lower() in k.lower()
+        ]
+        if len(choices) > 25:  # Discord limits choices to 25
+            return choices[0:24]
+        return choices
+
     @dua.error
     async def on_dua_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         if isinstance(error, KeyError):
