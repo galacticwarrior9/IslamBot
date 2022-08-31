@@ -75,13 +75,6 @@ class DBHandler:
 class PrayerTimesHandler(DBHandler):
 
     @classmethod
-    async def delete_user_prayer_times_details(cls, user_id):
-        if str(user_id) not in cls.user_df.user.values:
-            pass
-        else:
-            cls.user_df = cls.user_df[cls.user_df.user != str(user_id)]
-
-    @classmethod
     async def update_user_calculation_method(cls, user, method):
         connection = await cls.create_connection()
         async with connection.cursor() as cursor:

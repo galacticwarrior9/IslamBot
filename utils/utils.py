@@ -1,9 +1,6 @@
 import configparser
-from typing import Union
 
 import aiohttp
-import discord
-import pandas as pd
 from bs4 import BeautifulSoup
 from discord import Embed
 
@@ -101,7 +98,7 @@ async def get_site_json(url):
     return data
 
 
-def convert_to_arabic_number(number_string):
+def convert_to_arabic_number(number_string) -> str:
     dic = {
         '0': '۰',
         '1': '١',
@@ -118,7 +115,7 @@ def convert_to_arabic_number(number_string):
     return "".join([dic[char] for char in number_string])
 
 
-def convert_from_arabic_number(number_string):
+def convert_from_arabic_number(number_string) -> str:
     dic = {
         '۹': '9',
         '٨': '8',
@@ -133,77 +130,3 @@ def convert_from_arabic_number(number_string):
         ':': ':'
     }
     return "".join([dic[char] for char in number_string])
-
-
-path = "../prefixes.csv"
-
-
-def make_csv():
-    df = pd.DataFrame(columns=['guildID', 'prefix', 'authorID'])
-    df.to_csv(path, index=False)
-
-
-def get_csv():
-    try:
-        pd.read_csv(path)
-    except FileNotFoundError:
-        make_csv()
-
-    df = pd.read_csv(path)
-    return df
-
-
-class PrefixHandler:
-    df = get_csv()
-
-    @classmethod
-    def save(cls):
-        cls.df.to_csv(path, index=False)
-
-    @classmethod
-    def add_prefix(cls, author: discord.Member, guild_id: int, prefix: str):
-        if guild_id not in cls.df.guildID.values:
-
-            new_row = {
-                "guildID": guild_id,
-                "prefix": prefix,
-                "authorID": author.id
-            }
-
-            cls.df = cls.df.append(new_row, ignore_index=True)
-            cls.save()
-        else:
-            guild_row = cls.df[cls.df.guildID == guild_id]
-            guild_row.prefix.values[0] = prefix
-            cls.df[cls.df.guildID == guild_id] = guild_row
-            cls.save()
-
-    @classmethod
-    def remove_prefix(cls, guild_id: int):
-        if guild_id not in cls.df.guildID.values:
-            pass
-        else:
-            cls.df = cls.df[cls.df.guildID != guild_id]
-            cls.save()
-
-    @classmethod
-    def get_prefix(cls, guild_id: int) -> Union[str, None]:
-        prefix = None
-
-        try:
-            guild_row = cls.df[cls.df.guildID == guild_id]
-            prefix = guild_row.prefix.values[0]
-        except:
-            pass
-
-        return prefix
-
-    @classmethod
-    def get_default_prefix(cls):
-        prefix = config['IslamBot']['default_prefix']
-        return prefix
-
-    @classmethod
-    def has_custom_prefix(cls, guild_id: int) -> bool:
-
-        return guild_id in cls.df.guildID.values

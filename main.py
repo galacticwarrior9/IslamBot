@@ -1,33 +1,15 @@
-import asyncio
 import configparser
 
+import aiohttp
 import discord
 from discord.ext import commands, tasks
 
 from hijri_calendar.hijri_calendar import HijriCalendar
-from utils.utils import PrefixHandler
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 token = config['IslamBot']['token']
-default_prefix = config['IslamBot']['default_prefix']
-
-prefix_list = default_prefix
-
-
-async def get_prefix(_, message):
-    try:
-        guild_id = message.guild.id
-    except AttributeError:
-        return prefix_list
-    if PrefixHandler.has_custom_prefix(guild_id):
-        guild_prefix = PrefixHandler.get_prefix(guild_id)
-        if guild_prefix:
-            return *prefix_list, guild_prefix
-    else:
-        return prefix_list
-
 
 description = "A Discord bot with Islamic utilities."
 
@@ -53,37 +35,31 @@ async def before_presence_update():
 
 class IslamBot(commands.AutoShardedBot):
     def __init__(self) -> None:
-        super().__init__(command_prefix=get_prefix, description=description, case_insensitive=True, intents=intents)
+        super().__init__(command_prefix='-', description=description, case_insensitive=True, intents=intents)
+        self.initial_extensions = [
+            "quran.quran",
+            "quran.mushaf",
+            "quran.morphology",
+            "hijri_calendar.hijri_calendar",
+            "salaah.salaah_times",
+            "dua.dua",
+            "hadith.hadith",
+            "hadith.transmitter_biographies",
+            "tafsir.arabic_tafsir",
+            "tafsir.tafsir"
+        ]
 
-    #async def setup_hook(self):
-    #    placeholder()
+    async def setup_hook(self):
+        self.session = aiohttp.ClientSession()
+        for ext in self.initial_extensions:
+            await self.load_extension(ext)
 
-
-bot = IslamBot()
-
-
-async def main():
-    async with bot:
-        await bot.load_extension("quran.quran")
-        await bot.load_extension("quran.mushaf")
-        await bot.load_extension("quran.morphology")
-        await bot.load_extension("hijri_calendar.hijri_calendar")
-        await bot.load_extension("salaah.salaah_times")
-        await bot.load_extension("dua.dua")
-        await bot.load_extension("hadith.hadith")
-        await bot.load_extension("hadith.transmitter_biographies")
-        await bot.load_extension("tafsir.arabic_tafsir")
-        await bot.load_extension("tafsir.tafsir")
+    async def on_ready(self):
+        print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
+        await bot.tree.sync(guild=discord.Object(308241121165967362))
 
         # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
         update_presence.start()
 
-        await bot.start(token)
-
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
-    await bot.tree.sync(guild=discord.Object(308241121165967362))
-
-asyncio.run(main())
+bot = IslamBot()
+bot.run(token)
