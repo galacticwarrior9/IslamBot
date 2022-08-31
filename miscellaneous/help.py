@@ -161,11 +161,11 @@ class HelpMenu(discord.ui.View):
                                description="For these commands, the `tajweed` parameters controls whether tajweed "
                                            "rules should be highlighted.")
 
-            em.add_field(name="/musha by_ayah", inline=True, value="View a Qur'anic verse on a Medinian *mushaf*."
+            em.add_field(name="/mushaf by_ayah", inline=True, value="View a Qur'anic verse on a Medinian *mushaf*."
                                                                    "\n\n`/mushaf by_ayah <surah> <verse>`"
                                                                    "\n\nExample: `/mushaf 2 255`")
 
-            em.add_field(name="/musha by_page", inline=True, value="Displays a page on the Medinian *mushaf*."
+            em.add_field(name="/mushaf by_page", inline=True, value="Displays a page on the Medinian *mushaf*."
                                                                    "\n\n`/mushaf by_page <page number>`"
                                                                    "\n\nExample: `/mushaf 604`")
 
