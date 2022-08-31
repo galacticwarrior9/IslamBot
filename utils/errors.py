@@ -8,6 +8,7 @@ class ErrorMessage(Enum):
     INVALID_AYAH = ":warning: There are only **{0}** verses in this surah."
     INVALID_SURAH_NUMBER = ":warning: **There are only 114 surahs.** Please choose a surah between 1 and 114."
     INVALID_SURAH_NAME = ":warning: **Invalid surah name!** Please try specifying its number instead."
+    INVALID_TAFSIR = ":warning: **Invalid tafsir!** List of tafasir: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#arabic-tafsir>"
     INVALID_ARABIC_TAFSIR = ":warning: **Invalid tafsir!** List of tafasir: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#arabic-tafsir>"
 
 
@@ -21,6 +22,8 @@ async def respond_to_interaction_error(interaction: discord.Interaction, error: 
         return await hook.send(content=ErrorMessage.INVALID_SURAH_NUMBER.value)
     elif isinstance(error, InvalidTranslation):
         return await hook.send(content=ErrorMessage.INVALID_TRANSLATION.value)
+    elif isinstance(error, InvalidTafsir):
+        return await hook.send(content=ErrorMessage.INVALID_TAFSIR.value)
     elif isinstance(error, InvalidArabicTafsir):
         return await hook.send(content=ErrorMessage.INVALID_ARABIC_TAFSIR.value)
     else:
@@ -49,5 +52,9 @@ class InvalidTranslation(discord.app_commands.AppCommandError):
 
 
 class InvalidArabicTafsir(discord.app_commands.AppCommandError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args)
+
+class InvalidTafsir(discord.app_commands.AppCommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args)

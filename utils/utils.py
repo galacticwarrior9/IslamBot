@@ -87,7 +87,7 @@ def make_embed(**kwargs):
     return embedObj
 
 
-async def get_site_source(url):
+async def get_site_source(url) -> BeautifulSoup:
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             text = await resp.read()
