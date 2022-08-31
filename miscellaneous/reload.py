@@ -57,7 +57,5 @@ class Reload(commands.Cog):
             print(error)
 
 
-
-
 async def setup(bot):
-    await bot.add_cog(Reload(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(Reload(bot))

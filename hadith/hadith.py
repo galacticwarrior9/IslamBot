@@ -367,4 +367,4 @@ class HadithNavigator(discord.ui.View):
 
 
 async def setup(bot):
-    await bot.add_cog(HadithCommands(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(HadithCommands(bot))

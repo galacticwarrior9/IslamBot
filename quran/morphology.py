@@ -95,4 +95,4 @@ class QuranMorphology(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(QuranMorphology(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(QuranMorphology(bot))

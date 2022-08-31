@@ -11,9 +11,9 @@ config.read('config.ini')
 
 token = config['IslamBot']['token']
 
-description = "A Discord bot with Islamic utilities."
+description = "A Discord bot with Islamic utilities. View Qur'an, hadith, prayer times and more."
 
-intents = discord.Intents(messages=True, guilds=True, reactions=True)
+intents = discord.Intents(messages=True, guilds=True)
 
 
 @tasks.loop(hours=1)
@@ -44,6 +44,7 @@ class IslamBot(commands.AutoShardedBot):
             "tafsir.tafsir",
             "miscellaneous.reload",
             "miscellaneous.help",
+            "miscellaneous.TopGG" # Remove if using the bot locally
         ]
 
     async def setup_hook(self):
@@ -53,7 +54,13 @@ class IslamBot(commands.AutoShardedBot):
 
     async def on_ready(self):
         print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
-        await bot.tree.sync(guild=discord.Object(308241121165967362))
+
+        # Sync commands globally
+        await bot.tree.sync(guild=None)
+
+        # If you are using the bot locally, uncomment the below and comment out the statement above so that commands
+        # only sync to your server. Global syncs are slow to propagate and are strictly rate-limited.
+        # await bot.tree.sync(guild=discord.Object(308241121165967362))
 
         # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
         update_presence.start()

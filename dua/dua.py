@@ -124,4 +124,4 @@ class Dua(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Dua(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(Dua(bot))

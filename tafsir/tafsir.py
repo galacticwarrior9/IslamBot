@@ -276,4 +276,4 @@ class TafsirNavigator(discord.ui.View):
 
 
 async def setup(bot):
-    await bot.add_cog(Tafsir(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(Tafsir(bot))

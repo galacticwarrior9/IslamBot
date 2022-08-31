@@ -313,4 +313,4 @@ class ArabicTafsirNavigator(discord.ui.View):
 
 
 async def setup(bot):
-    await bot.add_cog(ArabicTafsir(bot), guild=discord.Object(308241121165967362))
+    await bot.add_cog(ArabicTafsir(bot))
