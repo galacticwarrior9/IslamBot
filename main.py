@@ -43,7 +43,6 @@ class IslamBot(commands.AutoShardedBot):
             "tafsir.arabic_tafsir",
             "tafsir.tafsir",
             "miscellaneous.reload",
-            "miscellaneous.TopGG"
         ]
 
     async def setup_hook(self):

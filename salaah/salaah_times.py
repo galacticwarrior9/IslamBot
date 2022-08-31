@@ -3,10 +3,12 @@ from datetime import timedelta
 
 import discord
 from dateutil.tz import gettz
-from discord.ext import commands
+from discord.ext import commands, tasks
+from fuzzywuzzy import fuzz, process
 
 from salaah.praytimes import PrayTimes
 from utils.database_utils import PrayerTimesHandler
+from utils.slash_utils import get_key_from_value
 
 ICON = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
 METHODS_URL = 'https://api.aladhan.com/v1/methods'
@@ -18,15 +20,22 @@ headers = {'content-type': 'application/json'}
 class PrayerTimes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.calculation_methods = None
 
-    async def get_calculation_methods(self):
+    async def cog_load(self) -> None:
+        self.update_calculation_methods.start()
+
+    async def cog_unload(self) -> None:
+        self.update_calculation_methods.cancel()
+
+    # The calculation methods (infrequently) update, so dynamically add new methods
+    @tasks.loop(hours=1)
+    async def update_calculation_methods(self):
         async with self.bot.session.get(METHODS_URL, headers=headers) as resp:
             data = await resp.json()
             data = data['data'].values()
-
             # There's an entry ('CUSTOM') with no 'name' value, so we need to ignore it:
-            calculation_methods = {method['id']: method['name'] for method in data if int(method['id']) != 99}
-            return calculation_methods
+            self.calculation_methods = {method['id']: method['name'] for method in data if int(method['id']) != 99}
 
     async def get_prayertimes(self, location, calculation_method):
         url = PRAYER_TIMES_URL.format(location, calculation_method, '0')
@@ -111,9 +120,9 @@ class PrayerTimes(commands.Cog):
 
         return fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date
 
-    async def _prayer_times(self, interaction: discord.Interaction, location: str):
-        calculation_method = await PrayerTimesHandler.get_user_calculation_method(interaction.user.id)
-        calculation_method = int(calculation_method)
+    async def _prayer_times(self, interaction: discord.Interaction, location: str, calculation_method: int = None):
+        if calculation_method is None:
+            calculation_method = await PrayerTimesHandler.get_user_calculation_method(interaction.user.id)
 
         try:
             fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, date = await \
@@ -121,7 +130,7 @@ class PrayerTimes(commands.Cog):
         except:
             return await interaction.followup.send(":warning: **Location not found**.")
 
-        em = discord.Embed(colour=0x2186d3, title=date)
+        em = discord.Embed(colour=0x558a25, title=date)
         em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
             .add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak}', inline=True)\
             .add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr}', inline=True)\
@@ -133,8 +142,7 @@ class PrayerTimes(commands.Cog):
             .add_field(name='**Isha (صلاة العشاء)**', value=f'{isha}', inline=True)\
             .add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight}', inline=True)
 
-        calculation_methods = await self.get_calculation_methods()
-        em.set_footer(text=f'Calculation Method: {calculation_methods[calculation_method]}')
+        em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
         await interaction.followup.send(embed=em)
 
     group = discord.app_commands.Group(name="prayertimes", description="Commands related to prayer times.")
@@ -146,12 +154,10 @@ class PrayerTimes(commands.Cog):
     )
     async def prayer_times(self, interaction: discord.Interaction, location: str, calculation_method: int = None):
         await interaction.response.defer(thinking=True)
-        await self._prayer_times(interaction, location)
+        await self._prayer_times(interaction, location, calculation_method)
 
     async def _set_calculation_method(self, interaction: discord.Interaction, method_num: int):
-        calculation_methods = await self.get_calculation_methods()
-
-        if method_num not in calculation_methods.keys():
+        if method_num not in self.calculation_methods.keys():
             return await interaction.followup.send("❌ **Invalid calculation method number.**", ephemeral=True)
 
         await PrayerTimesHandler.update_user_calculation_method(interaction.user.id, method_num)
@@ -159,17 +165,24 @@ class PrayerTimes(commands.Cog):
 
     @group.command(name="set_calculation_method", description="Change your default prayer times calculation method")
     @discord.app_commands.describe(
-        method_number="The number of the prayer time calculation method, from /prayertimes list_calculation_methods."
+        calculation_method="The prayer time calculation method number, from the choices provided or /prayertimes list_calculation_methods."
     )
-    async def set_calculation_method(self, interaction: discord.Interaction, method_number: int):
+    async def set_calculation_method(self, interaction: discord.Interaction, calculation_method: int):
         await interaction.response.defer(thinking=True, ephemeral=True)
-        await self._set_calculation_method(interaction, method_number)
+        await self._set_calculation_method(interaction, calculation_method)
+
+    @prayer_times.autocomplete('calculation_method')
+    @set_calculation_method.autocomplete('calculation_method')
+    async def calculation_method_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        return [
+            discord.app_commands.Choice(name=v, value=k)
+            for k, v in self.calculation_methods.items() if current.lower() in v.lower()
+        ]
 
     async def _list_methods(self, interaction: discord.Interaction):
-        em = discord.Embed(colour=0x467f05, description='')
+        em = discord.Embed(colour=0x558a25, description='')
         em.set_author(name='Calculation Methods', icon_url=ICON)
-        calculation_methods = await self.get_calculation_methods()
-        for method, name in calculation_methods.items():
+        for method, name in self.calculation_methods.items():
             em.description = f'{em.description}**{method}** - {name}\n'
         return await interaction.followup.send(embed=em, ephemeral=True)
 
