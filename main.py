@@ -70,6 +70,7 @@ async def main():
         await bot.load_extension("salaah.salaah_times")
         await bot.load_extension("dua.dua")
         await bot.load_extension("hadith.hadith")
+        await bot.load_extension("hadith.transmitter_biographies")
 
         # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
         update_presence.start()

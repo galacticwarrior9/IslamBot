@@ -264,6 +264,7 @@ class HadithCommands(commands.Cog):
         hadith_ui_view = HadithNavigator(hadith)
         await interaction.response.send_message(embed=embed, view=hadith_ui_view)
         await hadith_ui_view.wait()
+        # Exit on timeout
         if hadith_ui_view.value is None:
             return
 
@@ -347,7 +348,6 @@ class HadithCommands(commands.Cog):
 class HadithNavigator(discord.ui.View):
     def __init__(self, hadith: HadithSpecifics):
         super().__init__()
-        self.value = None
         self.hadith = hadith
 
     @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.grey, emoji='⬅')
