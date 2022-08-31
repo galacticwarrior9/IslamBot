@@ -133,7 +133,8 @@ class PrayerTimes(commands.Cog):
 
         return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date)
 
-    async def _prayer_times(self, interaction: discord.Interaction, location: str, calculation_method: int = None):
+    async def _prayer_times(self, interaction: discord.Interaction, location: str,
+                            calculation_method: int = None, hidden: bool = False):
         if calculation_method is None:
             calculation_method = await PrayerTimesHandler.get_user_calculation_method(interaction.user.id)
 
@@ -155,17 +156,19 @@ class PrayerTimes(commands.Cog):
             .add_field(name='**Midnight (منتصف الليل)**', value=f'{response.midnight}', inline=True)
 
         em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
-        await interaction.followup.send(embed=em)
+        await interaction.followup.send(embed=em, ephemeral=hidden)
 
     group = discord.app_commands.Group(name="prayertimes", description="Commands related to prayer times.")
 
     @group.command(name="get", description="Get the prayer times for a location.")
     @discord.app_commands.describe(
         location="The location to get prayer times for.",
-        calculation_method="The method to use when calculating the prayer times."
+        calculation_method="The method to use when calculating the prayer times.",
+        hidden="Whether to hide the response from other users."
     )
-    async def prayer_times(self, interaction: discord.Interaction, location: str, calculation_method: int = None):
-        await interaction.response.defer(thinking=True)
+    async def prayer_times(self, interaction: discord.Interaction, location: str,
+                           calculation_method: int = None, hidden: bool = False):
+        await interaction.response.defer(thinking=True, ephemeral=hidden)
         await self._prayer_times(interaction, location, calculation_method)
 
     async def _set_calculation_method(self, interaction: discord.Interaction, method_num: int):
