@@ -271,7 +271,7 @@ class ArabicTafsir(commands.Cog):
         tafsir_name="اسم التفسير."
     )
     async def atafsir(self, interaction: discord.Interaction, surah: str, verse_number: int, tafsir_name: str = 'tabari'):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
         quran_reference = QuranReference(ref=f'{surah_number}:{verse_number}')
         tafsir = ArabicTafsirRequest(quran_reference.surah, quran_reference.ayat_list, tafsir_name)

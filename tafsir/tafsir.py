@@ -230,7 +230,7 @@ class Tafsir(commands.Cog):
     )
     async def tafsir(self, interaction: discord.Interaction, surah: str, verse_number: int,
                      tafsir_name: str = "maarifulquran"):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
         tafsir_request = await self.process_request(ref=f'{surah_number}:{verse_number}', tafsir=tafsir_name, page=1)
         await self.send_embed(interaction, tafsir_request)

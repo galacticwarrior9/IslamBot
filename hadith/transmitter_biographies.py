@@ -48,7 +48,7 @@ class Biographies(commands.Cog):
     @discord.app_commands.command(name="biography", description="View the biography of a hadith transmitter or early Muslim.")
     @discord.app_commands.describe(name="The Arabic name of the person, e.g. {}".format("عبد الله بن عباس"))
     async def biography(self, interaction: discord.Interaction, name: str):
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
         await self._biography(interaction, name)
 
     @biography.error

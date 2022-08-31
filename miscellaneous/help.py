@@ -8,6 +8,7 @@ SELECT_OPTIONS = [
     SelectOption(label="Prayer Times", value="prayertimes", description="View help for the prayer time commands."),
     SelectOption(label="Tafsir", value="tafsir", description="View help for the tafsir commands."),
     SelectOption(label="Dua", value="dua", description="View help for the dua commands."),
+    SelectOption(label="Mushaf", value="mushaf", description="View help for the mushaf commands."),
     SelectOption(label="Calendar", value="calendar", description="View help for the Hijri calendar commands.")
 ]
 
@@ -61,15 +62,6 @@ class HelpMenu(discord.ui.View):
                                                                     "\n\nExample: `/settranslation khattab`"
                                                                     "\n\nYou must have the **Administrator** permission to use this command.")
 
-            em.add_field(name="/mushaf", inline=True, value="View a Qur'anic verse on a standard *mushaf*."
-                                                            "\n\n`/mushaf <surah> <verse>`"
-                                                            "\n\nExample: `/mushaf 2 255`" \
-                                                            "\n\nThe `tajweed` parameter controls whether tajweed rules should be highlighted.")
-
-            em.add_field(name="/rmushaf", inline=True, value="Gets a random page of a standard *mushaf*."
-                                                             "\n\nAdd 'tajweed' to the end of the command for color-coded tajweed rules."
-                                                             "\n\nExample: `/rmushaf tajweed`")
-
             em.add_field(name="/surah", inline=True, value="Get information about a surah."
                                                            "\n\n`/surah <surah number or namer>`"
                                                            "\n\nExample: `/surah 1`")
@@ -102,7 +94,7 @@ class HelpMenu(discord.ui.View):
         elif option == "calendar":
             em = discord.Embed(title="Hijri Calendar", colour=0x558a25)
 
-            em.add_field(name="/calendar hijri_date", inline=True, value="Gets the current Hijri date (in the US)")
+            em.add_field(name="/calendar hijri_date", inline=True, value="Gets the current Hijri date.")
 
             em.add_field(name="/calendar convert_to_hijri", inline=True,
                          value="Converts a Gregorian date to its Hijri counterpart.")
@@ -153,15 +145,32 @@ class HelpMenu(discord.ui.View):
         elif option == "dua":
             em = discord.Embed(title="Dua", colour=0x558a25)
             em.add_field(name="/dualist", inline=True, value="Shows a list of duas.")
-            
+
             em.add_field(name="/dua", inline=True, value="Gets a dua for a topic."
                                                          "\n\n__Usage__"
                                                          "\n\n`/dua <topic>`"
                                                          "\n\nExample: `/dua forgiveness`"
                                                          "\n\nSee `/dualist` for a list of topics.")
-            
+
             em.add_field(name="/rdua", inline=True, value="Gets a random dua.")
-            
+
+            await interaction.response.edit_message(embed=em)
+
+        elif option == "mushaf":
+            em = discord.Embed(title="Mushaf", colour=0x558a25,
+                               description="For these commands, the `tajweed` parameters controls whether tajweed "
+                                           "rules should be highlighted.")
+
+            em.add_field(name="/musha by_ayah", inline=True, value="View a Qur'anic verse on a Medinian *mushaf*."
+                                                                   "\n\n`/mushaf by_ayah <surah> <verse>`"
+                                                                   "\n\nExample: `/mushaf 2 255`")
+
+            em.add_field(name="/musha by_page", inline=True, value="Displays a page on the Medinian *mushaf*."
+                                                                   "\n\n`/mushaf by_page <page number>`"
+                                                                   "\n\nExample: `/mushaf 604`")
+
+            em.add_field(name="/rmushaf", inline=True, value="Gets a random page of a standard *mushaf*.")
+
             await interaction.response.edit_message(embed=em)
 
 
