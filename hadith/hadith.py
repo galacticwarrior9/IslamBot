@@ -263,10 +263,6 @@ class HadithCommands(commands.Cog):
         # If there are multiple pages, construct buttons for their navigation.
         hadith_ui_view = HadithNavigator(hadith)
         await interaction.response.send_message(embed=embed, view=hadith_ui_view)
-        await hadith_ui_view.wait()
-        # Exit on timeout
-        if hadith_ui_view.value is None:
-            return
 
     async def _rhadith(self, interaction: discord.Interaction):
         await self.abstract_hadith(interaction, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
