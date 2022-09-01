@@ -32,8 +32,6 @@ class HelpMenu(discord.ui.View):
 
     @discord.ui.select(custom_id="islambot:help", placeholder="Select a help topic.", options=SELECT_OPTIONS)
     async def select_callback(self, interaction: discord.Interaction, menu: discord.ui.Select):
-        interaction.response.defer()
-
         option = menu.values[0]
 
         if option == "quran":
@@ -158,7 +156,7 @@ class HelpMenu(discord.ui.View):
 
         elif option == "mushaf":
             em = discord.Embed(title="Mushaf", colour=0x558a25,
-                               description="For these commands, the `tajweed` parameters controls whether tajweed "
+                               description="For these commands, the `tajweed` parameters control whether tajweed "
                                            "rules should be highlighted.")
 
             em.add_field(name="/mushaf by_ayah", inline=True, value="View a Qur'anic verse on a Medinian *mushaf*."

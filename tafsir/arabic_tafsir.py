@@ -1,4 +1,3 @@
-import asyncio
 import re
 import textwrap
 
@@ -260,7 +259,7 @@ class ArabicTafsir(commands.Cog):
             return await interaction.followup.send(embed=em)
 
         # If there are multiple pages, construct buttons for their navigation.
-        tafsir_ui_view = ArabicTafsirNavigator(tafsir)
+        tafsir_ui_view = ArabicTafsirNavigator(tafsir, interaction)
         await interaction.followup.send(embed=em, view=tafsir_ui_view)
 
 
@@ -289,9 +288,15 @@ class ArabicTafsir(commands.Cog):
 
 
 class ArabicTafsirNavigator(discord.ui.View):
-    def __init__(self, tafsir: ArabicTafsirRequest):
-        super().__init__()
+    def __init__(self, tafsir: ArabicTafsirRequest, interaction: discord.Interaction):
+        super().__init__(timeout=600)
         self.tafsir = tafsir
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
 
     @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.red, emoji='⬅')
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):

@@ -202,7 +202,7 @@ class Tafsir(commands.Cog):
         if spec.num_pages == 1:
             return await interaction.followup.send(embed=spec.embed)
         else:
-            tafsir_ui_view = TafsirNavigator(spec)
+            tafsir_ui_view = TafsirNavigator(spec, interaction)
             await interaction.followup.send(embed=spec.embed, view=tafsir_ui_view)
 
     async def process_request(self, ref: str, tafsir: str, page: int, reveal_order: bool = False):
@@ -252,9 +252,15 @@ class Tafsir(commands.Cog):
 
 
 class TafsirNavigator(discord.ui.View):
-    def __init__(self, tafsir: TafsirRequest):
-        super().__init__()
+    def __init__(self, tafsir: TafsirRequest, interaction: discord.Interaction):
+        super().__init__(timeout=300)
         self.tafsir = tafsir
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
 
     @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.red, emoji='⬅')
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):

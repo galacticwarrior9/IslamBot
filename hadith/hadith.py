@@ -239,10 +239,10 @@ class HadithCommands(commands.Cog):
             name='Get Hadith from URL',
             callback=self.get_hadith_text
         )
-        self.bot.tree.add_command(self.ctx_menu, guild=discord.Object(308241121165967362))
+        self.bot.tree.add_command(self.ctx_menu)
 
     async def cog_unload(self) -> None:
-        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type, guild=discord.Object(308241121165967362))
+        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     async def abstract_hadith(self, interaction: discord.Interaction, collection_name, ref, lang):
         if collection_name not in HADITH_COLLECTION_LIST:
@@ -261,7 +261,7 @@ class HadithCommands(commands.Cog):
             return await interaction.response.send_message(embed=embed)
 
         # If there are multiple pages, construct buttons for their navigation.
-        hadith_ui_view = HadithNavigator(hadith)
+        hadith_ui_view = HadithNavigator(hadith, interaction)
         await interaction.response.send_message(embed=embed, view=hadith_ui_view)
 
     async def _rhadith(self, interaction: discord.Interaction):
@@ -342,9 +342,15 @@ class HadithCommands(commands.Cog):
 
 
 class HadithNavigator(discord.ui.View):
-    def __init__(self, hadith: HadithSpecifics):
-        super().__init__()
+    def __init__(self, hadith: HadithSpecifics, interaction: discord.Interaction):
+        super().__init__(timeout=300)
         self.hadith = hadith
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
 
     @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.grey, emoji='⬅')
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):

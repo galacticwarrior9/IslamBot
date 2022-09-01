@@ -57,12 +57,18 @@ class Biographies(commands.Cog):
 
 
 class BiographyNavigator(discord.ui.View):
-    def __init__(self, page: int, pages: list[str], embed: discord.Embed):
-        super().__init__()
+    def __init__(self, page: int, pages: list[str], embed: discord.Embed, interaction=discord.Interaction):
+        super().__init__(timeout=600)
         self.page = page
         self.pages = pages
         self.em = embed
         self.num_pages = len(pages)
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
 
     @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.red, emoji='⬅')
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):

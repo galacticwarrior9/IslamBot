@@ -91,7 +91,7 @@ class Mushaf(commands.Cog):
 
 class MushafNavigator(discord.ui.View):
     def __init__(self, page: int, show_tajweed: bool, interaction: discord.Interaction):
-        super().__init__(timeout=60)
+        super().__init__()
         self.page = page
         self.show_tajweed = show_tajweed
         self.original_interaction = interaction
