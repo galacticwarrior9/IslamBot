@@ -2,8 +2,6 @@ import asyncio
 import configparser
 
 import aiomysql
-from asyncache import cached
-from cachetools import TTLCache
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -18,7 +16,6 @@ user_prayer_times_table_name = config['MySQL']['user_prayer_times_table_name']
 
 loop = asyncio.get_event_loop()
 
-_translations_cache = TTLCache(maxsize=1024, ttl=600)
 
 
 class DBHandler:
@@ -30,7 +27,6 @@ class DBHandler:
         return connection
 
     @classmethod
-    @cached(_translations_cache)
     async def get_guild_translation(cls, guild_id):
         try:
             connection = await cls.create_connection()
@@ -54,7 +50,6 @@ class DBHandler:
 
     @classmethod
     async def update_guild_translation(cls, guild_id, translation):
-        _translations_cache.__setitem__(guild_id, translation)
         connection = await cls.create_connection()
         async with connection.cursor() as cursor:
             create_sql = f"INSERT INTO {server_translations_table_name} (server, translation) VALUES (%s, %s) " \
@@ -64,7 +59,6 @@ class DBHandler:
 
     @classmethod
     async def delete_guild_translation(cls, guild_id):
-        _translations_cache.pop(guild_id)
         connection = await cls.create_connection()
         async with connection.cursor() as cursor:
             delete_sql = f"DELETE FROM {server_translations_table_name} WHERE server=%s"
