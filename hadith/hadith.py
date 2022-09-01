@@ -1,4 +1,3 @@
-import asyncio
 import configparser
 import random
 import re
@@ -8,11 +7,6 @@ import aiohttp
 import discord
 import html2text
 from discord.ext import commands
-from discord_slash import SlashContext, cog_ext, ButtonStyle
-from discord_slash.context import MenuContext
-from discord_slash.model import ContextMenuType
-from discord_slash.utils import manage_components
-from discord_slash.utils.manage_commands import create_option
 
 from utils.slash_utils import generate_choices_from_dict
 
@@ -241,9 +235,16 @@ class HadithSpecifics:
 class HadithCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.ctx_menu = discord.app_commands.ContextMenu(
+            name='Get Hadith from URL',
+            callback=self.get_hadith_text
+        )
+        self.bot.tree.add_command(self.ctx_menu)
 
-    async def abstract_hadith(self, channel, collection_name, ref, lang):
+    async def cog_unload(self) -> None:
+        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
+    async def abstract_hadith(self, interaction: discord.Interaction, collection_name, ref, lang):
         if collection_name not in HADITH_COLLECTION_LIST:
             raise InvalidCollection
 
@@ -254,136 +255,64 @@ class HadithCommands(commands.Cog):
         try:
             embed = await hadith.fetch_hadith()
         except InvalidHadith:
-            return await channel.send("Sorry, no hadith with this number could be found.")
+            return await interaction.response.send_message("Sorry, no hadith with this number could be found.")
 
         if hadith.num_pages == 1:
-            return await channel.send(embed=embed)
+            return await interaction.response.send_message(embed=embed)
 
         # If there are multiple pages, construct buttons for their navigation.
-        buttons = [
-            manage_components.create_button(style=ButtonStyle.grey, label="Previous Page", emoji="⬅",
-                                            custom_id="hadith_previous_page"),
-            manage_components.create_button(style=ButtonStyle.green, label="Next Page", emoji="➡",
-                                            custom_id="hadith_next_page")
-        ]
-        action_row = manage_components.create_actionrow(*buttons)
-        await channel.send(embed=embed, components=[action_row])
+        hadith_ui_view = HadithNavigator(hadith, interaction)
+        await interaction.response.send_message(embed=embed, view=hadith_ui_view)
 
-        while True:
-            try:
-                button_ctx = await manage_components.wait_for_component(self.bot, components=action_row, timeout=600)
-                if button_ctx.custom_id == 'hadith_previous_page':
-                    if hadith.page > 1:
-                        hadith.page -= 1
-                    else:
-                        hadith.page = hadith.num_pages
-                    em = hadith.make_embed()
-                    await button_ctx.edit_origin(embed=em)
-                elif button_ctx.custom_id == 'hadith_next_page':
-                    if hadith.page < hadith.num_pages:
-                        hadith.page += 1
-                    else:
-                        hadith.page = 1
-                    em = hadith.make_embed()
-                    await button_ctx.edit_origin(embed=em)
+    async def _rhadith(self, interaction: discord.Interaction):
+        await self.abstract_hadith(interaction, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
 
-            except asyncio.TimeoutError:
-                break
+    async def _rahadith(self, interaction: discord.Interaction):
+        await self.abstract_hadith(interaction, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'ar')
 
-    async def _rhadith(self, ctx):
-        await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'en')
+    @discord.app_commands.command(name="hadith", description="Send a hadith in English from sunnah.com.")
+    @discord.app_commands.choices(hadith_collection=generate_choices_from_dict(english_hadith_collections))
+    @discord.app_commands.describe(
+        hadith_collection="The name of the hadith collection.",
+        hadith_number="The number of the hadith."
+    )
+    async def hadith(self, interaction: discord.Interaction, hadith_collection: str, hadith_number: str):
+        await self.abstract_hadith(interaction, hadith_collection, Reference(hadith_number), 'en')
 
-    async def _rahadith(self, ctx):
-        await self.abstract_hadith(ctx, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'ar')
+    @discord.app_commands.command(name="ahadith", description="Send a hadith in Arabic from sunnah.com.")
+    @discord.app_commands.choices(hadith_collection=generate_choices_from_dict(arabic_hadith_collections))
+    @discord.app_commands.describe(
+        hadith_collection="The name of the hadith collection.",
+        hadith_number="The number of the hadith."
+    )
+    async def ahadith(self, interaction: discord.Interaction, hadith_collection: str, hadith_number: str):
+        await self.abstract_hadith(interaction, hadith_collection, Reference(hadith_number), 'ar')
 
-    @commands.command(name='hadith')
-    async def hadith(self, ctx, collection_name: str, ref: Reference):
-        await ctx.channel.trigger_typing()
-        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'en')
+    @discord.app_commands.command(name="rhadith", description="Send a random hadith in English from sunnah.com.")
+    async def rhadith(self, interaction: discord.Interaction):
+        await self._rhadith(interaction)
 
-    @commands.command(name='ahadith')
-    async def ahadith(self, ctx, collection_name: str, ref: Reference):
-        await ctx.channel.trigger_typing()
-        await self.abstract_hadith(ctx, collection_name.lower(), ref, 'ar')
-
-    @commands.command(name="rhadith")
-    async def rhadith(self, ctx):
-        await ctx.channel.trigger_typing()
-        await self._rhadith(ctx)
-
-    @commands.command(name="rahadith")
-    async def rahadith(self, ctx):
-        await ctx.channel.trigger_typing()
-        await self._rahadith(ctx)
+    @discord.app_commands.command(name="rahadith", description="Send a random hadith in Arabic from sunnah.com.")
+    async def slash_rahadith(self, interaction: discord.Interaction):
+        await self._rahadith(interaction)
 
     @hadith.error
-    async def hadith_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(INVALID_INPUT.format(ctx.prefix))
-        elif isinstance(error, InvalidCollection):
-            await ctx.send(INVALID_COLLECTION)
-
     @ahadith.error
-    async def ahadith_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(INVALID_INPUT.format(f'{ctx.prefix}a'))
-        elif isinstance(error, InvalidCollection):
-            await ctx.send(INVALID_COLLECTION)
+    async def hadith_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        if isinstance(error, InvalidCollection):
+            await interaction.response.send(INVALID_COLLECTION)
 
-    @cog_ext.cog_slash(name="hadith", description="Send hadith in English from sunnah.com.",
-                       options=[
-                           create_option(
-                               name="hadith_collection",
-                               description="The name of the hadith collection.",
-                               option_type=3,
-                               required=True,
-                               choices=generate_choices_from_dict(english_hadith_collections)),
-                           create_option(
-                               name="hadith_number",
-                               description="The number of the hadith.",
-                               option_type=3,
-                               required=True)])
-    async def slash_hadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await ctx.defer()
-        await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'en')
-
-    @cog_ext.cog_slash(name="ahadith", description="Send hadith in Arabic from sunnah.com.",
-                       options=[
-                           create_option(
-                               name="hadith_collection",
-                               description="The name of the hadith collection.",
-                               option_type=3,
-                               required=True,
-                               choices=generate_choices_from_dict(arabic_hadith_collections)),
-                           create_option(
-                               name="hadith_number",
-                               description="The number of the hadith.",
-                               option_type=3,
-                               required=True)])
-    async def slash_ahadith(self, ctx: SlashContext, hadith_collection: str, hadith_number: str):
-        await ctx.defer()
-        await self.abstract_hadith(ctx, hadith_collection, Reference(hadith_number), 'ar')
-
-    @cog_ext.cog_slash(name="rhadith", description="Send a random hadith in English from sunnah.com.")
-    async def slash_rhadith(self, ctx: SlashContext):
-        await ctx.defer()
-        await self._rhadith(ctx)
-
-    @cog_ext.cog_slash(name="rahadith", description="Send a random hadith in Arabic from sunnah.com.")
-    async def slash_rahadith(self, ctx: SlashContext):
-        await ctx.defer()
-        await self._rahadith(ctx)
-
-    def findURL(self, message):
+    def find_url(self, message):
         urls = re.findall(r'(https?://\S+)', message)
         for link in urls:
             if "sunnah.com/" in link:
                 return link
 
-    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Get Hadith Text")
-    async def get_hadith_text(self, ctx: MenuContext):
-        content = ctx.target_message.content
-        url = self.findURL(content)
+    # See https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458 for why we can't use the
+    # context menu annotation in cogs.
+    async def get_hadith_text(self, interaction: discord.Interaction, message: discord.Message):
+        content = message.content
+        url = self.find_url(content)
         if url:
             try:
                 meta = url.split("/")
@@ -405,38 +334,43 @@ class HadithCommands(commands.Cog):
                     except:
                         ref = Reference(
                             book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
-                await self.abstract_hadith(ctx, collection, ref, "en")
+                await self.abstract_hadith(interaction, collection, ref, "en")
             except InvalidHadith:
-                await ctx.send("**There is no valid sunnah.com link here**")
+                await interaction.response.send_message("Found an invalid sunnah.com link in the message.", ephemeral=True)
         else:
-            await ctx.send("**There is no valid sunnah.com link here**")
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        content = message.content
-        url = self.findURL(content)
-        if url:
-            meta = url.split("/")
-            collection = meta[3]
-            if collection in hadith_collection_aliases:
-                collection = hadith_collection_aliases[collection]
-            if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
-                if collection[-1] == "/":  # if url ended with /
-                    collection = collection[:-1]
-                ref = collection.split(":")[1]  # getting hadith number
-                ref = Reference(ref)
-                collection = collection.split(":")[0]  # getting book name
-            else:
-                book = meta[4]
-                try:
-                    hadith = meta[5]
-                    ref = f"{book}:{hadith}"
-                    ref = Reference(ref)
-                except:
-                    ref = Reference(
-                        book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
-            await self.abstract_hadith(message.channel, collection, ref, "en")
+            await interaction.response.send_message("Could not find valid sunnah.com link in message.", ephemeral=True)
 
 
-def setup(bot):
-    bot.add_cog(HadithCommands(bot))
+class HadithNavigator(discord.ui.View):
+    def __init__(self, hadith: HadithSpecifics, interaction: discord.Interaction):
+        super().__init__(timeout=300)
+        self.hadith = hadith
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
+
+    @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.grey, emoji='⬅')
+    async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.hadith.page > 1:
+            self.hadith.page -= 1
+        else:
+            self.hadith.page = self.hadith.num_pages
+
+        em = self.hadith.make_embed()
+        await interaction.response.edit_message(embed=em)
+
+    @discord.ui.button(label='Next Page', style=discord.ButtonStyle.green, emoji='➡')
+    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.hadith.page < self.hadith.num_pages:
+            self.hadith.page += 1
+        else:
+            self.hadith.page = 1
+        em = self.hadith.make_embed()
+        await interaction.response.edit_message(embed=em)
+
+
+async def setup(bot):
+    await bot.add_cog(HadithCommands(bot))

@@ -1,62 +1,70 @@
 import configparser
 
+import aiohttp
 import discord
-from discord.ext import commands
-from discord.ext.commands import CommandNotFound
-from discord_slash import SlashCommand
+from discord.ext import commands, tasks
 
-from utils.utils import PrefixHandler
+from hijri_calendar.hijri_calendar import HijriCalendar
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 token = config['IslamBot']['token']
-default_prefix = config['IslamBot']['default_prefix']
 
-prefix_list = default_prefix
+description = "A Discord bot with Islamic utilities. View Qur'an, hadith, prayer times and more."
 
-
-async def get_prefix(_, message):
-    try:
-        guild_id = message.guild.id
-    except AttributeError:
-        return prefix_list
-    if PrefixHandler.has_custom_prefix(guild_id):
-        guild_prefix = PrefixHandler.get_prefix(guild_id)
-        if guild_prefix:
-            return *prefix_list, guild_prefix
-    else:
-        return prefix_list
+intents = discord.Intents(messages=True, guilds=True)
 
 
-description = "A Discord bot with Islamic utilities."
-
-cog_list = {'hadith.hadith', 'hijri_calendar.hijri_calendar', 'quran.morphology', 'tafsir.tafsir',
-            'tafsir.arabic_tafsir',
-            'quran.mushaf', 'dua.dua', 'miscellaneous.help', 'miscellaneous.TopGG', 'miscellaneous.settings',
-            'hadith.transmitter_biographies', 'quran.quran', 'salaah.salaah_times', 'miscellaneous.utility'}
-
-intents = discord.Intents(messages=True, guilds=True, reactions=True)
-
-bot = commands.AutoShardedBot(command_prefix=get_prefix, description=description, case_insensitive=True,
-                              intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
-
-bot.remove_command('help')
-
-for cog in cog_list:
-    bot.load_extension(cog)
+@tasks.loop(hours=1)
+async def update_presence():
+    hijri = HijriCalendar.get_current_hijri()
+    game = discord.Game(f"/help | {hijri}")
+    await bot.change_presence(activity=game)
 
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
+@update_presence.before_loop
+async def before_presence_update():
+    await bot.wait_until_ready()
 
 
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, CommandNotFound):
-        return
+class IslamBot(commands.AutoShardedBot):
+    def __init__(self) -> None:
+        super().__init__(command_prefix='-', description=description, case_insensitive=True, intents=intents)
+        self.initial_extensions = [
+            "quran.quran",
+            "quran.mushaf",
+            "quran.morphology",
+            "hijri_calendar.hijri_calendar",
+            "salaah.salaah_times",
+            "dua.dua",
+            "hadith.hadith",
+            "hadith.transmitter_biographies",
+            "tafsir.arabic_tafsir",
+            "tafsir.tafsir",
+            "miscellaneous.reload",
+            "miscellaneous.help",
+            "miscellaneous.TopGG" # Remove if using the bot locally
+        ]
+
+    async def setup_hook(self):
+        self.session = aiohttp.ClientSession()
+        for ext in self.initial_extensions:
+            await self.load_extension(ext)
+
+    async def on_ready(self):
+        print(f'Logged in as {bot.user.name} ({bot.user.id}) on {len(bot.guilds)} servers')
+
+        # Sync commands globally
+        await bot.tree.sync(guild=None)
+
+        # If you are using the bot locally, uncomment the below and comment out the statement above so that commands
+        # only sync to your server. Global syncs are slow to propagate and are strictly rate-limited.
+        # await bot.tree.sync(guild=discord.Object(308241121165967362))
+
+        # Starting this in the setup hook causes a deadlock as before_presence_update calls wait_until_ready()
+        update_presence.start()
 
 
+bot = IslamBot()
 bot.run(token)

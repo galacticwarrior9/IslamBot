@@ -1,6 +1,6 @@
 import configparser
 
-import dbl
+import topgg
 from discord.ext import commands
 
 config = configparser.ConfigParser()
@@ -13,7 +13,7 @@ class TopGG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.token = config['APIs']['top.gg']
-        self.dblpy = dbl.DBLClient(self.bot, self.token, autopost=True)
+        self.dblpy = topgg.DBLClient(self.bot, self.token, autopost=True, post_shard_count=True)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):  # when the bot joins a server
@@ -24,5 +24,5 @@ class TopGG(commands.Cog):
         await self.dblpy.post_guild_count()  # post server count
 
 
-def setup(bot):
-    bot.add_cog(TopGG(bot))
+async def setup(bot):
+    await bot.add_cog(TopGG(bot))

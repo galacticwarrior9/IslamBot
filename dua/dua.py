@@ -4,12 +4,11 @@ import re
 import discord
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option
 from fuzzywuzzy import process, fuzz
 
 from utils.utils import get_site_source
 
+URL = 'https://ahadith.co.uk/hisnulmuslim-dua-{}'
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
 DUAS = {
@@ -52,9 +51,8 @@ DUAS = {
 class Dua(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.url = 'https://ahadith.co.uk/hisnulmuslim-dua-{}'
 
-    async def _dua(self, ctx, subject: str):
+    async def _dua(self, interaction: discord.Interaction, subject: str):
         subject = subject.title()
         try:
             dua_id = DUAS[subject]
@@ -66,7 +64,7 @@ class Dua(commands.Cog):
             subject = subject[0][0].title()
             dua_id = DUAS[subject]
 
-        site_source = await get_site_source(self.url.format(dua_id))
+        site_source = await get_site_source(URL.format(dua_id))
         dua_text = []
         for dua in site_source.findAll("div", {"class": 'search-item'}):
             text = dua.get_text(separator=" ").strip() \
@@ -78,10 +76,10 @@ class Dua(commands.Cog):
 
         em = discord.Embed(title=f'Duas for {subject}', colour=0x467f05, description=dua_text)
         em.set_author(name="Fortress of the Muslim", icon_url=ICON)
-        await ctx.send(embed=em)
+        await interaction.followup.send(embed=em)
 
-    async def _dualist(self, ctx, prefix):
-        dua_list_message = [f'**Type {prefix}dua <topic>**. Example: `{prefix}dua breaking fast`\n']
+    async def _dua_list(self, interaction: discord.Interaction):
+        dua_list_message = [f'**Type /dua <topic>**. Example: `/dua breaking fast`\n']
 
         for dua in DUAS:
             dua_list_message.append('\n' + dua)
@@ -89,58 +87,41 @@ class Dua(commands.Cog):
         em = discord.Embed(title='Dua List', colour=0x467f05, description=''.join(dua_list_message))
         em.set_footer(text="Source: Fortress of the Muslim (Hisn al-Muslim)")
 
-        await ctx.send(embed=em)
+        await interaction.response.send_message(embed=em, ephemeral=True)
 
-    @commands.command(name='dua')
-    async def dua(self, ctx, *, subject: str):
-        await ctx.channel.trigger_typing()
-        await self._dua(ctx, subject)
+    @discord.app_commands.command(name="dua", description="Send ʾadʿiyah by topic.")
+    @discord.app_commands.describe(topic="The topic of the dua, from /dualist.")
+    async def dua(self, interaction: discord.Interaction, topic: str):
+        await interaction.response.defer(thinking=True)
+        await self._dua(interaction, topic)
 
-    @commands.command(name="rdua")
-    async def randomdua(self, ctx):
-        await ctx.channel.trigger_typing()
-        await self._dua(ctx, random.choice(list(DUAS.keys())))
+    @discord.app_commands.command(name="rdua", description="Sends a random dua.")
+    async def rdua(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        await self._dua(interaction, random.choice(list(DUAS.keys())))
 
-    @commands.command(name='dualist')
-    async def dualist(self, ctx):
-        await ctx.channel.trigger_typing()
-        await self._dualist(ctx, ctx.prefix)
+    @discord.app_commands.command(name="dualist", description="Sends the dua topic list.")
+    async def dua_list(self, interaction: discord.Interaction):
+        await self._dua_list(interaction)
 
-    @cog_ext.cog_slash(name="dua", description="Send ʾadʿiyah by topic.",
-                       options=[
-                           create_option(
-                               name="topic",
-                               description="The topic of the dua.",
-                               option_type=3,
-                               required=True)])
-    async def slash_dua(self, ctx: SlashContext, topic: str):
-        await ctx.defer()
-        await self._dua(ctx, topic)
-
-    @cog_ext.cog_slash(name="rdua", description="Send a random dua.")
-    async def slash_rdua(self, ctx: SlashContext):
-        await ctx.defer()
-        await self._dua(ctx, random.choice(list(DUAS.keys())))
-
-    @cog_ext.cog_slash(name="dualist", description="Send dua list.")
-    async def slash_dualist(self, ctx: SlashContext):
-        await ctx.defer()
-        await self._dualist(ctx, '/')
+    @dua.autocomplete('topic')
+    async def dua_topic_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        if len(current) == 0:  # User has not started typing, so don't send anything
+            return []
+        choices = [
+            discord.app_commands.Choice(name=k, value=k)
+            for k, v in DUAS.items() if current.lower() in k.lower()
+        ]
+        if len(choices) > 25:  # Discord limits choices to 25
+            return choices[0:24]
+        return choices
 
     @dua.error
-    @slash_dua.error
-    async def on_dua_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(f"**You need to provide a dua topic**. Type `{ctx.prefix}dualist` for a list of dua topics.")
+    async def on_dua_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         if isinstance(error, KeyError):
-            try:
-                await ctx.send(
-                    f"**Could not find dua for this topic.** Type `{ctx.prefix}dualist` for a list of dua topics.")
-            except AttributeError:
-                await ctx.send(
-                    f"**Could not find dua for this topic.** Type `/dualist` for a list of dua topics.")
-                # SlashContext doesn't attribute `prefix`
+            await interaction.followup.send(
+                f":warning: **Could not find dua for this topic.** Type `/dualist` for a list of dua topics.")
 
 
-def setup(bot):
-    bot.add_cog(Dua(bot))
+async def setup(bot):
+    await bot.add_cog(Dua(bot))

@@ -3,27 +3,14 @@ import re
 
 import discord
 import pymysql
-from discord.ext.commands import CheckFailure, MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
+from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
 from utils.database_utils import DBHandler
+from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
 
 INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List>"
-
-INVALID_ARGUMENTS_ARABIC = "**Invalid arguments!** Type `{0}aquran [surah]:[ayah]`. \n\nExample: `{0}aquran 1:1`" \
-                           "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                           "\n\nExample: `{0}aquran 1:1-7`"
-
-INVALID_ARGUMENTS_ENGLISH = "**Invalid arguments!** Type `{0}quran [surah]:[ayah]`. \n\nExample: `{0}quran 1:1`" \
-                            "\n\nTo send multiple verses, type `{0}quran [surah]:[first ayah]-[last ayah]`" \
-                            "\n\nExample: `{0}quran 1:1-7`"
-
-INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
-INVALID_AYAH = "**There are only {0} verses in this surah**."
-INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
 
 DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
@@ -151,16 +138,6 @@ translation_list = {
 }
 
 
-class InvalidReference(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-class InvalidTranslation(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
 class Translation:
     def __init__(self, key):
         self.id = self.get_translation_id(key)
@@ -189,8 +166,8 @@ class Translation:
 
 
 class QuranRequest:
-    def __init__(self, ctx, ref: str, is_arabic: bool, translation_key: str = None, reveal_order: bool = False):
-        self.ctx = ctx
+    def __init__(self, interaction: discord.Interaction, ref: str, is_arabic: bool, translation_key: str = None, reveal_order: bool = False):
+        self.webhook = interaction.followup
         self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=reveal_order)
         self.is_arabic = is_arabic
         if translation_key is not None:
@@ -258,224 +235,110 @@ class QuranRequest:
 
         em = self.construct_embed()
         if len(em) > 6000:
-            await self.ctx.send(TOO_LONG)
+            await self.webhook.send(TOO_LONG)
         else:
-            await self.ctx.send(embed=em)
+            await self.webhook.send(embed=em)
 
 
 class Quran(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(name="quran")
-    async def quran(self, ctx, ref: str, translation_key: str = None):
-        await ctx.channel.trigger_typing()
-        if translation_key is None:
-            translation_key = await Translation.get_guild_translation(ctx.guild.id)
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=ref, translation_key=translation_key).process_request()
-
-    @commands.command(name="aquran")
-    async def aquran(self, ctx, ref: str):
-        await ctx.channel.trigger_typing()
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=ref).process_request()
-
-    @commands.command(name="rquran")
-    async def rquran(self, ctx, translation_key: str = None):
-        await ctx.channel.trigger_typing()
-        surah = random.randint(1, 114)
-        verse = random.randint(1, quranInfo['surah'][surah][1])
-
-        if translation_key is None:
-            translation_key = await Translation.get_guild_translation(ctx.guild.id)
-
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}',
-                           translation_key=translation_key).process_request()
-
-    @commands.command(name="raquran")
-    async def raquran(self, ctx):
-        await ctx.channel.trigger_typing()
-        surah = random.randint(1, 114)
-        verse = random.randint(1, quranInfo['surah'][surah][1])
-
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
-
-    @cog_ext.cog_slash(name="quran", description="Send verses from the Qurʼān.",
-                       options=[
-                           create_option(
-                               name="surah",
-                               description="The surah name/number to fetch, e.g. Al-Ikhlaas, 112",
-                               option_type=3,
-                               required=True),
-                           create_option(
-                               name="start_verse",
-                               description="The start verse to fetch, e.g. 255",
-                               option_type=4,
-                               required=True),
-                           create_option(
-                               name="end_verse",
-                               description="If you want to send multiple verses - the end verse to fetch, e.g. 260",
-                               option_type=4,
-                               required=False),
-                           create_option(
-                               name="translation",
-                               description="The translation to use.",
-                               option_type=3,
-                               required=False),
-                           create_option(
-                               name="reveal_order",
-                               description="Is the surah referenced the revelation order number? (If it's a number)",
-                               option_type=5,
-                               required=False)])
-    async def slash_quran(self, ctx: SlashContext, surah: str, start_verse: int, end_verse: int = None,
+    @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
+    @discord.app_commands.describe(
+        surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas or 112",
+        start_verse="The first verse to fetch, e.g. 255.",
+        end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
+        translation="The translation to use",
+        reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
+    )
+    async def quran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
                           translation: str = None, reveal_order: bool = False):
-        await ctx.defer()
+        await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation is None:
-            translation = await Translation.get_guild_translation(ctx.guild.id)
+            translation = await Translation.get_guild_translation(interaction.guild_id)
 
         surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah_number}:{ref}', translation_key=translation,
+        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah_number}:{ref}', translation_key=translation,
                            reveal_order=reveal_order).process_request()
 
-    @cog_ext.cog_slash(name="aquran",
-                       description="تبعث آيات قرآنية في الشات",
-                       options=[
-                           create_option(
-                               name="surah",
-                               description="اكتب رقم أو اسم السورة",
-                               option_type=3,
-                               required=True),
-                           create_option(
-                               name="start_verse",
-                               description="اكتب رقم أول آية",
-                               option_type=4,
-                               required=True),
-                           create_option(
-                               name="end_verse",
-                               description="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
-                               option_type=4,
-                               required=False),
-                           create_option(
-                               name="reveal_order",
-                               description="هل السورة تشير إلى رقم أمر الوحي؟",
-                               option_type=5,
-                               required=False)])
-    async def slash_aquran(self, ctx: SlashContext, surah: str, start_verse: int, end_verse: int = None,
+    @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
+    @discord.app_commands.describe(
+        surah="اكتب رقم أو اسم السورة",
+        start_verse="اكتب رقم أول آية",
+        end_verse="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
+        reveal_order="هل السورة تشير إلى رقم أمر الوحي؟"
+    )
+    async def aquran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
                            reveal_order: bool = False):
-        await ctx.defer()
+        await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah_number}:{ref}',
+        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah_number}:{ref}',
                            reveal_order=reveal_order).process_request()
 
-    @cog_ext.cog_slash(name="rquran", description="Send a random translated verse from the Qurʼān.",
-                       options=[
-                           create_option(
-                               name="translation",
-                               description="The translation to use.",
-                               option_type=3,
-                               required=False)])
-    async def slash_rquran(self, ctx: SlashContext, translation: str = None):
-        await ctx.defer()
+    @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
+    @discord.app_commands.describe(translation="The translation to use.")
+    async def rquran(self, interaction: discord.Interaction, translation: str = None) -> None:
+        await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
         if translation is None:
-            translation = await Translation.get_guild_translation(ctx.guild.id)
+            translation = await Translation.get_guild_translation(interaction.guild_id)
 
-        await QuranRequest(ctx=ctx, is_arabic=False, ref=f'{surah}:{verse}',
+        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
                            translation_key=translation).process_request()
 
-    @cog_ext.cog_slash(name="raquran", description="Send a random verse from the Qurʼān in Arabic.")
-    async def slash_raquran(self, ctx: SlashContext):
-        await ctx.defer()
+    @quran.autocomplete('translation')
+    @rquran.autocomplete('translation')
+    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
+        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
+        return choices
+
+    @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
+    async def raquran(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
-        await QuranRequest(ctx=ctx, is_arabic=True, ref=f'{surah}:{verse}').process_request()
+        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{verse}').process_request()
 
-    @quran.error
-    @rquran.error
-    @slash_quran.error
-    @slash_rquran.error
-    async def quran_command_error(self, ctx, error):
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, InvalidReference):
-            try:
-                await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
-            except AttributeError:
-                await ctx.send(INVALID_ARGUMENTS_ENGLISH.format('/'))
-        if isinstance(error, BadArgument):
-            await ctx.send(INVALID_ARGUMENTS_ENGLISH.format(ctx.prefix))
-        if isinstance(error, InvalidSurahName):
-            await ctx.send(INVALID_SURAH_NAME)
+    @discord.app_commands.command(name="settranslation",
+                                  description="Changes the default Qur'an translation for this server.")
+    @discord.app_commands.describe(translation="The translation to use. See /help quran for a list.")
+    @discord.app_commands.checks.has_permissions(administrator=True)
+    @discord.app_commands.guild_only()
+    async def set_translation(self, interaction: discord.Interaction, translation: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
 
-    @aquran.error
-    @raquran.error
-    @slash_aquran.error
-    @slash_raquran.error
-    async def aquran_command_error(self, ctx, error):
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-        if isinstance(error, InvalidAyah):
-            await ctx.send(INVALID_AYAH.format(error.num_verses))
-        if isinstance(error, (InvalidTranslation, MissingRequiredArgument)):
-            await ctx.send(INVALID_TRANSLATION)
-        if isinstance(error, InvalidReference):
-            try:
-                await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
-            except AttributeError:
-                await ctx.send(INVALID_ARGUMENTS_ARABIC.format('/'))
-                # SlashContext doesn't have the attribute `prefix`
-        if isinstance(error, BadArgument):
-            await ctx.send(INVALID_ARGUMENTS_ARABIC.format(ctx.prefix))
-        if isinstance(error, InvalidSurahName):
-            await ctx.send(INVALID_SURAH_NAME)
-
-    async def _settranslation(self, ctx, translation):
         translation_id = Translation.get_translation_id(translation)
-        translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
-        await DBHandler.update_guild_translation(ctx.guild.id, translation)
-        await ctx.send(f"**Successfully updated default translation to `{translation}`!**")
+        translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
+        await DBHandler.update_guild_translation(interaction.guild_id, translation)
+        await interaction.followup.send(f"**Successfully updated default translation to `{translation}`!**")
 
-    @commands.command(name="settranslation")
-    @commands.has_permissions(administrator=True)
-    async def settranslation(self, ctx, translation: str):
-        await self._settranslation(ctx, translation)
-
-    @cog_ext.cog_slash(name="settranslation",
-                       description="🔒 Administrator only command. Changes the default translation for /quran.",
-                       options=[
-                           create_option(
-                               name="translation",
-                               description="The translation to use. See /help quran for a list.",
-                               option_type=3,
-                               required=True)])
-    @commands.has_permissions(administrator=True)
-    async def slash_settranslation(self, ctx: SlashContext, translation: str):
-        await ctx.defer()
-        await self._settranslation(ctx, translation)
-
-    @settranslation.error
-    @slash_settranslation.error
-    async def settranslation_error(self, ctx, error):
+    @set_translation.error
+    async def set_translation_error(self, interaction: discord.Interaction, error):
         if isinstance(error, CheckFailure):
-            await ctx.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, (MissingRequiredArgument, InvalidTranslation)):
-            await ctx.send(INVALID_TRANSLATION)
+            await interaction.followup.send("🔒 You need the **Administrator** permission to use this command.")
+        if isinstance(error, InvalidTranslation):
+            await interaction.followup.send(INVALID_TRANSLATION)
         if isinstance(error, pymysql.err.OperationalError):
             print(error)
-            await ctx.send(DATABASE_UNREACHABLE)
+            await interaction.followup.send(DATABASE_UNREACHABLE)
 
-    async def _surah(self, ctx, surah: str, reveal_order: bool = False):
+    @discord.app_commands.command(name="surah", description="View information about a surah.")
+    @discord.app_commands.describe(
+        surah="The name or number of the surah, e.g. al-Baqarah or 2.",
+        reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
+    )
+    async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
+        await interaction.response.defer(thinking=True)
         surah_num = QuranReference.parse_surah_number(surah)
         surah = Surah(num=surah_num, reveal_order=reveal_order)
         em = discord.Embed(colour=0x048c28)
@@ -484,43 +347,17 @@ class Quran(commands.Cog):
                           f'\n• **Number of verses**: {surah.verses_count}'
                           f'\n• **Revelation location**: {surah.revelation_location}'
                           f'\n• **Revelation order**: {surah.revelation_order} ')
+        await interaction.followup.send(embed=em)
 
-        await ctx.send(embed=em)
-
-    @commands.command(name="surah")
-    async def surah(self, ctx, *, surah: str):
-        # the star is so a user can e.g: -surah an naml
-        # instead of 2 args, its 1 arg: "an naml"
-        await ctx.channel.trigger_typing()
-        await self._surah(ctx, surah)
-
-    @cog_ext.cog_slash(name="surah",
-                       description="Send information on a surah",
-                       options=[
-                           create_option(
-                               name="surah",
-                               description="The name/number of the Surah",
-                               option_type=3,
-                               required=True),
-                           create_option(
-                               name="reveal_order",
-                               description="Is the surah referenced the revelation order number? (If it's a number)",
-                               option_type=5,
-                               required=False)])
-    async def slash_surah(self, ctx: SlashContext, surah: str, reveal_order: bool = False):
-        await ctx.defer()
-        await self._surah(ctx=ctx, surah=surah, reveal_order=reveal_order)
-
+    @quran.error
+    @aquran.error
+    @rquran.error
+    @raquran.error
     @surah.error
-    @slash_surah.error
-    async def surah_error(self, ctx, error):
-        if isinstance(error, BadArgument):
-            await ctx.send("**Error**: Invalid surah number.")
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send("**Error**: You typed the command wrongly. Type `-surah <surah number>`.")
-        if isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
+    async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        await respond_to_interaction_error(interaction, error)
 
 
-def setup(bot):
-    bot.add_cog(Quran(bot))
+async def setup(bot):
+    await bot.add_cog(Quran(bot))
+

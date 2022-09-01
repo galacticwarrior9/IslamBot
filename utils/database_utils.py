@@ -17,7 +17,9 @@ user_prayer_times_table_name = config['MySQL']['user_prayer_times_table_name']
 loop = asyncio.get_event_loop()
 
 
+
 class DBHandler:
+
     @classmethod
     async def create_connection(cls):
         connection = await aiomysql.connect(host=host, user=user, password=password, db=database,
@@ -65,13 +67,6 @@ class DBHandler:
 
 
 class PrayerTimesHandler(DBHandler):
-
-    @classmethod
-    async def delete_user_prayer_times_details(cls, user_id):
-        if str(user_id) not in cls.user_df.user.values:
-            pass
-        else:
-            cls.user_df = cls.user_df[cls.user_df.user != str(user_id)]
 
     @classmethod
     async def update_user_calculation_method(cls, user, method):

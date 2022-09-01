@@ -4,10 +4,9 @@ import discord
 from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
 
 from quran.quran_info import InvalidSurahName, QuranReference
+from utils.errors import respond_to_interaction_error
 from utils.utils import get_site_source
 
 ICON = 'https://www.stickpng.com/assets/images/580b585b2edbce24c47b2abb.png'
@@ -38,14 +37,6 @@ def get_syntax_image(source, word):
     return image_url
 
 
-def in_correct_format(ref):
-    try:
-        ref.split(':')
-        return True
-    except:
-        return False
-
-
 class QuranMorphology(commands.Cog):
 
     def __init__(self, bot):
@@ -54,21 +45,11 @@ class QuranMorphology(commands.Cog):
         self.morphologyURL = 'http://corpus.quran.com/wordmorphology.jsp?location=({}:{}:{})'
         self.syntaxURL = 'http://corpus.quran.com/treebank.jsp?chapter={}&verse={}&token={}'
 
-    async def _morphology(self, ctx, ref: str):
-        try:
-            prefix = ctx.prefix
-        except AttributeError:
-            prefix = '/'
+    async def _morphology(self, interaction: discord.Interaction, ref: str):
+        surah, verse, word = ref.split(':')
 
-        if not in_correct_format(ref):
-            await ctx.send(INVALID_ARGUMENTS.format(prefix))
-            return
-
-        try:
-            surah, verse, word = ref.split(':')
-        except:
-            await ctx.send(INVALID_ARGUMENTS.format(prefix))
-            return
+        # Check if the surah and ayah are valid
+        QuranReference(f"{surah}:{verse}")
 
         word_source = await get_site_source(self.morphologyURL.format(surah, verse, word))
         word_image = get_word_image(word_source)
@@ -94,44 +75,24 @@ class QuranMorphology(commands.Cog):
             em.set_thumbnail(url=word_image)
         else:
             em.set_image(url=word_image)
-        await ctx.send(embed=em)
+        await interaction.followup.send(embed=em)
 
-    @commands.command(name="morphology")
-    async def morphology(self, ctx, ref: str):
-        await ctx.channel.trigger_typing()
-        await self._morphology(ctx, ref)
-
-    @cog_ext.cog_slash(name="morphology", description="View the morphology of a Quranic word.",
-                       options=[
-                           create_option(
-                               name="surah",
-                               description="The surah name/number of the word.",
-                               option_type=3,
-                               required=True),
-                           create_option(
-                               name="verse_number",
-                               description="The ayah number of the word.",
-                               option_type=4,
-                               required=True),
-                           create_option(
-                               name="word_number",
-                               description="The word number of the word.",
-                               option_type=4,
-                               required=True)])
-    async def slash_morphology(self, ctx: SlashContext, surah: str, verse_number: int, word_number: int):
-        await ctx.defer()
+    @discord.app_commands.command(name="morphology", description="View the morphology of a word in the Qur'an.")
+    @discord.app_commands.describe(
+        surah="The name/number of the word's surah, e.g. Al-Ikhlas or 112",
+        verse="The verse in the surah that the word appears in, e.g. 100 for the 100th verse",
+        word_number="The order in which this word appears in the verse, e.g. 2 for the second word."
+    )
+    async def morphology(self, interaction: discord.Interaction, surah: str, verse: int, word_number: int):
+        await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
-        ref = f'{surah_number}:{verse_number}:{word_number}'
-        await self._morphology(ctx, ref)
+        ref = f'{surah_number}:{verse}:{word_number}'
+        await self._morphology(interaction, ref)
 
     @morphology.error
-    @slash_morphology.error
-    async def on_morphology_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
-        if isinstance(error, InvalidSurahName):
-            await ctx.send(INVALID_SURAH_NAME)
+    async def on_morphology_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        await respond_to_interaction_error(interaction, error)
 
 
-def setup(bot):
-    bot.add_cog(QuranMorphology(bot))
+async def setup(bot):
+    await bot.add_cog(QuranMorphology(bot))

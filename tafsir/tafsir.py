@@ -1,16 +1,13 @@
-import asyncio
 import re
 import textwrap
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument
-from discord_slash import cog_ext, SlashContext, ButtonStyle
-from discord_slash.utils import manage_components
-from discord_slash.utils.manage_commands import create_option
+from fuzzywuzzy import process, fuzz
 
-from quran.quran_info import Surah, InvalidSurah, QuranReference, InvalidSurahName
-from utils.slash_utils import generate_choices_from_dict
+from quran.quran_info import Surah, QuranReference
+from utils.errors import InvalidTafsir, respond_to_interaction_error
+from utils.slash_utils import get_key_from_value
 from utils.utils import get_site_source, get_site_json
 
 icon = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
@@ -60,18 +57,6 @@ quranCom_sources = {
     'israr': 159,
 }
 
-INVALID_ARGUMENTS = '**Invalid arguments.** Type the command in this format: `{0}tafsir <surah>:<ayah> <tafsir name>`.' \
-                    '\n\n**Example**: `{0}tafsir 1:1 ibnkathir`'
-
-INVALID_TAFSIR = "**Couldn't find tafsir!** " \
-                 "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
-
-INVALID_SURAH = "**There are only 114 surahs.** Please choose a surah between 1 and 114."
-
-INVALID_AYAH = "**There are only {0} verses in this surah**."
-
-INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
-
 NO_TEXT = "**Could not find tafsir for this verse.** Please try another tafsir." \
           "\n\n**List of tafasir**: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List>."
 
@@ -86,22 +71,6 @@ JALALAYN_URL = 'https://raw.githubusercontent.com/galacticwarrior9/islambot/mast
 CLEAN_HTML_REGEX = re.compile('<(.*?)>')
 
 
-class InvalidReference(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-class InvalidAyah(commands.CommandError):
-    def __init__(self, num_verses, *args, **kwargs):
-        self.num_verses = num_verses
-        super().__init__(*args, **kwargs)
-
-
-class InvalidTafsir(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
 class NoText(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -112,7 +81,7 @@ class BadAlias(commands.CommandError):
         super().__init__(*args, **kwargs)
 
 
-class TafsirSpecifics:
+class TafsirRequest:
     def __init__(self, tafsir, ref, page, reveal_order: bool = False):
         self.pages = None
         self.num_pages = None
@@ -209,7 +178,7 @@ class TafsirSpecifics:
         self.pages = textwrap.wrap(self.text, 2000, break_long_words=False)
         self.num_pages = len(self.pages)
 
-    async def make_embed(self):
+    def make_embed(self):
         em = discord.Embed(colour=0x467f05, description=self.pages[self.page - 1])
         em.title = f'Tafsir of Surah {Surah(self.ref.surah).name}, Verse {self.ref.ayat_list}'
         em.set_author(name=self.tafsir_name, icon_url=icon)
@@ -225,48 +194,19 @@ class TafsirSpecifics:
         self.embed = em
 
 
-class TafsirEnglish(commands.Cog):
-
+class Tafsir(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def send_embed(self, ctx, spec):
+    async def send_embed(self, interaction: discord.Interaction, spec: TafsirRequest):
         if spec.num_pages == 1:
-            return await ctx.send(embed=spec.embed)
-
-        # If there are multiple pages, construct buttons for their navigation.
-        buttons = [
-            manage_components.create_button(style=ButtonStyle.grey, label="Previous Page", emoji="⬅",
-                                            custom_id="tafsir_previous_page"),
-            manage_components.create_button(style=ButtonStyle.green, label="Next Page", emoji="➡",
-                                            custom_id="tafsir_next_page")
-        ]
-        action_row = manage_components.create_actionrow(*buttons)
-        await ctx.send(embed=spec.embed, components=[action_row])
-
-        while True:
-            try:
-                button_ctx = await manage_components.wait_for_component(self.bot, components=action_row, timeout=600)
-                if button_ctx.custom_id == 'tafsir_previous_page':
-                    if spec.page > 1:
-                        spec.page -= 1
-                    else:
-                        spec.page = spec.num_pages
-                    await spec.make_embed()
-                    await button_ctx.edit_origin(embed=spec.embed)
-                elif button_ctx.custom_id == 'tafsir_next_page':
-                    if spec.page < spec.num_pages:
-                        spec.page += 1
-                    else:
-                        spec.page = 1
-                    await spec.make_embed()
-                    await button_ctx.edit_origin(embed=spec.embed)
-
-            except asyncio.TimeoutError:
-                break
+            return await interaction.followup.send(embed=spec.embed)
+        else:
+            tafsir_ui_view = TafsirNavigator(spec, interaction)
+            await interaction.followup.send(embed=spec.embed, view=tafsir_ui_view)
 
     async def process_request(self, ref: str, tafsir: str, page: int, reveal_order: bool = False):
-        spec = TafsirSpecifics(tafsir=tafsir, ref=ref, page=page, reveal_order=reveal_order)
+        spec = TafsirRequest(tafsir=tafsir, ref=ref, page=page, reveal_order=reveal_order)
         try:
             await spec.get_text()
         except IndexError:
@@ -279,69 +219,67 @@ class TafsirEnglish(commands.Cog):
         if len(spec.text) == 0:
             raise NoText
 
-        await spec.make_embed()
+        spec.make_embed()
         return spec
 
-    @commands.command(name='tafsir')
-    async def tafsir(self, ctx, ref: str, tafsir: str = "maarifulquran", page: int = 1):
-        await ctx.channel.trigger_typing()
-        spec = await self.process_request(ref, tafsir, page)
-        await self.send_embed(ctx, spec)
-
-    @cog_ext.cog_slash(name="tafsir", description="Get the tafsir of a verse.",
-                       options=[
-                           create_option(
-                               name="surah",
-                               description="The surah name/number to fetch, e.g. Al-Ikhlaas, 112",
-                               option_type=3,
-                               required=True),
-                           create_option(
-                               name="verse_number",
-                               description="The verse number to fetch, e.g. 255",
-                               option_type=4,
-                               required=True),
-                           create_option(
-                               name="tafsir",
-                               description="The name of the tafsir.",
-                               option_type=3,
-                               required=False,
-                               choices=generate_choices_from_dict(name_mappings)),
-                           create_option(
-                               name="reveal_order",
-                               description="Is the surah referenced the revelation order number?",
-                               option_type=5,
-                               required=False)])
-    async def slash_tafsir(self, ctx: SlashContext, surah: str, verse_number: int, tafsir: str = "maarifulquran",
-                           reveal_order: bool = False):
-        await ctx.defer()
+    @discord.app_commands.command(name="tafsir", description="Get the tafsir of a Qur'anic verse.")
+    @discord.app_commands.describe(
+        surah="The name or number of the verse's surah, e.g. Al-Ikhlaas or 112.",
+        verse_number="The verse number to fetch.",
+        tafsir_name="The name of the tafsir to use.",
+    )
+    async def tafsir(self, interaction: discord.Interaction, surah: str, verse_number: int,
+                     tafsir_name: str = "maarifulquran"):
+        await interaction.response.defer(thinking=True)
         surah_number = QuranReference.parse_surah_number(surah)
-        spec = await self.process_request(ref=f'{surah_number}:{verse_number}', tafsir=tafsir, page=1,
-                                          reveal_order=reveal_order)
-        await self.send_embed(ctx, spec)
+        tafsir_request = await self.process_request(ref=f'{surah_number}:{verse_number}', tafsir=tafsir_name, page=1)
+        await self.send_embed(interaction, tafsir_request)
+
+    @tafsir.autocomplete('tafsir_name')
+    async def tafsir_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        closest_matches = [match[0] for match in process.extract(current, name_mappings.values(), scorer=fuzz.token_sort_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=get_key_from_value(match, name_mappings)) for match in closest_matches]
+        return choices
 
     @tafsir.error
-    @slash_tafsir.error
-    async def on_tafsir_error(self, ctx, error):
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
-        elif isinstance(error, InvalidReference):
-            try:
-                await ctx.send(INVALID_ARGUMENTS.format(ctx.prefix))
-            except AttributeError:
-                await ctx.send(INVALID_ARGUMENTS.format('/'))
-        elif isinstance(error, InvalidAyah):
-            await ctx.send(INVALID_AYAH.format(error.num_verses))
-        elif isinstance(error, InvalidSurah):
-            await ctx.send(INVALID_SURAH)
-        elif isinstance(error, InvalidTafsir):
-            await ctx.send(INVALID_TAFSIR)
-        elif isinstance(error, InvalidSurahName):
-            await ctx.send(INVALID_SURAH_NAME)
-        elif isinstance(error, NoText):
-            await ctx.send(NO_TEXT)
+    async def on_tafsir_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        if isinstance(error, NoText):
+            await interaction.followup.send(NO_TEXT)
         elif isinstance(error, BadAlias):
-            await ctx.send(BAD_ALIAS)
+            await interaction.followup.send(BAD_ALIAS)
+        else:
+            await respond_to_interaction_error(interaction, error)
 
 
-def setup(bot):
-    bot.add_cog(TafsirEnglish(bot))
+class TafsirNavigator(discord.ui.View):
+    def __init__(self, tafsir: TafsirRequest, interaction: discord.Interaction):
+        super().__init__(timeout=300)
+        self.tafsir = tafsir
+        self.original_interaction = interaction
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.original_interaction.edit_original_response(view=self, content=":warning: This message has timed out.")
+
+    @discord.ui.button(label='Previous Page', style=discord.ButtonStyle.red, emoji='⬅')
+    async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.tafsir.page > 1:
+            self.tafsir.page -= 1
+        else:
+            self.tafsir.page = self.tafsir.num_pages
+        self.tafsir.make_embed()
+        await interaction.response.edit_message(embed=self.tafsir.embed)
+
+    @discord.ui.button(label='Next Page', style=discord.ButtonStyle.green, emoji='➡')
+    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.tafsir.page < self.tafsir.num_pages:
+            self.tafsir.page += 1
+        else:
+            self.tafsir.page = 1
+        self.tafsir.make_embed()
+        await interaction.response.edit_message(embed=self.tafsir.embed)
+
+
+async def setup(bot):
+    await bot.add_cog(Tafsir(bot))
