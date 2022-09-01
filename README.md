@@ -30,6 +30,6 @@ Instructions on how to use the bot are available on the [wiki](https://github.co
 
 The Python packages required to run the bot are listed in [requirements.txt](https://github.com/galacticwarrior9/IslamBot/blob/master/requirements.txt) file. Options are retrieved from a file named `config.ini` in the base directory. An example `config.ini` can be found [here](https://github.com/galacticwarrior9/IslamBot/blob/master/example_config.ini).
 
-To run the bot, you will need to exclude the TopGG extension from loading. It is recommended to only sync commands with your test server to avoid falling afoul of Discord's strict rate limits on global command synchronisation. Please consult comments in [main.py](https://github.com/galacticwarrior9/IslamBot/blob/master/main.py) for more information.
+To run the bot, you will need to exclude the TopGG extension from loading. It is recommended to only sync commands with your test server to avoid falling afoul of Discord's strict rate limits on global command synchronisation. Please consult the comments in [main.py](https://github.com/galacticwarrior9/IslamBot/blob/master/main.py) for more information.
 
-You can use the `/reload` command to reload extensions and commands while the bot is running. If you have made a change to a command, reload its extension first before commands.
+You can use the `/reload` command to reload extensions and commands while the bot is running. If you have made a change to a command, reload its extension first before reloading commands.
