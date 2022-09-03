@@ -3,6 +3,7 @@ import re
 
 import discord
 import pymysql
+from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *

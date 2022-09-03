@@ -1,8 +1,6 @@
 import discord
 from discord.app_commands import TransformerError
 from discord.ext import commands
-from fuzzywuzzy import process, fuzz
-
 
 class GuildTransformer(discord.app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, guild_id: str) -> discord.Object:

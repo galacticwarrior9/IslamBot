@@ -1,6 +1,4 @@
 import discord.app_commands
-from discord.ext import commands
-from discord.ext.commands import BadArgument
 from fuzzywuzzy import process, fuzz
 
 from utils.errors import InvalidSurahNumber, InvalidAyah
