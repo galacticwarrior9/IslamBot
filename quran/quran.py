@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
-from utils.database_utils import DBHandler
+from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
 
@@ -156,13 +156,13 @@ class Translation:
 
     @staticmethod
     async def get_guild_translation(guild_id):
-        translation_key = await DBHandler.get_guild_translation(guild_id)
+        translation_key = await ServerTranslation().get(guild_id)
         # Ensure we are not somehow retrieving an invalid translation
         try:
             Translation.get_translation_id(translation_key)
             return translation_key
         except InvalidTranslation:
-            await DBHandler.delete_guild_translation(guild_id)
+            await ServerTranslation().delete(guild_id)
             return 'haleem'
 
 
@@ -320,7 +320,7 @@ class Quran(commands.Cog):
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
-        await DBHandler.update_guild_translation(interaction.guild_id, translation)
+        await ServerTranslation().update(interaction.guild_id, translation)
         await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
 
     @set_translation.error
