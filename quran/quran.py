@@ -320,7 +320,7 @@ class Quran(commands.Cog):
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         await DBHandler.update_guild_translation(interaction.guild_id, translation)
-        await interaction.followup.send(f"**Successfully updated default translation to `{translation}`!**")
+        await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
 
     @set_translation.error
     async def set_translation_error(self, interaction: discord.Interaction, error):
@@ -334,7 +334,7 @@ class Quran(commands.Cog):
 
     @discord.app_commands.command(name="surah", description="View information about a surah.")
     @discord.app_commands.describe(
-        surah="The name or number of the surah, e.g. al-Baqarah or 2.",
+        surah="The name or number of the surah, e.g. Al-Baqarah or 2.",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
     async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
