@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
+from utils import utils
 from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
@@ -245,6 +246,14 @@ class Quran(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.ctx_menu = discord.app_commands.ContextMenu(
+            name='Get Ayah from URL',
+            callback=self.get_quran_ayah
+        )
+        self.bot.tree.add_command(self.ctx_menu)
+
+    async def cog_unload(self) -> None:
+        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
     @discord.app_commands.describe(
@@ -349,6 +358,27 @@ class Quran(commands.Cog):
                           f'\n• **Revelation location**: {surah.revelation_location}'
                           f'\n• **Revelation order**: {surah.revelation_order} ')
         await interaction.followup.send(embed=em)
+
+    async def get_quran_ayah(self, interaction: discord.Interaction, message: discord.Message):
+        await interaction.response.defer(thinking=True)
+        url = utils.find_url('quran.com/', message.content)
+        if url is None:
+            return await interaction.followup.send("Could not find a valid `quran.com` link in this message.")
+        try:
+            meta = list(filter(None, url.split("/")))  # filter out the split url of the empty strings
+            meta[-1] = meta[-1].split('?')[0]  # get rid of any parameters in the link
+            meta = meta[2:]  # get rid of 'https' and 'quran.com' from the list
+            meta = list(filter(None, meta))  # get rid of empty strings that may have stuck with us
+
+            if len(meta) == 1:  # for ['1:1']
+                ref = meta[0]
+            else:
+                ref = f'{meta[0]}:{meta[1]}' # for ['1', '1']
+
+            translation = await Translation.get_guild_translation(interaction.guild_id)
+            return await QuranRequest(interaction=interaction, is_arabic=False, ref=ref, translation_key=translation).process_request()
+        except:
+            return await interaction.followup.send("Could not find a valid `quran.com` link in this message.")
 
     @quran.error
     @aquran.error
