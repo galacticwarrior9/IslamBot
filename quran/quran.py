@@ -157,13 +157,14 @@ class Translation:
 
     @staticmethod
     async def get_guild_translation(guild_id):
-        translation_key = await ServerTranslation().get(guild_id)
+        guild_translation_handler = ServerTranslation(guild_id)
+        translation_key = await guild_translation_handler.get(guild_id)
         # Ensure we are not somehow retrieving an invalid translation
         try:
             Translation.get_translation_id(translation_key)
             return translation_key
         except InvalidTranslation:
-            await ServerTranslation().delete(guild_id)
+            await guild_translation_handler.delete()
             return 'haleem'
 
 
@@ -327,7 +328,7 @@ class Quran(commands.Cog):
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
-        await ServerTranslation().update(interaction.guild_id, translation)
+        await ServerTranslation(interaction.guild_id).update(translation)
         await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
 
     @set_translation.error
@@ -366,6 +367,7 @@ class Quran(commands.Cog):
             meta[-1] = meta[-1].split('?')[0]  # get rid of any parameters in the link
             meta = meta[2:]  # get rid of 'https' and 'quran.com' from the list
             meta = list(filter(None, meta))  # get rid of empty strings that may have stuck with us
+            # This leaves us with either a list that is [surah:verse] or [surah, verse]
 
             if len(meta) == 1:  # for ['1:1']
                 ref = meta[0]

@@ -15,11 +15,12 @@ loop = asyncio.get_event_loop()
 
 
 class DBHandler:
-    def __init__(self, table_name: str, column1: str, column2: str, default_value):
+    def __init__(self, table_name: str, column1: str, column2: str, default_value, key):
         self.table_name = table_name
         self.column1 = column1  # e.g in the prayer times table, user is column1
         self.column2 = column2  # and calculation_method is column2
         self.default_value = default_value  # would be 4 in the prayer times table
+        self.key = key
 
     @classmethod
     async def create_connection(cls):
@@ -27,7 +28,7 @@ class DBHandler:
                                             loop=loop, autocommit=True)
         return connection
 
-    async def _get_data(self, key):
+    async def _get_data(self):
         try:
             connection = await self.create_connection()
         except:
@@ -36,7 +37,7 @@ class DBHandler:
         async with connection.cursor() as cursor:
             await cursor.execute(f"SELECT {self.column2} "
                                  f"FROM {self.table_name} "
-                                 f"WHERE {self.column1} = {key}")
+                                 f"WHERE {self.column1} = {self.key}")
             result = await cursor.fetchone()
             connection.close()
 
@@ -45,94 +46,98 @@ class DBHandler:
 
             return result[0]
 
-    async def _update_data(self, key, value):
+    async def _update_data(self, value):
         connection = await self.create_connection()
         async with connection.cursor() as cursor:
             create_sql = f"INSERT INTO {self.table_name} ({self.column1}, {self.column2}) " \
                          "VALUES (%s, %s) " \
                          f"ON DUPLICATE KEY UPDATE {self.column1}=%s, {self.column2}=%s"
-            await cursor.execute(create_sql, (key, value, key, value))
+            await cursor.execute(create_sql, (self.key, value, self.key, value))
             connection.close()
 
-    async def _delete_data(self, key):
+    async def _delete_data(self):
         connection = await self.create_connection()
         async with connection.cursor() as cursor:
             delete_sql = f"DELETE FROM {self.table_name} WHERE {self.column1}=%s"
-            await cursor.execute(delete_sql, key)
+            await cursor.execute(delete_sql, self.key)
             connection.close()
 
 
 class ServerTranslation(DBHandler):
-    def __init__(self):
+    def __init__(self, guild_id: int):
         super().__init__(
             table_name=config['MySQL']['server_translations_table_name'],
             column1='server',
             column2='translation',
-            default_value='haleem'
+            default_value='haleem',
+            key=guild_id
         )
 
-    async def get(self, guild_id) -> str:
-        return await self._get_data(guild_id)
+    async def get(self) -> str:
+        return await self._get_data()
 
-    async def update(self, guild_id, translation):
-        return await self._update_data(guild_id, translation)
+    async def update(self, translation):
+        return await self._update_data(translation)
 
-    async def delete(self, guild_id):
-        return await self._delete_data(guild_id)
+    async def delete(self):
+        return await self._delete_data()
 
 
 class ServerTafsir(DBHandler):
-    def __init__(self):
+    def __init__(self, guild_id: int):
         super().__init__(
             table_name=config['MySQL']['server_tafsir_table_name'],
             column1='server',
             column2='tafsir',
-            default_value='maarifulquran'
+            default_value='maarifulquran',
+            key=guild_id,
         )
 
-    async def get(self, guild_id) -> str:
-        return await self._get_data(guild_id)
+    async def get(self) -> str:
+        return await self._get_data()
 
-    async def update(self, guild_id, tafsir):
-        return await self._update_data(guild_id, tafsir)
+    async def update(self, tafsir):
+        return await self._update_data(tafsir)
 
-    async def delete(self, guild_id):
-        return await self._delete_data(guild_id)
+    async def delete(self):
+        return await self._delete_data()
 
 
 class ServerArabicTafsir(DBHandler):
-    def __init__(self):
+    def __init__(self, guild_id: int):
         super().__init__(
             table_name=config['MySQL']['server_atafsir_table_name'],
             column1='server',
             column2='atafsir',
-            default_value='tabari'
+            default_value='tabari',
+            key=guild_id,
         )
 
-    async def get(self, guild_id) -> str:
-        return await self._get_data(guild_id)
+    async def get(self) -> str:
+        return await self._get_data()
 
-    async def update(self, guild_id, atafsir):
-        return await self._update_data(guild_id, atafsir)
+    async def update(self, atafsir):
+        return await self._update_data(atafsir)
 
-    async def delete(self, guild_id):
-        return await self._delete_data(guild_id)
+    async def delete(self):
+        return await self._delete_data()
 
 
 class UserPrayerCalculationMethod(DBHandler):
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__(
             table_name=config['MySQL']['user_prayer_times_table_name'],
             column1='user',
             column2='calculation_method',
-            default_value=4
+            default_value=4,
+            key=user_id,
         )
 
-    async def get(self, user_id) -> int:
-        return int(await self._get_data(user_id))
+    async def get(self) -> int:
+        return int(await self._get_data())
 
-    async def update(self, user_id, calculation_method):
-        return await self._update_data(user_id, calculation_method)
+    async def update(self, calculation_method):
+        return await self._update_data(calculation_method)
 
-    async def delete(self, user_id):
-        return await self._delete_data(user_id)
+    async def delete(self):
+        return await self._delete_data()
