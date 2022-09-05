@@ -158,7 +158,7 @@ class Translation:
     @staticmethod
     async def get_guild_translation(guild_id):
         guild_translation_handler = ServerTranslation(guild_id)
-        translation_key = await guild_translation_handler.get(guild_id)
+        translation_key = await guild_translation_handler.get()
         # Ensure we are not somehow retrieving an invalid translation
         try:
             Translation.get_translation_id(translation_key)
