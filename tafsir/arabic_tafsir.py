@@ -7,6 +7,7 @@ from discord.ext import commands
 from fuzzywuzzy import process, fuzz
 
 from quran.quran_info import QuranReference, SurahNameTransformer
+from utils.database_utils import ServerArabicTafsir
 from utils.errors import InvalidArabicTafsir, respond_to_interaction_error
 from utils.slash_utils import get_key_from_value
 from utils.utils import get_site_source, convert_to_arabic_number
@@ -133,6 +134,18 @@ TAFSIR_NAMES = {
     'mafateeh': 'مفاتيح الأغاني في القراءات — أبو العلاء الكرماني (بعد ٥٦٣ هـ)'
 }
 
+class DefaultArabicTafsir:
+    @staticmethod
+    async def get_guild_tafsir(guild_id):
+        guild_tafsir_handler = ServerArabicTafsir(guild_id)
+        tafsir_name = await guild_tafsir_handler.get()
+
+        # Ensure we are not somehow retrieving an invalid tafsir
+        if tafsir_name in TAFSIR_NAMES:
+            return tafsir_name
+
+        await guild_tafsir_handler.delete()
+        return 'tabari'
 
 class ArabicTafsirRequest:
     def __init__(self, surah: int, ayah: int, supplied_tafsir: str):
@@ -262,20 +275,37 @@ class ArabicTafsir(commands.Cog):
         tafsir_ui_view = ArabicTafsirNavigator(tafsir, interaction)
         await interaction.followup.send(embed=em, view=tafsir_ui_view)
 
+    group = discord.app_commands.Group(name="atafsir", description="Commands related to arabic tafsir.")
 
-    @discord.app_commands.command(name="atafsir", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية")
+    @group.command(name="get", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية")
     @discord.app_commands.describe(
         surah="اكتب رقم أو اسم السورة",
         verse_number="اكتب رقم آية",
         tafsir_name="اسم التفسير."
     )
-    async def atafsir(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse_number: int, tafsir_name: str = 'tabari'):
+    async def atafsir(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse_number: int, tafsir_name: str = None):
         await interaction.response.defer(thinking=True)
         quran_reference = QuranReference(ref=f'{surah}:{verse_number}')
+
+        if tafsir_name is None:
+            tafsir_name = await DefaultArabicTafsir.get_guild_tafsir(interaction.guild_id)
+
         tafsir = ArabicTafsirRequest(quran_reference.surah, quran_reference.ayat_list, tafsir_name)
         await self.send(interaction, tafsir)
 
+    @group.command(name="set_default_atafsir", description="تعيين التفسير العربي الافتراضي")
+    @discord.app_commands.describe(
+        tafsir_name="اسم التفسير."
+    )
+    async def set_default_atafsir(self, interaction: discord.Interaction, tafsir_name: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        await ServerArabicTafsir(interaction.guild_id).update(tafsir_name)
+        await interaction.followup.send(f":white_check_mark: **Successfully updated the default arabic tafsir to `{TAFSIR_NAMES[tafsir_name]}`!**")
+
+
     @atafsir.autocomplete('tafsir_name')
+    @set_default_atafsir.autocomplete('tafsir_name')
     async def atafsir_autocomplete_callback(self, interaction: discord.Interaction, current: str):
         closest_matches = [match[0] for match in process.extract(current, TAFSIR_NAMES.values(), scorer=fuzz.token_sort_ratio, limit=5)]
         choices = [discord.app_commands.Choice(name=match, value=get_key_from_value(match, TAFSIR_NAMES)) for match in closest_matches]

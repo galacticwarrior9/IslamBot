@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 from quran.quran_info import Surah, QuranReference, SurahNameTransformer
+from utils.database_utils import ServerTafsir
 from utils.errors import InvalidTafsir, respond_to_interaction_error
 from utils.slash_utils import generate_choices_from_dict
 from utils.utils import get_site_source, get_site_json
@@ -79,6 +80,19 @@ class BadAlias(commands.CommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
+class DefaultTafsir:
+    @staticmethod
+    async def get_guild_tafsir(guild_id):
+        guild_tafsir_handler = ServerTafsir(guild_id)
+        tafsir_name = await guild_tafsir_handler.get()
+
+        # Ensure we are not somehow retrieving an invalid tafsir
+        if tafsir_name in name_mappings:
+            return tafsir_name
+
+        await guild_tafsir_handler.delete()
+        return 'maarifulquran'
 
 class TafsirRequest:
     def __init__(self, tafsir, ref, page, reveal_order: bool = False):
@@ -221,7 +235,9 @@ class Tafsir(commands.Cog):
         spec.make_embed()
         return spec
 
-    @discord.app_commands.command(name="tafsir", description="Get the tafsir of a Qur'anic verse.")
+    group = discord.app_commands.Group(name="tafsir", description="Commands related to tafsir.")
+
+    @group.command(name="get", description="Get the tafsir of a Qur'anic verse.")
     @discord.app_commands.choices(tafsir_name=generate_choices_from_dict(name_mappings))
     @discord.app_commands.describe(
         surah="The name or number of the verse's surah, e.g. Al-Ikhlaas or 112.",
@@ -229,10 +245,25 @@ class Tafsir(commands.Cog):
         tafsir_name="The name of the tafsir to use.",
     )
     async def tafsir(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse_number: int,
-                     tafsir_name: str = "maarifulquran"):
+                     tafsir_name: str = None):
         await interaction.response.defer(thinking=True)
+
+        if tafsir_name is None:
+            tafsir_name = await DefaultTafsir.get_guild_tafsir(interaction.guild_id)
+
         tafsir_request = await self.process_request(ref=f'{surah}:{verse_number}', tafsir=tafsir_name, page=1)
         await self.send_embed(interaction, tafsir_request)
+
+    @group.command(name="set_default_tafsir", description="The default tafsir that will be used in the /tafsir command.")
+    @discord.app_commands.choices(tafsir_name=generate_choices_from_dict(name_mappings))
+    @discord.app_commands.describe(
+        tafsir_name="The name of the tafsir to set",
+    )
+    async def set_default_tafsir(self, interaction: discord.Interaction, tafsir_name: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        await ServerTafsir(interaction.guild_id).update(tafsir_name)
+        await interaction.followup.send(f":white_check_mark: **Successfully updated the default tafsir to `{name_mappings[tafsir_name]}`!**")
 
     @tafsir.error
     async def on_tafsir_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):

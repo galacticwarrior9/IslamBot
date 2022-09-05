@@ -322,7 +322,7 @@ class Quran(commands.Cog):
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         await ServerTranslation(interaction.guild_id).update(translation)
-        await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
+        await interaction.followup.send(f":white_check_mark: **Successfully updated the default translation to `{translation}`!**")
 
     @quran.autocomplete('translation')
     @rquran.autocomplete('translation')
