@@ -301,14 +301,6 @@ class Quran(commands.Cog):
         await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
                            translation_key=translation).process_request()
 
-    @quran.autocomplete('translation')
-    @rquran.autocomplete('translation')
-    @set_translation.autocomplete('translation')
-    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
-        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
-        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
-        return choices
-
     @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
     async def raquran(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
@@ -331,6 +323,14 @@ class Quran(commands.Cog):
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         await ServerTranslation(interaction.guild_id).update(translation)
         await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
+
+    @quran.autocomplete('translation')
+    @rquran.autocomplete('translation')
+    @set_translation.autocomplete('translation')
+    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
+        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
+        return choices
 
     @set_translation.error
     async def set_translation_error(self, interaction: discord.Interaction, error):
