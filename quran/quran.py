@@ -303,6 +303,7 @@ class Quran(commands.Cog):
 
     @quran.autocomplete('translation')
     @rquran.autocomplete('translation')
+    @set_translation.autocomplete('translation')
     async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
         closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
         choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
