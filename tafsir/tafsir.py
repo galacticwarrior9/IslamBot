@@ -3,11 +3,10 @@ import textwrap
 
 import discord
 from discord.ext import commands
-from fuzzywuzzy import process, fuzz
 
 from quran.quran_info import Surah, QuranReference, SurahNameTransformer
 from utils.errors import InvalidTafsir, respond_to_interaction_error
-from utils.slash_utils import get_key_from_value
+from utils.slash_utils import generate_choices_from_dict
 from utils.utils import get_site_source, get_site_json
 
 icon = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
@@ -223,6 +222,7 @@ class Tafsir(commands.Cog):
         return spec
 
     @discord.app_commands.command(name="tafsir", description="Get the tafsir of a Qur'anic verse.")
+    @discord.app_commands.choices(tafsir_name=generate_choices_from_dict(name_mappings))
     @discord.app_commands.describe(
         surah="The name or number of the verse's surah, e.g. Al-Ikhlaas or 112.",
         verse_number="The verse number to fetch.",
@@ -233,12 +233,6 @@ class Tafsir(commands.Cog):
         await interaction.response.defer(thinking=True)
         tafsir_request = await self.process_request(ref=f'{surah}:{verse_number}', tafsir=tafsir_name, page=1)
         await self.send_embed(interaction, tafsir_request)
-
-    @tafsir.autocomplete('tafsir_name')
-    async def tafsir_autocomplete_callback(self, interaction: discord.Interaction, current: str):
-        closest_matches = [match[0] for match in process.extract(current, name_mappings.values(), scorer=fuzz.token_sort_ratio, limit=5)]
-        choices = [discord.app_commands.Choice(name=match, value=get_key_from_value(match, name_mappings)) for match in closest_matches]
-        return choices
 
     @tafsir.error
     async def on_tafsir_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
