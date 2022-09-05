@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from fuzzywuzzy import process, fuzz
 
-from quran.quran_info import Surah, QuranReference
+from quran.quran_info import Surah, QuranReference, SurahNameTransformer
 from utils.errors import InvalidTafsir, respond_to_interaction_error
 from utils.slash_utils import get_key_from_value
 from utils.utils import get_site_source, get_site_json
@@ -228,11 +228,10 @@ class Tafsir(commands.Cog):
         verse_number="The verse number to fetch.",
         tafsir_name="The name of the tafsir to use.",
     )
-    async def tafsir(self, interaction: discord.Interaction, surah: str, verse_number: int,
+    async def tafsir(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse_number: int,
                      tafsir_name: str = "maarifulquran"):
         await interaction.response.defer(thinking=True)
-        surah_number = QuranReference.parse_surah_number(surah)
-        tafsir_request = await self.process_request(ref=f'{surah_number}:{verse_number}', tafsir=tafsir_name, page=1)
+        tafsir_request = await self.process_request(ref=f'{surah}:{verse_number}', tafsir=tafsir_name, page=1)
         await self.send_embed(interaction, tafsir_request)
 
     @tafsir.autocomplete('tafsir_name')

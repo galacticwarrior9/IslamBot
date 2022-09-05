@@ -263,15 +263,14 @@ class Quran(commands.Cog):
         translation="The translation to use",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def quran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
+    async def quran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
                           translation: str = None, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation is None:
             translation = await Translation.get_guild_translation(interaction.guild_id)
 
-        surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah_number}:{ref}', translation_key=translation,
+        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{ref}', translation_key=translation,
                            reveal_order=reveal_order).process_request()
 
     @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
@@ -281,12 +280,11 @@ class Quran(commands.Cog):
         end_verse="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
         reveal_order="هل السورة تشير إلى رقم أمر الوحي؟"
     )
-    async def aquran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
+    async def aquran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
                            reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
-        surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah_number}:{ref}',
+        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{ref}',
                            reveal_order=reveal_order).process_request()
 
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
@@ -347,10 +345,9 @@ class Quran(commands.Cog):
         surah="The name or number of the surah, e.g. Al-Baqarah or 2.",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
+    async def surah(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
-        surah_num = QuranReference.parse_surah_number(surah)
-        surah = Surah(num=surah_num, reveal_order=reveal_order)
+        surah = Surah(num=surah, reveal_order=reveal_order)
         em = discord.Embed(colour=0x048c28)
         em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
         em.description = (f'\n• **Surah number**: {surah.num}'
