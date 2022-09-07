@@ -2,19 +2,13 @@ import random
 import re
 
 import discord
-import pymysql
 from discord.ext import commands
-from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
 from utils import utils
 from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
-
-INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List>"
-
-DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
 TOO_LONG = "This passage was too long to send."
 
@@ -332,16 +326,6 @@ class Quran(commands.Cog):
         choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
         return choices
 
-    @set_translation.error
-    async def set_translation_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, CheckFailure):
-            await interaction.followup.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, InvalidTranslation):
-            await interaction.followup.send(INVALID_TRANSLATION)
-        if isinstance(error, pymysql.err.OperationalError):
-            print(error)
-            await interaction.followup.send(DATABASE_UNREACHABLE)
-
     @discord.app_commands.command(name="surah", description="View information about a surah.")
     @discord.app_commands.describe(
         surah="The name or number of the surah, e.g. Al-Baqarah or 2.",
@@ -385,6 +369,7 @@ class Quran(commands.Cog):
     @rquran.error
     @raquran.error
     @surah.error
+    @set_translation.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         await respond_to_interaction_error(interaction, error)
 

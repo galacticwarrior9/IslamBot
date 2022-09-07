@@ -294,15 +294,14 @@ class ArabicTafsir(commands.Cog):
         await self.send(interaction, tafsir)
 
     @group.command(name="set_default_atafsir", description="تعيين التفسير العربي الافتراضي")
-    @discord.app_commands.describe(
-        tafsir_name="اسم التفسير."
-    )
+    @discord.app_commands.describe(tafsir_name="اسم التفسير.")
+    @discord.app_commands.checks.has_permissions(administrator=True)
+    @discord.app_commands.guild_only()
     async def set_default_atafsir(self, interaction: discord.Interaction, tafsir_name: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
         await ServerArabicTafsir(interaction.guild_id).update(tafsir_name)
         await interaction.followup.send(f":white_check_mark: **Successfully updated the default arabic tafsir to `{TAFSIR_NAMES[tafsir_name]}`!**")
-
 
     @atafsir.autocomplete('tafsir_name')
     @set_default_atafsir.autocomplete('tafsir_name')
@@ -312,6 +311,7 @@ class ArabicTafsir(commands.Cog):
         return choices
 
     @atafsir.error
+    @set_default_atafsir.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         await respond_to_interaction_error(interaction, error)
 

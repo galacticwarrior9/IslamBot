@@ -1,6 +1,8 @@
 from enum import Enum
 
 import discord
+import pymysql
+from discord.ext.commands import CheckFailure
 
 
 class ErrorMessage(Enum):
@@ -10,7 +12,8 @@ class ErrorMessage(Enum):
     INVALID_SURAH_NAME = ":warning: **Invalid surah name!** Please try specifying its number instead."
     INVALID_TAFSIR = ":warning: **Invalid tafsir!** List of tafasir: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#arabic-tafsir>"
     INVALID_ARABIC_TAFSIR = ":warning: **Invalid tafsir!** List of tafasir: <https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#arabic-tafsir>"
-
+    DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
+    ADMINISTRATOR_REQUIRED = "🔒 You need the **Administrator** permission to use this command."
 
 async def respond_to_interaction_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     hook = interaction.followup
@@ -26,6 +29,11 @@ async def respond_to_interaction_error(interaction: discord.Interaction, error: 
         return await hook.send(content=ErrorMessage.INVALID_TAFSIR.value)
     elif isinstance(error, InvalidArabicTafsir):
         return await hook.send(content=ErrorMessage.INVALID_ARABIC_TAFSIR.value)
+    elif isinstance(error, CheckFailure):
+        await hook.send(content=ErrorMessage.ADMINISTRATOR_REQUIRED.value)
+    elif isinstance(error, pymysql.err.OperationalError):
+        print(error)
+        await hook.send(content=ErrorMessage.DATABASE_UNREACHABLE.value)
     else:
         return await hook.send(f":warning: **An error occurred!** Code: {error}")
 

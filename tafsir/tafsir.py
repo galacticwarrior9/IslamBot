@@ -256,9 +256,9 @@ class Tafsir(commands.Cog):
 
     @group.command(name="set_default_tafsir", description="The default tafsir that will be used in the /tafsir command.")
     @discord.app_commands.choices(tafsir_name=generate_choices_from_dict(name_mappings))
-    @discord.app_commands.describe(
-        tafsir_name="The name of the tafsir to set",
-    )
+    @discord.app_commands.describe(tafsir_name="The name of the tafsir to set")
+    @discord.app_commands.checks.has_permissions(administrator=True)
+    @discord.app_commands.guild_only()
     async def set_default_tafsir(self, interaction: discord.Interaction, tafsir_name: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
@@ -266,6 +266,7 @@ class Tafsir(commands.Cog):
         await interaction.followup.send(f":white_check_mark: **Successfully updated the default tafsir to `{name_mappings[tafsir_name]}`!**")
 
     @tafsir.error
+    @set_default_tafsir.error
     async def on_tafsir_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         if isinstance(error, NoText):
             await interaction.followup.send(NO_TEXT)
