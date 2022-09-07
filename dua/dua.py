@@ -78,7 +78,7 @@ class Dua(commands.Cog):
         await interaction.followup.send(embed=em)
 
     async def _dua_list(self, interaction: discord.Interaction):
-        dua_list_message = [f'**Type /dua <topic>**. Example: `/dua breaking fast`\n']
+        dua_list_message = [f'**Type </dua:817163873730822195> <topic>**. Example: `/dua breaking fast`\n']
 
         for dua in DUAS:
             dua_list_message.append('\n' + dua)
@@ -119,7 +119,7 @@ class Dua(commands.Cog):
     async def on_dua_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         if isinstance(error, KeyError):
             await interaction.followup.send(
-                f":warning: **Could not find dua for this topic.** Type `/dualist` for a list of dua topics.")
+                f":warning: **Could not find dua for this topic.** Type </dualist:967584174586355741> for a list of dua topics.")
 
 
 async def setup(bot):
