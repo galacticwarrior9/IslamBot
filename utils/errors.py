@@ -2,7 +2,7 @@ from enum import Enum
 
 import discord
 import pymysql
-from discord.ext.commands import CheckFailure
+from discord.app_commands import MissingPermissions
 
 
 class ErrorMessage(Enum):
@@ -15,27 +15,36 @@ class ErrorMessage(Enum):
     DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
     ADMINISTRATOR_REQUIRED = "🔒 You need the **Administrator** permission to use this command."
 
+
 async def respond_to_interaction_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    hook = interaction.followup
     if isinstance(error, InvalidAyah):
-        return await hook.send(content=ErrorMessage.INVALID_AYAH.value.format(error.num_verses))
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_AYAH.value.format(error.num_verses))
     elif isinstance(error, InvalidSurahName):
-        return await hook.send(content=ErrorMessage.INVALID_SURAH_NAME.value)
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_SURAH_NAME.value)
     elif isinstance(error, InvalidSurahNumber):
-        return await hook.send(content=ErrorMessage.INVALID_SURAH_NUMBER.value)
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_SURAH_NUMBER.value)
     elif isinstance(error, InvalidTranslation):
-        return await hook.send(content=ErrorMessage.INVALID_TRANSLATION.value)
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_TRANSLATION.value)
     elif isinstance(error, InvalidTafsir):
-        return await hook.send(content=ErrorMessage.INVALID_TAFSIR.value)
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_TAFSIR.value)
     elif isinstance(error, InvalidArabicTafsir):
-        return await hook.send(content=ErrorMessage.INVALID_ARABIC_TAFSIR.value)
-    elif isinstance(error, CheckFailure):
-        await hook.send(content=ErrorMessage.ADMINISTRATOR_REQUIRED.value)
+        await reply_to_interaction(interaction, ErrorMessage.INVALID_ARABIC_TAFSIR.value)
+    elif isinstance(error, MissingPermissions):
+        await reply_to_interaction(interaction, ErrorMessage.ADMINISTRATOR_REQUIRED.value)
     elif isinstance(error, pymysql.err.OperationalError):
         print(error)
-        await hook.send(content=ErrorMessage.DATABASE_UNREACHABLE.value)
+        await reply_to_interaction(interaction, ErrorMessage.DATABASE_UNREACHABLE.value)
     else:
-        return await hook.send(f":warning: **An error occurred!** Code: {error}")
+        print(error)
+        await reply_to_interaction(interaction, f":warning: **An error occurred!** Code: {error}")
+
+
+async def reply_to_interaction(interaction: discord.Interaction, message: str):
+    """ Safely replies to an interaction, taking into consideration whether it has already been responded to. """
+    if interaction.response.is_done():
+        await interaction.followup.send(content=message)
+    else:
+        await interaction.response.send_message(content=message)
 
 
 class InvalidAyah(discord.app_commands.AppCommandError):
@@ -62,6 +71,7 @@ class InvalidTranslation(discord.app_commands.AppCommandError):
 class InvalidArabicTafsir(discord.app_commands.AppCommandError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
+
 
 class InvalidTafsir(discord.app_commands.AppCommandError):
     def __init__(self, *args, **kwargs):
