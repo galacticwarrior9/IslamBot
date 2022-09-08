@@ -127,8 +127,8 @@ class UserPrayerCalculationMethod(DBHandler):
     def __init__(self, user_id):
         super().__init__(
             table_name=config['MySQL']['user_prayer_times_table_name'],
-            column1='user',
-            column2='calculation_method',
+            column1='user_id',
+            column2='calculation_method_id',
             default_value=4,
             key=user_id,
         )
