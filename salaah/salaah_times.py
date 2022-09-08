@@ -7,7 +7,7 @@ from dateutil.tz import gettz
 from discord.ext import commands, tasks
 
 from salaah.praytimes import PrayTimes
-from utils.database_utils import PrayerTimesHandler
+from utils.database_utils import UserPrayerCalculationMethod
 
 ICON = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
 METHODS_URL = 'https://api.aladhan.com/v1/methods'
@@ -136,7 +136,7 @@ class PrayerTimes(commands.Cog):
     async def _prayer_times(self, interaction: discord.Interaction, location: str,
                             calculation_method: int = None, hidden: bool = False):
         if calculation_method is None:
-            calculation_method = await PrayerTimesHandler.get_user_calculation_method(interaction.user.id)
+            calculation_method = await UserPrayerCalculationMethod(interaction.user.id).get()
 
         try:
             response = await self.get_prayertimes(location, calculation_method)
@@ -175,7 +175,7 @@ class PrayerTimes(commands.Cog):
         if method_num not in self.calculation_methods.keys():
             return await interaction.followup.send("❌ **Invalid calculation method number.**", ephemeral=True)
 
-        await PrayerTimesHandler.update_user_calculation_method(interaction.user.id, method_num)
+        await UserPrayerCalculationMethod(interaction.user.id).update(method_num)
         return await interaction.followup.send(f':white_check_mark: **Successfully updated user calculation method to `{self.calculation_methods[method_num]}`!**', ephemeral=True)
 
     @group.command(name="set_calculation_method", description="Change your default prayer times calculation method")

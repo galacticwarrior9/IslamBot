@@ -63,10 +63,7 @@ class Mushaf(commands.Cog):
         page="The page to display on the mushaf. Must be between 1 and 604.",
         show_tajweed="Should the mushaf highlight where tajweed rules apply?",
     )
-    async def by_page(self, interaction: discord.Interaction, page: int, show_tajweed: bool = False):
-        if page < 1 or page > 604:
-            return await interaction.response.send_message("The page must be between 1 and 604.", ephemeral=True)
-
+    async def by_page(self, interaction: discord.Interaction, page: discord.app_commands.Range[int, 1, 604], show_tajweed: bool = False):
         await interaction.response.defer(thinking=True)
         em = self.get_mushaf_image(page=page, show_tajweed=show_tajweed)
         mushaf_ui_view = MushafNavigator(page, show_tajweed, interaction)

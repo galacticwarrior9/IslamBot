@@ -3,6 +3,7 @@ import configparser
 import aiohttp
 from bs4 import BeautifulSoup
 from discord import Embed
+import re
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -97,6 +98,11 @@ async def get_site_json(url):
             data = await r.json()
     return data
 
+def find_url(link, message):
+    urls = re.findall(r'(https?://\S+)', message)
+    for link_ in urls:
+        if link in link_:
+            return link_
 
 def convert_to_arabic_number(number_string) -> str:
     dic = {

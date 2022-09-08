@@ -8,6 +8,7 @@ import discord
 import html2text
 from discord.ext import commands
 
+from utils import utils
 from utils.slash_utils import generate_choices_from_dict
 
 config = configparser.ConfigParser()
@@ -297,17 +298,10 @@ class HadithCommands(commands.Cog):
         if isinstance(error, InvalidCollection):
             await interaction.response.send(INVALID_COLLECTION)
 
-    def find_url(self, message):
-        urls = re.findall(r'(https?://\S+)', message)
-        for link in urls:
-            if "sunnah.com/" in link:
-                return link
-
     # See https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458 for why we can't use the
     # context menu annotation in cogs.
     async def get_hadith_text(self, interaction: discord.Interaction, message: discord.Message):
-        content = message.content
-        url = self.find_url(content)
+        url = utils.find_url('sunnah.com/', message.content)
         if url:
             try:
                 meta = url.split("/")
@@ -331,9 +325,9 @@ class HadithCommands(commands.Cog):
                             book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
                 await self.abstract_hadith(interaction, collection, ref, "en")
             except InvalidHadith:
-                await interaction.response.send_message("Found an invalid sunnah.com link in the message.", ephemeral=True)
+                await interaction.response.send_message("Could not find a valid `sunnah.com` link in this message.", ephemeral=True)
         else:
-            await interaction.response.send_message("Could not find valid sunnah.com link in message.", ephemeral=True)
+            await interaction.response.send_message("Could not find a valid `sunnah.com` link in this message.", ephemeral=True)
 
 
 class HadithNavigator(discord.ui.View):

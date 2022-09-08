@@ -81,7 +81,8 @@ class HijriCalendar(commands.Cog):
         month="The month of the Gregorian date to convert, e.g. 1 for January; 12 for December",
         year="The year of the Gregorian date to convert, e.g. 2023. Must be between 1924 and 2077."
     )
-    async def convert_to_hijri(self, interaction: discord.Interaction, day: int, month: int, year: int):
+    async def convert_to_hijri(self, interaction: discord.Interaction, day: discord.app_commands.Range[int, 1, 31], month: discord.app_commands.Range[int, 1, 12],
+                               year: discord.app_commands.Range[int, 1924, 2077]):
         await self._convert_to_hijri(interaction, f"{day}-{month}-{year}")
 
     @group.command(name="to_gregorian", description="Convert a Hijri date to a Gregorian date.")
@@ -90,7 +91,8 @@ class HijriCalendar(commands.Cog):
         month="The month of the Hijri date to convert, e.g. 1 for Muḥarram, 9 for Ramaḍān",
         year="The year of the Hijri date to convert, e.g. 1444. Must be between 1343 and 1500."
     )
-    async def convert_to_gregorian(self, interaction: discord.Interaction, day: int, month: int, year: int):
+    async def convert_to_gregorian(self, interaction: discord.Interaction, day: discord.app_commands.Range[int, 1, 30], month: discord.app_commands.Range[int, 1, 12],
+                                   year: discord.app_commands.Range[int, 1343, 1500]):
         await self._convert_to_gregorian(interaction, f"{day}-{month}-{year}")
 
     @group.command(name="hijri_date", description="Get the current Hijri date.")

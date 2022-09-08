@@ -2,18 +2,13 @@ import random
 import re
 
 import discord
-import pymysql
 from discord.ext import commands
-from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
-from utils.database_utils import DBHandler
+from utils import utils
+from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, get_site_json
-
-INVALID_TRANSLATION = "**Invalid translation**. List of translations: <https://github.com/galacticwarrior9/IslamBot/wiki/Qur%27an-Translation-List>"
-
-DATABASE_UNREACHABLE = "Could not contact database. Please report this on the support server!"
 
 TOO_LONG = "This passage was too long to send."
 
@@ -156,13 +151,14 @@ class Translation:
 
     @staticmethod
     async def get_guild_translation(guild_id):
-        translation_key = await DBHandler.get_guild_translation(guild_id)
+        guild_translation_handler = ServerTranslation(guild_id)
+        translation_key = await guild_translation_handler.get()
         # Ensure we are not somehow retrieving an invalid translation
         try:
             Translation.get_translation_id(translation_key)
             return translation_key
         except InvalidTranslation:
-            await DBHandler.delete_guild_translation(guild_id)
+            await guild_translation_handler.delete()
             return 'haleem'
 
 
@@ -245,6 +241,14 @@ class Quran(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.ctx_menu = discord.app_commands.ContextMenu(
+            name='Get Ayah from URL',
+            callback=self.get_quran_ayah
+        )
+        self.bot.tree.add_command(self.ctx_menu)
+
+    async def cog_unload(self) -> None:
+        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
     @discord.app_commands.describe(
@@ -311,8 +315,8 @@ class Quran(commands.Cog):
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
-        await DBHandler.update_guild_translation(interaction.guild_id, translation)
-        await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
+        await ServerTranslation(interaction.guild_id).update(translation)
+        await interaction.followup.send(f":white_check_mark: **Successfully updated the default translation to `{translation}`!**")
 
     @quran.autocomplete('translation')
     @rquran.autocomplete('translation')
@@ -321,16 +325,6 @@ class Quran(commands.Cog):
         closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
         choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
         return choices
-
-    @set_translation.error
-    async def set_translation_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, CheckFailure):
-            await interaction.followup.send("🔒 You need the **Administrator** permission to use this command.")
-        if isinstance(error, InvalidTranslation):
-            await interaction.followup.send(INVALID_TRANSLATION)
-        if isinstance(error, pymysql.err.OperationalError):
-            print(error)
-            await interaction.followup.send(DATABASE_UNREACHABLE)
 
     @discord.app_commands.command(name="surah", description="View information about a surah.")
     @discord.app_commands.describe(
@@ -348,11 +342,34 @@ class Quran(commands.Cog):
                           f'\n• **Revelation order**: {surah.revelation_order} ')
         await interaction.followup.send(embed=em)
 
+    async def get_quran_ayah(self, interaction: discord.Interaction, message: discord.Message):
+        await interaction.response.defer(thinking=True)
+        url = utils.find_url('quran.com/', message.content)
+        if url is None:
+            return await interaction.followup.send("Could not find a valid `quran.com` link in this message.")
+        try:
+            meta = list(filter(None, url.split("/")))  # filter out the split url of the empty strings
+            meta[-1] = meta[-1].split('?')[0]  # get rid of any parameters in the link
+            meta = meta[2:]  # get rid of 'https' and 'quran.com' from the list
+            meta = list(filter(None, meta))  # get rid of empty strings that may have stuck with us
+            # This leaves us with either a list that is [surah:verse] or [surah, verse]
+
+            if len(meta) == 1:  # for ['1:1']
+                ref = meta[0]
+            else:
+                ref = f'{meta[0]}:{meta[1]}' # for ['1', '1']
+
+            translation = await Translation.get_guild_translation(interaction.guild_id)
+            return await QuranRequest(interaction=interaction, is_arabic=False, ref=ref, translation_key=translation).process_request()
+        except:
+            return await interaction.followup.send("Could not find a valid `quran.com` link in this message.")
+
     @quran.error
     @aquran.error
     @rquran.error
     @raquran.error
     @surah.error
+    @set_translation.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
         await respond_to_interaction_error(interaction, error)
 
