@@ -3,6 +3,7 @@ import re
 
 import discord
 import pymysql
+from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
 from quran.quran_info import *
@@ -253,15 +254,14 @@ class Quran(commands.Cog):
         translation="The translation to use",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def quran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
+    async def quran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
                           translation: str = None, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation is None:
             translation = await Translation.get_guild_translation(interaction.guild_id)
 
-        surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah_number}:{ref}', translation_key=translation,
+        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{ref}', translation_key=translation,
                            reveal_order=reveal_order).process_request()
 
     @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
@@ -271,12 +271,11 @@ class Quran(commands.Cog):
         end_verse="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
         reveal_order="هل السورة تشير إلى رقم أمر الوحي؟"
     )
-    async def aquran(self, interaction: discord.Interaction, surah: str, start_verse: int, end_verse: int = None,
+    async def aquran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
                            reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
-        surah_number = QuranReference.parse_surah_number(surah)
-        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah_number}:{ref}',
+        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{ref}',
                            reveal_order=reveal_order).process_request()
 
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
@@ -291,13 +290,6 @@ class Quran(commands.Cog):
 
         await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
                            translation_key=translation).process_request()
-
-    @quran.autocomplete('translation')
-    @rquran.autocomplete('translation')
-    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
-        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
-        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
-        return choices
 
     @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
     async def raquran(self, interaction: discord.Interaction):
@@ -320,7 +312,15 @@ class Quran(commands.Cog):
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
         translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
         await DBHandler.update_guild_translation(interaction.guild_id, translation)
-        await interaction.followup.send(f"**Successfully updated default translation to `{translation}`!**")
+        await interaction.followup.send(f":white_check_mark: **Successfully updated default translation to `{translation}`!**")
+
+    @quran.autocomplete('translation')
+    @rquran.autocomplete('translation')
+    @set_translation.autocomplete('translation')
+    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
+        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
+        choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
+        return choices
 
     @set_translation.error
     async def set_translation_error(self, interaction: discord.Interaction, error):
@@ -334,13 +334,12 @@ class Quran(commands.Cog):
 
     @discord.app_commands.command(name="surah", description="View information about a surah.")
     @discord.app_commands.describe(
-        surah="The name or number of the surah, e.g. al-Baqarah or 2.",
+        surah="The name or number of the surah, e.g. Al-Baqarah or 2.",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def surah(self, interaction: discord.Interaction, surah: str, reveal_order: bool = False):
+    async def surah(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
-        surah_num = QuranReference.parse_surah_number(surah)
-        surah = Surah(num=surah_num, reveal_order=reveal_order)
+        surah = Surah(num=surah, reveal_order=reveal_order)
         em = discord.Embed(colour=0x048c28)
         em.set_author(name=f'Surah {surah.name} ({surah.translated_name}) |  سورة {surah.arabic_name}', icon_url=ICON)
         em.description = (f'\n• **Surah number**: {surah.num}'

@@ -42,7 +42,7 @@ class Biographies(commands.Cog):
             page = 1
             em.set_footer(text=f'Page {page}/{num_pages}')
 
-            biography_ui_view = BiographyNavigator(page, pages, em)
+            biography_ui_view = BiographyNavigator(page, pages, em, interaction)
             await interaction.followup.send(embed=em, view=biography_ui_view)
 
     @discord.app_commands.command(name="biography", description="View the biography of a hadith transmitter or early Muslim.")
@@ -57,7 +57,7 @@ class Biographies(commands.Cog):
 
 
 class BiographyNavigator(discord.ui.View):
-    def __init__(self, page: int, pages: list[str], embed: discord.Embed, interaction=discord.Interaction):
+    def __init__(self, page: int, pages: list[str], embed: discord.Embed, interaction: discord.Interaction):
         super().__init__(timeout=600)
         self.page = page
         self.pages = pages

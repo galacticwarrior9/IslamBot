@@ -1,6 +1,4 @@
 import discord.app_commands
-from discord.ext import commands
-from discord.ext.commands import BadArgument
 from fuzzywuzzy import process, fuzz
 
 from utils.errors import InvalidSurahNumber, InvalidAyah
@@ -664,8 +662,9 @@ class QuranReference:
             if quranInfo['surah'][surah_number + 1][2] == surah_num:
                 return surah_number + 1
 
-    @staticmethod
-    def parse_surah_number(surah: str) -> int:
+
+class SurahNameTransformer(discord.app_commands.Transformer):
+    async def transform(self, interaction: discord.Interaction, surah: str):
         try:
             return int(surah)
         except ValueError:

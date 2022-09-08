@@ -1,10 +1,10 @@
 from datetime import datetime, date
 
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from hijri_converter import convert
 
-from utils.utils import convert_to_arabic_number, make_embed
+from utils.utils import convert_to_arabic_number
 
 ICON = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/512/calendar-icon.png'
 DATE_INVALID = ':warning: You provided an invalid date!'

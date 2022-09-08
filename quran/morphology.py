@@ -3,9 +3,8 @@ import re
 import discord
 from aiohttp import ClientSession
 from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument
 
-from quran.quran_info import InvalidSurahName, QuranReference
+from quran.quran_info import QuranReference, SurahNameTransformer
 from utils.errors import respond_to_interaction_error
 from utils.utils import get_site_source
 
@@ -83,10 +82,9 @@ class QuranMorphology(commands.Cog):
         verse="The verse in the surah that the word appears in, e.g. 100 for the 100th verse",
         word_number="The order in which this word appears in the verse, e.g. 2 for the second word."
     )
-    async def morphology(self, interaction: discord.Interaction, surah: str, verse: int, word_number: int):
+    async def morphology(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse: int, word_number: int):
         await interaction.response.defer(thinking=True)
-        surah_number = QuranReference.parse_surah_number(surah)
-        ref = f'{surah_number}:{verse}:{word_number}'
+        ref = f'{surah}:{verse}:{word_number}'
         await self._morphology(interaction, ref)
 
     @morphology.error

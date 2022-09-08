@@ -60,11 +60,6 @@ hadith_collection_aliases = {
     'nawawi': 'forty'
 }
 
-INVALID_INPUT = '**Invalid arguments!** \n\nType `{0}hadith <collection name> <book number>:<hadith number>`' \
-                '\n\n**Example**: `{0}hadith bukhari 1:1`' \
-                '\n\nAlternatively, you can use the sunnah.com hadith number:' \
-                '\n\n**Example**: `{0}hadith muslim 1051`' \
-                f'\n\nValid collection names are `{HADITH_COLLECTION_LIST}`'
 
 INVALID_COLLECTION = f'**Invalid hadith collection.**\nValid collection names are `{HADITH_COLLECTION_LIST}`'
 

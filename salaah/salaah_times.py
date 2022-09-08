@@ -176,7 +176,7 @@ class PrayerTimes(commands.Cog):
             return await interaction.followup.send("❌ **Invalid calculation method number.**", ephemeral=True)
 
         await PrayerTimesHandler.update_user_calculation_method(interaction.user.id, method_num)
-        return await interaction.followup.send(':white_check_mark: **Successfully updated!**', ephemeral=True)
+        return await interaction.followup.send(f':white_check_mark: **Successfully updated user calculation method to `{self.calculation_methods[method_num]}`!**', ephemeral=True)
 
     @group.command(name="set_calculation_method", description="Change your default prayer times calculation method")
     @discord.app_commands.describe(

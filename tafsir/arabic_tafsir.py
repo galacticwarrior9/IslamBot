@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 from fuzzywuzzy import process, fuzz
 
-from quran.quran_info import QuranReference
+from quran.quran_info import QuranReference, SurahNameTransformer
 from utils.errors import InvalidArabicTafsir, respond_to_interaction_error
 from utils.slash_utils import get_key_from_value
 from utils.utils import get_site_source, convert_to_arabic_number
@@ -269,10 +269,9 @@ class ArabicTafsir(commands.Cog):
         verse_number="اكتب رقم آية",
         tafsir_name="اسم التفسير."
     )
-    async def atafsir(self, interaction: discord.Interaction, surah: str, verse_number: int, tafsir_name: str = 'tabari'):
+    async def atafsir(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse_number: int, tafsir_name: str = 'tabari'):
         await interaction.response.defer(thinking=True)
-        surah_number = QuranReference.parse_surah_number(surah)
-        quran_reference = QuranReference(ref=f'{surah_number}:{verse_number}')
+        quran_reference = QuranReference(ref=f'{surah}:{verse_number}')
         tafsir = ArabicTafsirRequest(quran_reference.surah, quran_reference.ayat_list, tafsir_name)
         await self.send(interaction, tafsir)
 

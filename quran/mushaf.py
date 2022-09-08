@@ -3,7 +3,7 @@ import random
 import discord
 from discord.ext import commands
 
-from quran.quran_info import QuranReference
+from quran.quran_info import QuranReference, SurahNameTransformer
 from utils.errors import respond_to_interaction_error
 from utils.utils import convert_to_arabic_number
 
@@ -52,11 +52,10 @@ class Mushaf(commands.Cog):
         show_tajweed="Should the mushaf highlight where tajweed rules apply?",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
     )
-    async def by_ayah(self, interaction: discord.Interaction, surah: str, verse: int = 1,
+    async def by_ayah(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], verse: int = 1,
                       show_tajweed: bool = False, reveal_order: bool = False):
         await interaction.response.defer(thinking=True)
-        surah_number = QuranReference.parse_surah_number(surah)
-        await self._mushaf_from_ref(interaction=interaction, ref=f'{surah_number}:{verse}', show_tajweed=show_tajweed,
+        await self._mushaf_from_ref(interaction=interaction, ref=f'{surah}:{verse}', show_tajweed=show_tajweed,
                                     reveal_order=reveal_order)
 
     @group.command(name="by_page", description="Displays a page on the mushaf.")

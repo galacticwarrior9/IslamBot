@@ -93,6 +93,6 @@ class PrayerTimesHandler(DBHandler):
             if result is None:  # If no calculation method has been set
                 method = 4
             else:
-                method = result[0]
+                method = int(result[0])
             connection.close()
             return method
