@@ -134,6 +134,7 @@ TAFSIR_NAMES = {
     'mafateeh': 'مفاتيح الأغاني في القراءات — أبو العلاء الكرماني (بعد ٥٦٣ هـ)'
 }
 
+
 class DefaultArabicTafsir:
     @staticmethod
     async def get_guild_tafsir(guild_id):
@@ -145,7 +146,8 @@ class DefaultArabicTafsir:
             return tafsir_name
 
         await guild_tafsir_handler.delete()
-        return 'tabari'
+        return guild_tafsir_handler.default_value
+
 
 class ArabicTafsirRequest:
     def __init__(self, surah: int, ayah: int, supplied_tafsir: str):
