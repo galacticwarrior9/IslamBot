@@ -33,3 +33,5 @@ The Python packages required to run the bot are listed in [requirements.txt](htt
 To run the bot, you will need to exclude the TopGG extension from loading. It is recommended to only sync commands with your test server to avoid falling afoul of Discord's strict rate limits on global command synchronisation. Please consult the comments in [main.py](https://github.com/galacticwarrior9/IslamBot/blob/master/main.py) for more information.
 
 You can use the `/reload` command to reload extensions and commands while the bot is running. If you have made a change to a command, reload its extension first before reloading commands.
+
+If you lack a sunnah.com API key, you may use the demo key provided in the [API documentation](https://sunnah.api-docs.io/1.0/getting-started/introduction) for testing. Be aware that this key has a low request limit.
