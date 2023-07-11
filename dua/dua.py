@@ -71,7 +71,14 @@ class Dua(commands.Cog):
             text = '\n' + text
             dua_text.append(text)
         dua_text = ''.join(dua_text)
-        dua_text = re.sub(r'\d+', '', dua_text)
+        dua_text = dua_text.split("\n")  # split to get the number that was unintentionally scraped as an item
+
+        for item in dua_text:
+            if item.strip().isdigit():  # check if each item is a number
+                dua_text.remove(item)  # remove then number
+
+        dua_text = '\n'.join(dua_text)
+
 
         em = discord.Embed(title=f'Duas for {subject}', colour=0x467f05, description=dua_text)
         em.set_author(name="Fortress of the Muslim", icon_url=ICON)
@@ -114,6 +121,8 @@ class Dua(commands.Cog):
         if len(choices) > 25:  # Discord limits choices to 25
             return choices[0:24]
         return choices
+
+
 
     @dua.error
     async def on_dua_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
