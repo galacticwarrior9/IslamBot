@@ -61,7 +61,7 @@ class HelpMenu(discord.ui.View):
                                                                     "\n\nYou must have the **Administrator** permission to use this command.")
 
             em.add_field(name="</surah:967584174586355734>", inline=True, value="Get information about a surah."
-                                                           "\n\n`/surah <surah number or namer>`"
+                                                           "\n\n`/surah <surah number or name>`"
                                                            "\n\nExample: `/surah 1`")
 
             em.add_field(name="</morphology:817163873760968744>", inline=True, value="View the morphology of a Qur'anic word."
