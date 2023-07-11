@@ -76,24 +76,24 @@ class HelpMenu(discord.ui.View):
                                            "__**[Click here for the tafsir list.](https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List)**__")
 
             # TODO: get id to make it work properly - by doing 0, it mentions the command but when users click on it, it won't fill in their text input
-            em.add_field(name="</tafsir get:0>", inline=True, value="Gets the tafsīr of a verse."
+            em.add_field(name="</tafsir get:817163873730822197>", inline=True, value="Gets the tafsīr of a verse."
                                                             "\n\n`/tafsir <surah> <verse> <optional tafsir name>`"
                                                             "\n\nExample: `/tafsir 2 255`"
                                                             "\n\nExample 2: `/tafsir 2 255 ibnkathir`"
                                                             "\n\n[Click](https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#english) for a list of valid tafsirs.")
 
-            em.add_field(name="</tafsir set_default_tafsir:0>", inline=True, value="Changes the default tafsīr for the /tafsir get command."
+            em.add_field(name="</tafsir set_default_tafsir:817163873730822197>", inline=True, value="Changes the default tafsīr for the /tafsir get command."
                                                                            "\n\n`/tafsir set_default_tafsir <tafsir>`"
                                                                            "\n\nExample: `/tafsir set_default_tafsir jalalayn`"
                                                                            "\n\nYou must have the **Administrator** permission to use this command.")
 
-            em.add_field(name="</atafsir get:0>", inline=True, value="Gets the tafsīr of a verse in Arabic."
+            em.add_field(name="</atafsir get:817163873730822203>", inline=True, value="Gets the tafsīr of a verse in Arabic."
                                                              "\n\n`/atafsir <surah> <verse> <optional tafsir name>`"
                                                              "\n\nExample: `/atafsir 2 255`"
                                                              "\n\nExample 2: `/atafsir 2 255 zamakhshari`"
                                                              "\n\n[Click](https://github.com/galacticwarrior9/IslamBot/wiki/Tafsir-List#arabic-tafsir) for a list of valid tafsirs.")
 
-            em.add_field(name="</atafsir set_default_atafsir:0>", inline=True, value="Changes the default Arabic tafsīr for the /tafsir get command."
+            em.add_field(name="</atafsir set_default_atafsir:817163873730822203>", inline=True, value="Changes the default Arabic tafsīr for the /tafsir get command."
                                                                            "\n\n`/tafsir set_default_tafsir <tafsir>`"
                                                                            "\n\nExample: `/tafsir set_default_tafsir saadi`"
                                                                            "\n\nYou must have the **Administrator** permission to use this command.")
