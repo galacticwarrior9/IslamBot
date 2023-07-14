@@ -42,7 +42,7 @@ translation_list = {
     'transliteration': TranslationInfo(id=57, fullname="Transliteration"),
     'pickthall': TranslationInfo(id=19, fullname="English Translation (Pickthall)"),  # English
     'yusufali': TranslationInfo(id=22, fullname="Abdullah Yusuf Ali"),  # English
-    'ruwwad': TranslationInfo(id=206, fullname="Ruwwad Center"),  # English
+    'ruwwad': TranslationInfo(id=206, fullname="Ruwwad Center (English)"),  # English
     'muhammadhijab': TranslationInfo(id=207, fullname="Dr. T. B. Irving"),  # English
     'junagarri': TranslationInfo(id=54, fullname="Maulana Muhammad Junagarhi"),  # Urdu
     'sayyidqutb': TranslationInfo(id=156, fullname="Fe Zilal al-Qur'an"),  # Urdu
@@ -57,21 +57,21 @@ translation_list = {
     'taisirulquran': TranslationInfo(id=161, fullname="Taisirul Quran"),  # Bengali
     'mujibur': TranslationInfo(id=163, fullname="Sheikh Mujibur Rahman"),  # Bengali
     'rawai': TranslationInfo(id=162, fullname="Rawai Al-bayan"),  # Bengali
-    'tagalog': TranslationInfo(id=211, fullname="Dar Al-Salam Center"),  # Tagalog
+    'tagalog': TranslationInfo(id=211, fullname="Dar Al-Salam Center (Tagalog)"),  # Tagalog
     'ukrainian': TranslationInfo(id=217, fullname="Dr. Mikhailo Yaqubovic"),  # Ukrainian
     'omar': TranslationInfo(id=229, fullname="Sheikh Omar Sharif bin Abdul Salam"),  # Tamil
     'bamoki': TranslationInfo(id=143, fullname="Muhammad Saleh Bamoki"),  # Kurdish
     'sabiq': TranslationInfo(id=141, fullname="The Sabiq company"),  # Indonesian
     'telegu': TranslationInfo(id=227, fullname="Maulana Abder-Rahim ibn Muhammad"),  # Telugu
     'marathi': TranslationInfo(id=226, fullname="Muhammad Shafi’i Ansari"),  # Marathi
-    'hebrew': TranslationInfo(id=233, fullname="Dar Al-Salam Center"),  # Hebrew
+    'hebrew': TranslationInfo(id=233, fullname="Dar Al-Salam Center (Hebrew)"),  # Hebrew
     'gujarati': TranslationInfo(id=225, fullname="Rabila Al-Umry"),  # Gujarati
     'abdulislam': TranslationInfo(id=235, fullname="Malak Faris Abdalsalaam"),  # Dutch
     'ganda': TranslationInfo(id=232, fullname="African Development Foundation"),  # Ganda
     'khamis': TranslationInfo(id=231, fullname="Dr. Abdullah Muhammad Abu Bakr and Sheikh Nasir Khamis"),  # Swahili
     'thai': TranslationInfo(id=230, fullname="Society of Institutes and Universities"),  # Thai
     'kazakh': TranslationInfo(id=222, fullname="Khalifa Altay"),  # Kazakh
-    'vietnamese': TranslationInfo(id=220, fullname="Ruwwad Center"),  # Vietnamese
+    'vietnamese': TranslationInfo(id=220, fullname="Ruwwad Center (Vietnamese)"),  # Vietnamese
     'siregar': TranslationInfo(id=144, fullname="Sofian S. Siregar"),  # Dutch
     'hasanefendi': TranslationInfo(id=88, fullname="Hasan Efendi Nahi"),  # Albanian
     'amharic': TranslationInfo(id=87, fullname="Sadiq and Sani"),  # Amharic
@@ -123,7 +123,7 @@ translation_list = {
     'zakaria': TranslationInfo(id=213, fullname="Dr. Abu Bakr Muhammad Zakaria"),  # Bengali
     'noor': TranslationInfo(id=199, fullname="Noor International Center"),  # Spanish
     'sato': TranslationInfo(id=218, fullname="Saeed Sato"),  # Japanese
-    'sinhalese': TranslationInfo(id=228, fullname="Ruwwad Center"),  # Sinhala/Sinhalese
+    'sinhalese': TranslationInfo(id=228, fullname="Ruwwad Center (Sinhala/Sinhalese)"),  # Sinhala/Sinhalese
     'korkut': TranslationInfo(id=126, fullname="Besim Korkut"),  # Bosnian
     'umari': TranslationInfo(id=122, fullname="Maulana Azizul Haque al-Umari"),  # Hindi
     'assamese': TranslationInfo(id=120, fullname="Shaykh Rafeequl Islam Habibur-Rahman"),  # Assamese
