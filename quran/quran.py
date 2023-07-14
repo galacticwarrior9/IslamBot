@@ -1,3 +1,4 @@
+from collections import namedtuple
 import random
 import re
 
@@ -16,121 +17,121 @@ ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_ico
 
 CLEAN_HTML_REGEX = re.compile('<[^<]+?>\d*')
 
+TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
+
+# translatons no longer in quran.com api: 'suhel' (id 82), 'serbian' (id 215), 'georgian' (id 212)
 translation_list = {
-    'khattab': 131,  # English
-    'bridges': 149,  # English
-    'sahih': 20,  # English
-    'maarifulquran': 167,  # English
-    'jalandhari': 234,  # Urdu
-    'suhel': 82,  # Hindi
-    'awqaf': 78,  # Russian
-    'musayev': 75,  # Azeri
-    'uyghur': 76,  # Uyghur
-    'haleem': 85,  # English
-    'abuadel': 79,  # Russian
-    'karakunnu': 80,  # Malayalam
-    'isagarcia': 83,  # Spanish
-    'divehi': 86,  # Maldivian
-    'burhan': 81,  # Kurdish
-    'taqiusmani': 84,  # English
-    'ghali': 17,  # English
-    'hilali': 203,  # English
-    'maududi.en': 95,  # English
-    'transliteration': 57,
-    'pickthall': 19,  # English
-    'yusufali': 22,  # English
-    'ruwwad': 206,  # English
-    'muhammadhijab': 207,  # English
-    'junagarri': 54,  # Urdu
-    'sayyidqutb': 156,  # Urdu
-    'mahmudhasan': 151,  # Urdu
-    'israrahmad': 158,  # Urdu
-    'maududi': 97,  # Urdu
-    'montada': 136,  # French
-    'khawaja': 139,  # Tajik
-    'ryoichi': 35,  # Japanese
-    'fahad.in': 134,  # Indonesian
-    'piccardo': 153,  # Italian
-    'taisirulquran': 161,  # Bengali
-    'mujibur': 163,  # Bengali
-    'rawai': 162,  # Bengali
-    'tagalog': 211,  # Tagalog
-    'ukrainian': 217,  # Ukrainian
-    'omar': 229,  # Tamil
-    'serbian': 215,  # Serbian
-    'bamoki': 143,  # Kurdish
-    'sabiq': 141,  # Indonesian
-    'telegu': 227,  # Telugu
-    'marathi': 226,  # Marathi
-    'hebrew': 233,  # Hebrew
-    'gujarati': 225,  # Gujarati
-    'abdulislam': 235,  # Dutch
-    'ganda': 232,  # Ganda
-    'khamis': 231,  # Swahili
-    'thai': 230,  # Thai
-    'kazakh': 222,  # Kazakh
-    'vietnamese': 220,  # Vietnamese
-    'siregar': 144,  # Dutch
-    'hasanefendi': 88,  # Albanian
-    'amharic': 87,  # Amharic
-    'jantrust': 50,  # Tamil
-    'barwani': 49,  # Somali
-    'swedish': 48,  # Swedish
-    'khmer': 128,  # Khmer (Cambodian)
-    'kuliev': 45,  # Russian
-    'diyanet': 77,  # Turkish
-    'turkish': 77,  # Turkish
-    'basmeih': 39,  # Malay
-    'malay': 39,  # Malay
-    'korean': 219,  # Korean (Hamed Choi)
-    'finnish': 30,  # Finnish
-    'czech': 26,  # Czech
-    'nasr': 103,  # Portuguese
-    'ayati': 74,  # Tajik
-    'mansour': 101,  # Uzbek
-    'tatar': 53,  # Tatar
-    'romanian': 44,  # Romanian
-    'polish': 42,  # Polish
-    'norwegian': 41,  # Norwegian
-    'amazigh': 236,  # Amazigh
-    'sindhi': 238,  # Sindhi
-    'chechen': 106,  # Chechen
-    'bulgarian': 237,  # Bulgarian
-    'yoruba': 125,  # Yoruba
-    'shahin': 124,  # Turkish
-    'abduh': 46,  # Somali
-    'britch': 112,  # Turkish
-    'maranao': 38,  # Maranao
-    'ahmeti': 89,  # Albanian
-    'majian': 56,  # Chinese
-    'hausa': 32,  # Hausa
-    'nepali': 108,  # Nepali
-    'hameed': 37,  # Malayalam
-    'elhayek': 43,  # Portuguese
-    'cortes': 28,  # Spanish
-    'oromo': 111,  # Oromo
-    'french': 31,  # French
-    'hamidullah': 31,  # French
-    'persian': 29,  # Persian
-    'farsi': 29,  # Persian
-    'aburida': 208,  # German
-    'othman': 209,  # Italian
-    'georgian': 212,  # Georgian
-    'baqavi': 133,  # Tamil
-    'mehanovic': 25,  # Bosnian
-    'yazir': 52,  # Turkish
-    'zakaria': 213,  # Bengali
-    'noor': 199,  # Spanish
-    'sato': 218,  # Japanese
-    'sinhalese': 228,  # Sinhala/Sinhalese
-    'korkut': 126,  # Bosnian
-    'umari': 122,  # Hindi
-    'assamese': 120,  # Assamese
-    'sodik': 127,  # Uzbek
-    'pashto': 118,  # Pashto
-    'makin': 109,  # Chinese
-    'bubenheim': 27,  # German
-    'indonesian': 33,  # Indonesian
+    'khattab': TranslationInfo(id=131, fullname="Dr. Mustafa Khattab, the Clear Quran"),  # English
+    'bridges': TranslationInfo(id=149, fullname="Fadel Soliman, Bridges’ translation"),  # English
+    'sahih': TranslationInfo(id=20, fullname="Saheeh International"),  # English
+    'maarifulquran': TranslationInfo(id=167, fullname="Maarif-ul-Quran"),  # English
+    'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari"),  # Urdu
+    'awqaf': TranslationInfo(id=78, fullname="Ministry of Awqaf, Egypt"),  # Russian
+    'musayev': TranslationInfo(id=75, fullname="Alikhan Musayev"),  # Azeri
+    'uyghur': TranslationInfo(id=76, fullname="Muhammad Saleh"),  # Uyghur
+    'haleem': TranslationInfo(id=85, fullname="Abdul Haleem"),  # English
+    'abuadel': TranslationInfo(id=79, fullname="Abu Adel"),  # Russian
+    'karakunnu': TranslationInfo(id=80, fullname="Muhammad Karakunnu and Vanidas Elayavoor"),  # Malayalam
+    'isagarcia': TranslationInfo(id=83, fullname="Sheikh Isa Garcia"),  # Spanish
+    'divehi': TranslationInfo(id=86, fullname="Divehi"),  # Maldivian
+    'burhan': TranslationInfo(id=81, fullname="Burhan Muhammad-Amin"),  # Kurdish
+    'taqiusmani': TranslationInfo(id=84, fullname="Mufti Taqi Usmani"),  # English
+    'ghali': TranslationInfo(id=17, fullname="Dr. Ghali"),  # English
+    'hilali': TranslationInfo(id=203, fullname="Muhammad Taqi-ud-Din al-Hilali & Muhammad Muhsin Khan"),  # English
+    'maududi.en': TranslationInfo(id=95, fullname="Tafheem-ul-Quran - Abul Ala Maududi"),  # English
+    'transliteration': TranslationInfo(id=57, fullname="Transliteration"),
+    'pickthall': TranslationInfo(id=19, fullname="English Translation (Pickthall)"),  # English
+    'yusufali': TranslationInfo(id=22, fullname="Abdullah Yusuf Ali"),  # English
+    'ruwwad': TranslationInfo(id=206, fullname="Ruwwad Center"),  # English
+    'muhammadhijab': TranslationInfo(id=207, fullname="Dr. T. B. Irving"),  # English
+    'junagarri': TranslationInfo(id=54, fullname="Maulana Muhammad Junagarhi"),  # Urdu
+    'sayyidqutb': TranslationInfo(id=156, fullname="Fe Zilal al-Qur'an"),  # Urdu
+    'mahmudhasan': TranslationInfo(id=151, fullname="Shaykh al-Hind Mahmud al-Hasan(with Tafsir E Usmani)"),  # Urdu
+    'israrahmad': TranslationInfo(id=158, fullname="Bayan-ul-Quran"),  # Urdu
+    'maududi': TranslationInfo(id=97, fullname="Tafheem e Qur'an - Syed Abu Ali Maududi"),  # Urdu
+    'montada': TranslationInfo(id=136, fullname="Montada Islamic Foundation"),  # French
+    'khawaja': TranslationInfo(id=139, fullname="Khawaja Mirof & Khawaja Mir"),  # Tajik
+    'ryoichi': TranslationInfo(id=35, fullname="Ryoichi Mita"),  # Japanese
+    'fahad.in': TranslationInfo(id=134, fullname="King Fahad Quran Complex"),  # Indonesian
+    'piccardo': TranslationInfo(id=153, fullname="Hamza Roberto Piccardo"),  # Italian
+    'taisirulquran': TranslationInfo(id=161, fullname="Taisirul Quran"),  # Bengali
+    'mujibur': TranslationInfo(id=163, fullname="Sheikh Mujibur Rahman"),  # Bengali
+    'rawai': TranslationInfo(id=162, fullname="Rawai Al-bayan"),  # Bengali
+    'tagalog': TranslationInfo(id=211, fullname="Dar Al-Salam Center"),  # Tagalog
+    'ukrainian': TranslationInfo(id=217, fullname="Dr. Mikhailo Yaqubovic"),  # Ukrainian
+    'omar': TranslationInfo(id=229, fullname="Sheikh Omar Sharif bin Abdul Salam"),  # Tamil
+    'bamoki': TranslationInfo(id=143, fullname="Muhammad Saleh Bamoki"),  # Kurdish
+    'sabiq': TranslationInfo(id=141, fullname="The Sabiq company"),  # Indonesian
+    'telegu': TranslationInfo(id=227, fullname="Maulana Abder-Rahim ibn Muhammad"),  # Telugu
+    'marathi': TranslationInfo(id=226, fullname="Muhammad Shafi’i Ansari"),  # Marathi
+    'hebrew': TranslationInfo(id=233, fullname="Dar Al-Salam Center"),  # Hebrew
+    'gujarati': TranslationInfo(id=225, fullname="Rabila Al-Umry"),  # Gujarati
+    'abdulislam': TranslationInfo(id=235, fullname="Malak Faris Abdalsalaam"),  # Dutch
+    'ganda': TranslationInfo(id=232, fullname="African Development Foundation"),  # Ganda
+    'khamis': TranslationInfo(id=231, fullname="Dr. Abdullah Muhammad Abu Bakr and Sheikh Nasir Khamis"),  # Swahili
+    'thai': TranslationInfo(id=230, fullname="Society of Institutes and Universities"),  # Thai
+    'kazakh': TranslationInfo(id=222, fullname="Khalifa Altay"),  # Kazakh
+    'vietnamese': TranslationInfo(id=220, fullname="Ruwwad Center"),  # Vietnamese
+    'siregar': TranslationInfo(id=144, fullname="Sofian S. Siregar"),  # Dutch
+    'hasanefendi': TranslationInfo(id=88, fullname="Hasan Efendi Nahi"),  # Albanian
+    'amharic': TranslationInfo(id=87, fullname="Sadiq and Sani"),  # Amharic
+    'jantrust': TranslationInfo(id=50, fullname="Jan Trust Foundation"),  # Tamil
+    'barwani': TranslationInfo(id=49, fullname="Ali Muhsin Al-Barwani"),  # Somali
+    'swedish': TranslationInfo(id=48, fullname="Knut Bernström"),  # Swedish
+    'khmer': TranslationInfo(id=128, fullname="Cambodian Muslim Community Development"),  # Khmer (Cambodian)
+    'kuliev': TranslationInfo(id=45, fullname="Russian Translation ( Elmir Kuliev )"),  # Russian
+    'diyanet': TranslationInfo(id=77, fullname="Turkish Translation(Diyanet)"),  # Turkish
+    'turkish': TranslationInfo(id=77, fullname="Turkish Translation(Diyanet)"),  # Turkish
+    'basmeih': TranslationInfo(id=39, fullname="Abdullah Muhammad Basmeih"),  # Malay
+    'malay': TranslationInfo(id=39, fullname="Abdullah Muhammad Basmeih"),  # Malay
+    'korean': TranslationInfo(id=219, fullname="Hamed Choi"),  # Korean (Hamed Choi)
+    'finnish': TranslationInfo(id=30, fullname="Finnish"),  # Finnish
+    'czech': TranslationInfo(id=26, fullname="Czech"),  # Czech
+    'nasr': TranslationInfo(id=103, fullname="Helmi Nasr"),  # Portuguese
+    'ayati': TranslationInfo(id=74, fullname="Tajik"),  # Tajik
+    'mansour': TranslationInfo(id=101, fullname="Alauddin Mansour"),  # Uzbek
+    'tatar': TranslationInfo(id=53, fullname="Tatar"),  # Tatar
+    'romanian': TranslationInfo(id=44, fullname="Grigore"),  # Romanian
+    'polish': TranslationInfo(id=42, fullname="Józef Bielawski"),  # Polish
+    'norwegian': TranslationInfo(id=41, fullname="Norwegian"),  # Norwegian
+    'amazigh': TranslationInfo(id=236, fullname="Ramdane At Mansour"),  # Amazigh
+    'sindhi': TranslationInfo(id=238, fullname="Taj Mehmood Amroti"),  # Sindhi
+    'chechen': TranslationInfo(id=106, fullname="Magomed Magomedov"),  # Chechen
+    'bulgarian': TranslationInfo(id=237, fullname="Tzvetan Theophanov"),  # Bulgarian
+    'yoruba': TranslationInfo(id=125, fullname="Shaykh Abu Rahimah Mikael Aykyuni"),  # Yoruba
+    'shahin': TranslationInfo(id=124, fullname="Muslim Shahin"),  # Turkish
+    'abduh': TranslationInfo(id=46, fullname="Mahmud Muhammad Abduh"),  # Somali
+    'britch': TranslationInfo(id=112, fullname="Shaban Britch"),  # Turkish
+    'maranao': TranslationInfo(id=38, fullname="Maranao"),  # Maranao
+    'ahmeti': TranslationInfo(id=89, fullname="Albanian Translation"),  # Albanian
+    'majian': TranslationInfo(id=56, fullname="Chinese Translation (Simplified) - Ma Jain"),  # Chinese
+    'hausa': TranslationInfo(id=32, fullname="Hausa Translation(Abubakar Gumi)"),  # Hausa
+    'nepali': TranslationInfo(id=108, fullname="Ahl Al-Hadith Central Society of Nepal"),  # Nepali
+    'hameed': TranslationInfo(id=37, fullname="Malay Translation(Abdul Hameed and Kunhi)"),  # Malayalam
+    'elhayek': TranslationInfo(id=43, fullname="Portuguese Translation( Samir )"),  # Portuguese
+    'cortes': TranslationInfo(id=28, fullname="Spanish Translation(Cortes)"),  # Spanish
+    'oromo': TranslationInfo(id=111, fullname="Ghali Apapur Apaghuna"),  # Oromo
+    'french': TranslationInfo(id=31, fullname="Muhammad Hamidullah"),  # French
+    'hamidullah': TranslationInfo(id=31, fullname="Muhammad Hamidullah"),  # French
+    'persian': TranslationInfo(id=29, fullname="Hussein Taji Kal Dari"),  # Persian
+    'farsi': TranslationInfo(id=29, fullname="Hussein Taji Kal Dari"),  # Persian
+    'aburida': TranslationInfo(id=208, fullname="Abu Reda Muhammad ibn Ahmad"),  # German
+    'othman': TranslationInfo(id=209, fullname="Othman al-Sharif"),  # Italian
+    'baqavi': TranslationInfo(id=133, fullname="Abdul Hameed Baqavi"),  # Tamil
+    'mehanovic': TranslationInfo(id=25, fullname="Muhamed Mehanović"),  # Bosnian
+    'yazir': TranslationInfo(id=52, fullname="Elmalili Hamdi Yazir"),  # Turkish
+    'zakaria': TranslationInfo(id=213, fullname="Dr. Abu Bakr Muhammad Zakaria"),  # Bengali
+    'noor': TranslationInfo(id=199, fullname="Noor International Center"),  # Spanish
+    'sato': TranslationInfo(id=218, fullname="Saeed Sato"),  # Japanese
+    'sinhalese': TranslationInfo(id=228, fullname="Ruwwad Center"),  # Sinhala/Sinhalese
+    'korkut': TranslationInfo(id=126, fullname="Besim Korkut"),  # Bosnian
+    'umari': TranslationInfo(id=122, fullname="Maulana Azizul Haque al-Umari"),  # Hindi
+    'assamese': TranslationInfo(id=120, fullname="Shaykh Rafeequl Islam Habibur-Rahman"),  # Assamese
+    'sodik': TranslationInfo(id=127, fullname="Muhammad Sodik Muhammad Yusuf"),  # Uzbek
+    'pashto': TranslationInfo(id=118, fullname="Zakaria Abulsalam"),  # Pashto
+    'makin': TranslationInfo(id=109, fullname="Muhammad Makin"),  # Chinese
+    'bubenheim': TranslationInfo(id=27, fullname="Frank Bubenheim and Nadeem"),  # German
+    'indonesian': TranslationInfo(id=33, fullname="Indonesian Islamic affairs ministry"),  # Indonesian
 }
 
 
@@ -141,13 +142,13 @@ class Translation:
     @staticmethod
     def get_translation_id(key):
         if key in translation_list:
-            return translation_list[key]
+            return translation_list[key].id
 
         translation = process.extract(key, translation_list.keys(), scorer=fuzz.partial_ratio, limit=1)
         if translation is None:
             raise InvalidTranslation
 
-        return translation_list[translation[0][0]]
+        return translation_list[translation[0][0]].id
 
     @staticmethod
     async def get_guild_translation(guild_id):
@@ -314,7 +315,7 @@ class Quran(commands.Cog):
         translation_id = Translation.get_translation_id(translation)
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
-        translation = list(translation_list.keys())[list(translation_list.values()).index(translation_id)]
+        translation = list(translation_list.keys())[[v.id for v in translation_list.values()].index(translation_id)]
         await ServerTranslation(interaction.guild_id).update(translation)
         await interaction.followup.send(f":white_check_mark: **Successfully updated the default translation to `{translation}`!**")
 
@@ -322,7 +323,7 @@ class Quran(commands.Cog):
     @rquran.autocomplete('translation')
     @set_translation.autocomplete('translation')
     async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
-        closest_matches = [match[0] for match in process.extract(current, translation_list.keys(), scorer=fuzz.partial_ratio, limit=5)]
+        closest_matches = [match[0] for match in process.extract(current, [v.fullname for v in translation_list.values()], scorer=fuzz.partial_ratio, limit=5)]
         choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
         return choices
 
