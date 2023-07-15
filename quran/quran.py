@@ -21,75 +21,74 @@ TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
 
 # translatons no longer in quran.com api: 'suhel' (id 82), 'serbian' (id 215), 'georgian' (id 212)
 translation_list = {
-    'khattab': TranslationInfo(id=131, fullname="Dr. Mustafa Khattab, the Clear Quran"),  # English
-    'bridges': TranslationInfo(id=149, fullname="Fadel Soliman, Bridges’ translation"),  # English
-    'sahih': TranslationInfo(id=20, fullname="Saheeh International"),  # English
-    'maarifulquran': TranslationInfo(id=167, fullname="Maarif-ul-Quran"),  # English
-    'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari"),  # Urdu
-    'awqaf': TranslationInfo(id=78, fullname="Ministry of Awqaf, Egypt"),  # Russian
-    'musayev': TranslationInfo(id=75, fullname="Alikhan Musayev"),  # Azeri
+    'khattab': TranslationInfo(id=131, fullname="Dr. Mustafa Khattab, the Clear Quran (English)"),  # English
+    'bridges': TranslationInfo(id=149, fullname="Fadel Soliman, Bridges’ translation (English)"),  # English
+    'sahih': TranslationInfo(id=20, fullname="Saheeh International (English)"),  # English
+    'maarifulquran': TranslationInfo(id=167, fullname="Maarif-ul-Quran (English)"),  # English
+    'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari (Urdu)"),  # Urdu
+    'awqaf': TranslationInfo(id=78, fullname="Ministry of Awqaf, Egypt (Russian)"),  # Russian
+    'musayev': TranslationInfo(id=75, fullname="Alikhan Musayev (Azeri)"),  # Azeri
     'uyghur': TranslationInfo(id=76, fullname="Muhammad Saleh (Uyghur)"),  # Uyghur
-    'haleem': TranslationInfo(id=85, fullname="Abdul Haleem"),  # English
-    'abuadel': TranslationInfo(id=79, fullname="Abu Adel"),  # Russian
+    'haleem': TranslationInfo(id=85, fullname="Abdul Haleem (English)"),  # English
+    'abuadel': TranslationInfo(id=79, fullname="Abu Adel (Russian)"),  # Russian
     'karakunnu': TranslationInfo(id=80, fullname="Muhammad Karakunnu and Vanidas Elayavoor"),  # Malayalam
-    'isagarcia': TranslationInfo(id=83, fullname="Sheikh Isa Garcia"),  # Spanish
+    'isagarcia': TranslationInfo(id=83, fullname="Sheikh Isa Garcia (Spanish)"),  # Spanish
     'divehi': TranslationInfo(id=86, fullname="Divehi"),  # Maldivian
-    'burhan': TranslationInfo(id=81, fullname="Burhan Muhammad-Amin"),  # Kurdish
-    'taqiusmani': TranslationInfo(id=84, fullname="Mufti Taqi Usmani"),  # English
-    'ghali': TranslationInfo(id=17, fullname="Dr. Ghali"),  # English
-    'hilali': TranslationInfo(id=203, fullname="Muhammad Taqi-ud-Din al-Hilali & Muhammad Muhsin Khan"),  # English
-    'maududi.en': TranslationInfo(id=95, fullname="Tafheem-ul-Quran - Abul Ala Maududi"),  # English
+    'burhan': TranslationInfo(id=81, fullname="Burhan Muhammad-Amin (Kurdish)"),  # Kurdish
+    'taqiusmani': TranslationInfo(id=84, fullname="Mufti Taqi Usmani (English)"),  # English
+    'ghali': TranslationInfo(id=17, fullname="Dr. Ghali (English)"),  # English
+    'hilali': TranslationInfo(id=203, fullname="Hilali–Khan (English)"),  # English
+    'maududi.en': TranslationInfo(id=95, fullname="Tafheem-ul-Quran - Abul Ala Maududi (English)"),  # English
     'transliteration': TranslationInfo(id=57, fullname="Transliteration"),
     'pickthall': TranslationInfo(id=19, fullname="English Translation (Pickthall)"),  # English
-    'yusufali': TranslationInfo(id=22, fullname="Abdullah Yusuf Ali"),  # English
+    'yusufali': TranslationInfo(id=22, fullname="Yusuf Ali (English)"),  # English
     'ruwwad': TranslationInfo(id=206, fullname="Ruwwad Center (English)"),  # English
-    'muhammadhijab': TranslationInfo(id=207, fullname="Dr. T. B. Irving"),  # English
-    'junagarri': TranslationInfo(id=54, fullname="Maulana Muhammad Junagarhi"),  # Urdu
-    'sayyidqutb': TranslationInfo(id=156, fullname="Fe Zilal al-Qur'an"),  # Urdu
-    'mahmudhasan': TranslationInfo(id=151, fullname="Shaykh al-Hind Mahmud al-Hasan(with Tafsir E Usmani)"),  # Urdu
-    'israrahmad': TranslationInfo(id=158, fullname="Bayan-ul-Quran"),  # Urdu
-    'maududi': TranslationInfo(id=97, fullname="Tafheem e Qur'an - Syed Abu Ali Maududi"),  # Urdu
-    'montada': TranslationInfo(id=136, fullname="Montada Islamic Foundation"),  # French
-    'khawaja': TranslationInfo(id=139, fullname="Khawaja Mirof & Khawaja Mir"),  # Tajik
-    'ryoichi': TranslationInfo(id=35, fullname="Ryoichi Mita"),  # Japanese
-    'fahad.in': TranslationInfo(id=134, fullname="King Fahad Quran Complex"),  # Indonesian
-    'piccardo': TranslationInfo(id=153, fullname="Hamza Roberto Piccardo"),  # Italian
-    'taisirulquran': TranslationInfo(id=161, fullname="Taisirul Quran"),  # Bengali
-    'mujibur': TranslationInfo(id=163, fullname="Sheikh Mujibur Rahman"),  # Bengali
-    'rawai': TranslationInfo(id=162, fullname="Rawai Al-Bayan"),  # Bengali
+    'muhammadhijab': TranslationInfo(id=207, fullname="Dr. T. B. Irving (English)"),  # English
+    'junagarri': TranslationInfo(id=54, fullname="Maulana Muhammad Junagarhi (Urdu)"),  # Urdu
+    'sayyidqutb': TranslationInfo(id=156, fullname="Fe Zilal al-Qur'an (Urdu)"),  # Urdu
+    'mahmudhasan': TranslationInfo(id=151, fullname="Shaykh al-Hind Mahmud al-Hasan (with Tafsir-e-Usmani, Urdu)"),  # Urdu
+    'israrahmad': TranslationInfo(id=158, fullname="Bayan-ul-Quran (Urdu)"),  # Urdu
+    'maududi': TranslationInfo(id=97, fullname="Tafheem e Qur'an - Syed Abu Ali Maududi (Urdu)"),  # Urdu
+    'montada': TranslationInfo(id=136, fullname="Montada Islamic Foundation (French)"),  # French
+    'khawaja': TranslationInfo(id=139, fullname="Khawaja Mirof & Khawaja Mir (Tajik)"),  # Tajik
+    'ryoichi': TranslationInfo(id=35, fullname="Ryoichi Mita (Japanese)"),  # Japanese
+    'fahad.in': TranslationInfo(id=134, fullname="King Fahad Quran Complex (Indonesian)"),  # Indonesian
+    'piccardo': TranslationInfo(id=153, fullname="Hamza Roberto Piccardo (Italian)"),  # Italian
+    'taisirulquran': TranslationInfo(id=161, fullname="Taisirul Quran (Bengali)"),  # Bengali
+    'mujibur': TranslationInfo(id=163, fullname="Sheikh Mujibur Rahman (Bengali)"),  # Bengali
+    'rawai': TranslationInfo(id=162, fullname="Rawai Al-Bayan (Bengali)"),  # Bengali
     'tagalog': TranslationInfo(id=211, fullname="Dar Al-Salam Center (Tagalog)"),  # Tagalog
-    'ukrainian': TranslationInfo(id=217, fullname="Dr. Mikhailo Yaqubovic"),  # Ukrainian
-    'omar': TranslationInfo(id=229, fullname="Sheikh Omar Sharif bin Abdul Salam"),  # Tamil
-    'bamoki': TranslationInfo(id=143, fullname="Muhammad Saleh Bamoki"),  # Kurdish
-    'sabiq': TranslationInfo(id=141, fullname="The Sabiq Company"),  # Indonesian
+    'ukrainian': TranslationInfo(id=217, fullname="Dr. Mikhailo Yaqubovic (Ukrainian)"),  # Ukrainian
+    'omar': TranslationInfo(id=229, fullname="Sheikh Omar Sharif bin Abdul Salam (Tamil)"),  # Tamil
+    'bamoki': TranslationInfo(id=143, fullname="Muhammad Saleh Bamoki (Kurdish)"),  # Kurdish
+    'sabiq': TranslationInfo(id=141, fullname="The Sabiq Company (Indonesian)"),  # Indonesian
     'telegu': TranslationInfo(id=227, fullname="Maulana Abder-Rahim ibn Muhammad (Telugu)"),  # Telugu
     'marathi': TranslationInfo(id=226, fullname="Muhammad Shafi’i Ansari (Marathi)"),  # Marathi
     'hebrew': TranslationInfo(id=233, fullname="Dar Al-Salam Center (Hebrew)"),  # Hebrew
     'gujarati': TranslationInfo(id=225, fullname="Rabila Al-Umry (Gujarati)"),  # Gujarati
-    'abdulislam': TranslationInfo(id=235, fullname="Malak Faris Abdalsalaam"),  # Dutch
+    'abdulislam': TranslationInfo(id=235, fullname="Malak Faris Abdalsalaam (Dutch)"),  # Dutch
     'ganda': TranslationInfo(id=232, fullname="African Development Foundation (Ganda)"),  # Ganda
-    'khamis': TranslationInfo(id=231, fullname="Dr. Abdullah Muhammad Abu Bakr and Sheikh Nasir Khamis"),  # Swahili
-    'thai': TranslationInfo(id=230, fullname="Society of Institutes and Universities"),  # Thai
-    'kazakh': TranslationInfo(id=222, fullname="Khalifa Altay (Kazakh)"),  # Kazakh
-    'vietnamese': TranslationInfo(id=220, fullname="Ruwwad Center (Vietnamese)"),  # Vietnamese
-    'siregar': TranslationInfo(id=144, fullname="Sofian S. Siregar"),  # Dutch
-    'hasanefendi': TranslationInfo(id=88, fullname="Hasan Efendi Nahi"),  # Albanian
+    'khamis': TranslationInfo(id=231, fullname="Dr. Abdullah Muhammad Abu Bakr and Sheikh Nasir Khamis (Swahili)"),  # Swahili
+    'thai': TranslationInfo(id=230, fullname="Society of Institutes and Universities (Thai)"),  # Thai
+    'kazakh': TranslationInfo(id=222, fullname="Khalifa Altai (Kazakh)"),  # Kazakh
+    'siregar': TranslationInfo(id=144, fullname="Sofian S. Siregar (Dutch)"),  # Dutch
+    'hasanefendi': TranslationInfo(id=88, fullname="Hasan Efendi Nahi (Albanian)"),  # Albanian
     'amharic': TranslationInfo(id=87, fullname="Sadiq and Sani (Amharic)"),  # Amharic
-    'jantrust': TranslationInfo(id=50, fullname="Jan Trust Foundation"),  # Tamil
-    'barwani': TranslationInfo(id=49, fullname="Ali Muhsin Al-Barwani"),  # Somali
-    'swedish': TranslationInfo(id=48, fullname="Knut Bernström"),  # Swedish
-    'khmer': TranslationInfo(id=128, fullname="Cambodian Muslim Community Development"),  # Khmer (Cambodian)
+    'jantrust': TranslationInfo(id=50, fullname="Jan Trust Foundation (Tamil)"),  # Tamil
+    'barwani': TranslationInfo(id=49, fullname="Ali Muhsin Al-Barwani (Somali)"),  # Somali
+    'swedish': TranslationInfo(id=48, fullname="Knut Bernström (Swedish)"),  # Swedish
+    'khmer': TranslationInfo(id=128, fullname="Cambodian Muslim Community Development (Khmer)"),  # Khmer (Cambodian)
     'kuliev': TranslationInfo(id=45, fullname="Russian Translation (Elmir Kuliev)"),  # Russian
-    'diyanet': TranslationInfo(id=77, fullname="Turkish Translation (Diyanet)"),  # Turkish
-    'turkish': TranslationInfo(id=77, fullname="Turkish Translation (Diyanet)"),  # Turkish
+    'diyanet': TranslationInfo(id=77, fullname="Diyanet (Turkish)"),  # Turkish
+    'turkish': TranslationInfo(id=77, fullname="Turkish"),  # Turkish
     'basmeih': TranslationInfo(id=39, fullname="Abdullah Muhammad Basmeih (Malay)"),  # Malay
-    'malay': TranslationInfo(id=39, fullname="Abdullah Muhammad Basmeih"),  # Malay
-    'korean': TranslationInfo(id=219, fullname="Hamed Choi"),  # Korean (Hamed Choi)
+    'malay': TranslationInfo(id=39, fullname="Malay"),  # Malay
+    'korean': TranslationInfo(id=219, fullname="Hamed Choi (Korean)"),  # Korean (Hamed Choi)
     'finnish': TranslationInfo(id=30, fullname="Finnish"),  # Finnish
     'czech': TranslationInfo(id=26, fullname="Czech"),  # Czech
-    'nasr': TranslationInfo(id=103, fullname="Helmi Nasr"),  # Portuguese
+    'nasr': TranslationInfo(id=103, fullname="Helmi Nasr (Portuguese)"),  # Portuguese
     'ayati': TranslationInfo(id=74, fullname="Tajik"),  # Tajik
-    'mansour': TranslationInfo(id=101, fullname="Alauddin Mansour"),  # Uzbek
+    'mansour': TranslationInfo(id=101, fullname="Alauddin Mansour (Uzbek)"),  # Uzbek
     'tatar': TranslationInfo(id=53, fullname="Tatar"),  # Tatar
     'romanian': TranslationInfo(id=44, fullname="Grigore (Romanian)"),  # Romanian
     'polish': TranslationInfo(id=42, fullname="Józef Bielawski (Polish)"),  # Polish
@@ -99,9 +98,9 @@ translation_list = {
     'chechen': TranslationInfo(id=106, fullname="Magomed Magomedov (Chechen)"),  # Chechen
     'bulgarian': TranslationInfo(id=237, fullname="Tzvetan Theophanov (Bulgarian)"),  # Bulgarian
     'yoruba': TranslationInfo(id=125, fullname="Shaykh Abu Rahimah Mikael Aykyuni (Yoruba)"),  # Yoruba
-    'shahin': TranslationInfo(id=124, fullname="Muslim Shahin"),  # Turkish
-    'abduh': TranslationInfo(id=46, fullname="Mahmud Muhammad Abduh"),  # Somali
-    'britch': TranslationInfo(id=112, fullname="Shaban Britch"),  # Turkish
+    'shahin': TranslationInfo(id=124, fullname="Muslim Shahin (Turkish)"),  # Turkish
+    'abduh': TranslationInfo(id=46, fullname="Mahmud Muhammad Abduh (Somali)"),  # Somali
+    'britch': TranslationInfo(id=112, fullname="Shaban Britch (Turkish)"),  # Turkish
     'maranao': TranslationInfo(id=38, fullname="Maranao"),  # Maranao
     'ahmeti': TranslationInfo(id=89, fullname="Albanian"),  # Albanian
     'majian': TranslationInfo(id=56, fullname="Ma Jain - Chinese (Simplified)"),  # Chinese
@@ -111,27 +110,37 @@ translation_list = {
     'elhayek': TranslationInfo(id=43, fullname="Samir (Portuguese)"),  # Portuguese
     'cortes': TranslationInfo(id=28, fullname="Cortes (Spanish)"),  # Spanish
     'oromo': TranslationInfo(id=111, fullname="Ghali Apapur Apaghuna (Oromo)"),  # Oromo
-    'french': TranslationInfo(id=31, fullname="Muhammad Hamidullah (French)"),  # French
-    'hamidullah': TranslationInfo(id=31, fullname="Muhammad Hamidullah"),  # French
-    'persian': TranslationInfo(id=29, fullname="Hussein Taji Kal Dari (Farsi)"),  # Persian
-    'farsi': TranslationInfo(id=29, fullname="Hussein Taji Kal Dari"),  # Persian
-    'aburida': TranslationInfo(id=208, fullname="Abu Reda Muhammad ibn Ahmad"),  # German
-    'othman': TranslationInfo(id=209, fullname="Othman al-Sharif"),  # Italian
-    'baqavi': TranslationInfo(id=133, fullname="Abdul Hameed Baqavi"),  # Tamil
-    'mehanovic': TranslationInfo(id=25, fullname="Muhamed Mehanović"),  # Bosnian
-    'yazir': TranslationInfo(id=52, fullname="Elmalili Hamdi Yazir"),  # Turkish
-    'zakaria': TranslationInfo(id=213, fullname="Dr. Abu Bakr Muhammad Zakaria"),  # Bengali
-    'noor': TranslationInfo(id=199, fullname="Noor International Center"),  # Spanish
-    'sato': TranslationInfo(id=218, fullname="Saeed Sato"),  # Japanese
+    'french': TranslationInfo(id=31, fullname="French"),  # French
+    'hamidullah': TranslationInfo(id=31, fullname="Muhammad Hamidullah (French)"),  # French
+    'persian': TranslationInfo(id=29, fullname="Persian"),  # Persian
+    'farsi': TranslationInfo(id=29, fullname="Farsi"),  # Persian
+    'aburida': TranslationInfo(id=208, fullname="Abu Reda Muhammad ibn Ahmad (German)"),  # German
+    'othman': TranslationInfo(id=209, fullname="Othman al-Sharif (Italian)"),  # Italian
+    'baqavi': TranslationInfo(id=133, fullname="Abdul Hameed Baqavi (Tamil)"),  # Tamil
+    'mehanovic': TranslationInfo(id=25, fullname="Muhamed Mehanović (Bosnian)"),  # Bosnian
+    'yazir': TranslationInfo(id=52, fullname="Elmalili Hamdi Yazir (Turkish)"),  # Turkish
+    'zakaria': TranslationInfo(id=213, fullname="Dr. Abu Bakr Muhammad Zakaria (Bengali)"),  # Bengali
+    'noor': TranslationInfo(id=199, fullname="Noor International Center (Spanish"),  # Spanish
+    'sato': TranslationInfo(id=218, fullname="Saeed Sato (Japanese)"),  # Japanese
     'sinhalese': TranslationInfo(id=228, fullname="Ruwwad Center (Sinhala/Sinhalese)"),  # Sinhala/Sinhalese
-    'korkut': TranslationInfo(id=126, fullname="Besim Korkut"),  # Bosnian
-    'umari': TranslationInfo(id=122, fullname="Maulana Azizul Haque al-Umari"),  # Hindi
-    'assamese': TranslationInfo(id=120, fullname="Shaykh Rafeequl Islam Habibur-Rahman"),  # Assamese
-    'sodik': TranslationInfo(id=127, fullname="Muhammad Sodik Muhammad Yusuf"),  # Uzbek
-    'pashto': TranslationInfo(id=118, fullname="Zakaria Abulsalam"),  # Pashto
-    'makin': TranslationInfo(id=109, fullname="Muhammad Makin"),  # Chinese
-    'bubenheim': TranslationInfo(id=27, fullname="Frank Bubenheim and Nadeem"),  # German
-    'indonesian': TranslationInfo(id=33, fullname="Indonesian Islamic affairs ministry"),  # Indonesian
+    'korkut': TranslationInfo(id=126, fullname="Besim Korkut (Bosnian)"),  # Bosnian
+    'umari': TranslationInfo(id=122, fullname="Maulana Azizul Haque al-Umari (Hindi)"),  # Hindi
+    'assamese': TranslationInfo(id=120, fullname="Shaykh Rafeequl Islam Habibur-Rahman (Assamese)"),  # Assamese
+    'sodik': TranslationInfo(id=127, fullname="Muhammad Sodik Muhammad Yusuf (Uzbek)"),  # Uzbek
+    'pashto': TranslationInfo(id=118, fullname="Zakaria Abulsalam (Pashto)"),  # Pashto
+    'makin': TranslationInfo(id=109, fullname="Muhammad Makin (Chinese)"),  # Chinese
+    'bubenheim': TranslationInfo(id=27, fullname="Frank Bubenheim and Nadeem (German)"),  # German
+    'indonesian': TranslationInfo(id=33, fullname="Indonesian Islamic Affairs Ministry (Indonesian)"),  # Indonesian
+    'kinyarwanda': TranslationInfo(id=774, fullname="Rwanda Muslims Association (Kinyarwanda)"),  # Kinyarwanda
+    'wahiduddin': TranslationInfo(id=819, fullname="Maulana Wahiduddin Khan (Urdu)"),  # Urdu
+    'kannada': TranslationInfo(id=771, fullname="Kannada"),  # Kannada
+    'kanti': TranslationInfo(id=795, fullname="Suliman Kanti (Bambara)"),  # Bambara
+    'mamady': TranslationInfo(id=796, fullname="Baba Mamady Jani (Bambara)"),  # Bambara
+    'rashid': TranslationInfo(id=779, fullname="Rashid Maash (French)"),  # French
+    'silika': TranslationInfo(id=798, fullname="Abdul Hamid Silika (Yao)"),  # Yao
+    'khmer': TranslationInfo(id=792, fullname="Al-Mukhtasar (Central Khmer)"),  # Central Khmer
+    'abdulkarim': TranslationInfo(id=221, fullname="Hasan Abdul-Karim (Vietnamese)"),  # Vietnamese
+    'mukhtasar_vietnamese': TranslationInfo(id=177, fullname="Al-Mukhtasar (Vietnamese)"),  # Vietnamese
 }
 
 
