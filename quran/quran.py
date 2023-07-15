@@ -160,7 +160,7 @@ class Translation:
             return translation_key
         except InvalidTranslation:
             await guild_translation_handler.delete()
-            return 'haleem'
+            return guild_translation_handler.default_value
 
 
 class QuranRequest:
@@ -356,9 +356,10 @@ class Quran(commands.Cog):
             # This leaves us with either a list that is [surah:verse] or [surah, verse]
 
             if len(meta) == 1:  # for ['1:1']
-                ref = meta[0]
-            else:
-                ref = f'{meta[0]}:{meta[1]}' # for ['1', '1']
+                meta = meta[0].split(":") # for ['1', '1']
+
+            meta[0] = await SurahNameTransformer().transform(interaction, meta[0])
+            ref = f'{meta[0]}:{meta[1]}'
 
             translation = await Translation.get_guild_translation(interaction.guild_id)
             return await QuranRequest(interaction=interaction, is_arabic=False, ref=ref, translation_key=translation).process_request()

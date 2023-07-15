@@ -92,7 +92,8 @@ class DefaultTafsir:
             return tafsir_name
 
         await guild_tafsir_handler.delete()
-        return 'maarifulquran'
+        return guild_tafsir_handler.default_value
+
 
 class TafsirRequest:
     def __init__(self, tafsir, ref, page, reveal_order: bool = False):
