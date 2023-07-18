@@ -8,8 +8,6 @@ from utils.utils import convert_to_arabic_number
 
 ICON = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/512/calendar-icon.png'
 DATE_INVALID = ':warning: You provided an invalid date!'
-GREGORIAN_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The year must be between 1924 and 2077.'
-HIJRI_DATE_OUT_OF_RANGE = '**Sorry, this year is out of range**. The year must be between 1343 and 1500.'
 
 
 class HijriCalendar(commands.Cog):
@@ -43,10 +41,7 @@ class HijriCalendar(commands.Cog):
         except:
             return await response.send_message(DATE_INVALID)
 
-        try:
-            hijri = self.get_hijri(gregorian_date=gregorian_date)
-        except OverflowError:
-            return await response.send_message(GREGORIAN_DATE_OUT_OF_RANGE)
+        hijri = self.get_hijri(gregorian_date=gregorian_date)
 
         em = discord.Embed(colour=0x72bcd4, description=hijri)
         em.set_author(name="Gregorian → Hijri Conversion", icon_url=ICON)
@@ -59,10 +54,7 @@ class HijriCalendar(commands.Cog):
         except:
             return await response.send_message(DATE_INVALID)
 
-        try:
-            gregorian = self.get_gregorian(hijri_date=hijri_date)
-        except OverflowError:
-            return await response.send_message(HIJRI_DATE_OUT_OF_RANGE)
+        gregorian = self.get_gregorian(hijri_date=hijri_date)
 
         em = discord.Embed(colour=0x72bcd4, description=gregorian)
         em.set_author(name="Hijri → Gregorian Conversion", icon_url=ICON)

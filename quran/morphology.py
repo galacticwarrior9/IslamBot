@@ -9,10 +9,6 @@ from utils.errors import respond_to_interaction_error
 from utils.utils import get_site_source
 
 ICON = 'https://www.stickpng.com/assets/images/580b585b2edbce24c47b2abb.png'
-INVALID_ARGUMENTS = "**Invalid arguments!**\n\n**Type**: `{0}morphology <surah>:<verse>:<word number>`" \
-                    "\n\n**Example**: `{0}morphology 1:1:2`"
-INVALID_SURAH_NAME = "**Invalid Surah name!** Try the number instead."
-
 
 def has_syntax_image(surah):
     if 1 <= surah <= 8 or 59 <= surah <= 114:
