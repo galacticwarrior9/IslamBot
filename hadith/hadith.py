@@ -17,10 +17,6 @@ API_KEY = config['APIs']['sunnah.com']
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 
-HADITH_COLLECTION_LIST = {'bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai',
-                          'ibnmajah', 'malik', 'riyadussalihin', 'adab', 'bulugh',
-                          'nawawi', 'shamail', 'ahmad', 'mishkat', 'hisn'}
-
 english_hadith_collections = {
     'ahmad': 'Musnad Ahmad ibn Hanbal',
     'bukhari': 'Sahīh al-Bukhārī',
@@ -57,21 +53,9 @@ arabic_hadith_collections = {
     'hisn': 'حصن المسلم'
 }
 
-hadith_collection_aliases = {
-    'nawawi': 'forty'
-}
-
-
-INVALID_COLLECTION = f'**Invalid hadith collection.**\nValid collection names are `{HADITH_COLLECTION_LIST}`'
-
 HEADERS = {"X-API-Key": API_KEY}
 
 CLEAN_ARABIC_REGEXP = re.compile(r'(\[+?[^\[]+?\])')
-
-
-class InvalidCollection(commands.CommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 class InvalidHadith(commands.CommandError):
@@ -241,12 +225,6 @@ class HadithCommands(commands.Cog):
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     async def abstract_hadith(self, interaction: discord.Interaction, collection_name, ref, lang):
-        if collection_name not in HADITH_COLLECTION_LIST:
-            raise InvalidCollection
-
-        if collection_name in hadith_collection_aliases:
-            collection_name = hadith_collection_aliases[collection_name]
-
         hadith = HadithSpecifics(collection_name, ref, lang)
         try:
             embed = await hadith.fetch_hadith()
@@ -292,12 +270,6 @@ class HadithCommands(commands.Cog):
     async def slash_rahadith(self, interaction: discord.Interaction):
         await self._rahadith(interaction)
 
-    @hadith.error
-    @ahadith.error
-    async def hadith_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-        if isinstance(error, InvalidCollection):
-            await interaction.response.send(INVALID_COLLECTION)
-
     # See https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458 for why we can't use the
     # context menu annotation in cogs.
     async def get_hadith_text(self, interaction: discord.Interaction, message: discord.Message):
@@ -306,8 +278,6 @@ class HadithCommands(commands.Cog):
             try:
                 meta = url.split("/")
                 collection = meta[3]
-                if collection in hadith_collection_aliases:
-                    collection = hadith_collection_aliases[collection]
                 if ":" in collection:  # For urls like http://sunnah.com/bukhari:1
                     if collection[-1] == "/":  # if url ended with /
                         collection = collection[:-1]
