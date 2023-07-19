@@ -138,7 +138,7 @@ translation_list = {
     'mamady': TranslationInfo(id=796, fullname="Baba Mamady Jani (Bambara)"),  # Bambara
     'rashid': TranslationInfo(id=779, fullname="Rashid Maash (French)"),  # French
     'silika': TranslationInfo(id=798, fullname="Abdul Hamid Silika (Yao)"),  # Yao
-    'khmer': TranslationInfo(id=792, fullname="Al-Mukhtasar (Central Khmer)"),  # Central Khmer
+    'mukhtasar_khmer': TranslationInfo(id=792, fullname="Al-Mukhtasar (Central Khmer)"),  # Central Khmer
     'abdulkarim': TranslationInfo(id=221, fullname="Hasan Abdul-Karim (Vietnamese)"),  # Vietnamese
     'mukhtasar_vietnamese': TranslationInfo(id=177, fullname="Al-Mukhtasar (Vietnamese)"),  # Vietnamese
 }
