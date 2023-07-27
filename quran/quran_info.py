@@ -1,3 +1,4 @@
+import re
 import discord.app_commands
 from fuzzywuzzy import process, fuzz
 
@@ -459,6 +460,125 @@ quranInfo = {'surah': [
     [96, 19, 'obligatory'],
 ]}
 
+arabic_surah_names: list = [
+    "",  # index 0 so everything is accessed like al-faatihah is 1 etc.
+    'الفاتحة',
+    'البقرة',
+    'آل عمران',
+    'النساء',
+    'المائدة',
+    'الأنعام',
+    'الأعراف',
+    'الأنفال',
+    'التوبة',
+    'يونس',
+    'هود',
+    'يوسف',
+    'الرعد',
+    'ابراهيم',
+    'الحجر',
+    'النحل',
+    'الإسراء',
+    'الكهف',
+    'مريم',
+    'طه',
+    'الأنبياء',
+    'الحج',
+    'المؤمنون',
+    'النور',
+    'الفرقان',
+    'الشعراء',
+    'النمل',
+    'القصص',
+    'العنكبوت',
+    'الروم',
+    'لقمان',
+    'السجدة',
+    'الأحزاب',
+    'سبإ',
+    'فاطر',
+    'يس',
+    'الصافات',
+    'ص',
+    'الزمر',
+    'غافر',
+    'فصلت',
+    'الشورى',
+    'الزخرف',
+    'الدخان',
+    'الجاثية',
+    'الأحقاف',
+    'محمد',
+    'الفتح',
+    'الحجرات',
+    'ق',
+    'الذاريات',
+    'الطور',
+    'النجم',
+    'القمر',
+    'الرحمن',
+    'الواقعة',
+    'الحديد',
+    'المجادلة',
+    'الحشر',
+    'الممتحنة',
+    'الصف',
+    'الجمعة',
+    'المنافقون',
+    'التغابن',
+    'الطلاق',
+    'التحريم',
+    'الملك',
+    'القلم',
+    'الحاقة',
+    'المعارج',
+    'نوح',
+    'الجن',
+    'المزمل',
+    'المدثر',
+    'القيامة',
+    'الانسان',
+    'المرسلات',
+    'النبإ',
+    'النازعات',
+    'عبس',
+    'التكوير',
+    'الإنفطار',
+    'المطففين',
+    'الإنشقاق',
+    'البروج',
+    'الطارق',
+    'الأعلى',
+    'الغاشية',
+    'الفجر',
+    'البلد',
+    'الشمس',
+    'الليل',
+    'الضحى',
+    'الشرح',
+    'التين',
+    'العلق',
+    'القدر',
+    'البينة',
+    'الزلزلة',
+    'العاديات',
+    'القارعة',
+    'التكاثر',
+    'العصر',
+    'الهمزة',
+    'الفيل',
+    'قريش',
+    'الماعون',
+    'الكوثر',
+    'الكافرون',
+    'النصر',
+    'المسد',
+    'الإخلاص',
+    'الفلق',
+    'الناس'
+]
+
+
 surah_names: list = [
     "",  # index 0 so everything is accessed like al-faatihah is 1 etc.
     "Al-Faatiha",
@@ -668,9 +788,22 @@ class SurahNameTransformer(discord.app_commands.Transformer):
         try:
             return int(surah)
         except ValueError:
-            surah_name = process.extract(surah, surah_names, scorer=fuzz.partial_ratio, limit=1)
-            if surah_name is None:
-                raise InvalidSurahName
+            surah = surah.strip()
 
-            surah_name = surah_name[0][0]
-            return surah_names.index(surah_name)
+            # Arabic letters, harakat, hamzah above/below, and some other symbols in between
+            # source: https://en.wikipedia.org/wiki/Arabic_(Unicode_block)
+            ARABIC_REGEX = r'[\u0621-\u0655]+'
+
+            is_arabic = (re.fullmatch(ARABIC_REGEX, surah) is not None)
+            if is_arabic:
+                try:
+                    return arabic_surah_names.index(surah)
+                except:
+                    raise InvalidSurahName
+            else:
+                surah_name = process.extract(surah, surah_names, scorer=fuzz.partial_ratio, limit=1)
+                if surah_name is None:
+                    raise InvalidSurahName
+
+                surah_name = surah_name[0][0]
+                return surah_names.index(surah_name)
