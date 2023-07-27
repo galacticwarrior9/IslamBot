@@ -269,7 +269,7 @@ class Quran(commands.Cog):
 
     @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
     @discord.app_commands.describe(
-        surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas or 112",
+        surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas, 112 or ٱلْإِخْلَاص",
         start_verse="The first verse to fetch, e.g. 255.",
         end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
         translation="The translation to use",
