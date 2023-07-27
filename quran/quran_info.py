@@ -785,16 +785,19 @@ class SurahNameTransformer(discord.app_commands.Transformer):
         except ValueError:
             surah = surah.strip()
 
-            # Arabic letters, harakat, hamzah above/below, and some other symbols in between
+            # Whitespace, Arabic letters, harakat, hamzah above/below, and some extra symbols
             # source: https://en.wikipedia.org/wiki/Arabic_(Unicode_block)
-            ARABIC_REGEX = r'[\u0621-\u0655]+'
+            ARABIC_REGEX = r'[\u0621-\u0655\s]+'
 
             is_arabic = (re.fullmatch(ARABIC_REGEX, surah) is not None)
             if is_arabic:
-                try:
-                    return arabic_surah_names.index(surah)
-                except:
+                # not using partial_ratio here because it would match e.g. الإخلاص with ص
+                arabic_surah_name = process.extract(surah, arabic_surah_names, scorer=fuzz.ratio, limit=1)
+                if arabic_surah_name is None:
                     raise InvalidSurahName
+
+                arabic_surah_name = arabic_surah_name[0][0]
+                return arabic_surah_names.index(arabic_surah_name)
             else:
                 surah_name = process.extract(surah, surah_names, scorer=fuzz.partial_ratio, limit=1)
                 if surah_name is None:
