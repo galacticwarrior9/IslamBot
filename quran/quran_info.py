@@ -2,7 +2,7 @@ import re
 import discord.app_commands
 from fuzzywuzzy import process, fuzz
 
-from utils.errors import InvalidSurahNumber, InvalidAyah
+from utils.errors import InvalidSurahNumber, InvalidAyah, InvalidSurahName
 
 quranInfo = {'surah': [
     # [start, ayas, order, rukus, name, tname, ename, type]
@@ -718,11 +718,6 @@ class Surah:
         self.revelation_order = quranInfo['surah'][num][2]
         self.verses_count = quranInfo['surah'][num][1]
         # TODO: Re-add pages.
-
-
-class InvalidSurahName(discord.app_commands.AppCommandError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args)
 
 
 class QuranReference:
