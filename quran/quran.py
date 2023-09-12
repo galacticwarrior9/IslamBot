@@ -196,8 +196,9 @@ class QuranRequest:
             json = await get_site_json(self.regular_url.format(self.translation.id, self.ref.surah, ayah))
             text = json['translations'][0]['text']
 
-            # Clear HTML tags
-            text = re.sub(CLEAN_HTML_REGEX, ' ', text)
+            # Clean text
+            text = re.sub(CLEAN_HTML_REGEX, ' ', text)  # remove HTML tags
+            text = text.replace('&quot;', '"')  # replace "&quot;" with quotation marks
 
             # Truncate verses longer than 1024 characters
             if len(text) > 1024:
