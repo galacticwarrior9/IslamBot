@@ -30,7 +30,8 @@ class DBHandler:
 
     async def _get_data(self):
         try:
-            async with self.create_connection() as connection, connection.cursor() as cursor:
+            connection = await self.create_connection()
+            async with connection, connection.cursor() as cursor:
                 await cursor.execute(f"SELECT {self.column2} "
                                      f"FROM {self.table_name} "
                                      f"WHERE {self.column1} = {self.key}")
