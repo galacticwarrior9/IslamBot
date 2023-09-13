@@ -31,30 +31,40 @@ class DBHandler:
     async def _get_data(self):
         try:
             connection = await self.create_connection()
-            async with connection, connection.cursor() as cursor:
+        except:
+            return self.default_value
+
+        try:
+            async with connection.cursor() as cursor:
                 await cursor.execute(f"SELECT {self.column2} "
                                      f"FROM {self.table_name} "
                                      f"WHERE {self.column1} = {self.key}")
                 result = await cursor.fetchone()
+                connection.close()
 
                 if result is None:
                     return self.default_value
 
                 return result[0]
         except:
+            connection.close()
             return self.default_value
 
     async def _update_data(self, value):
-        async with self.create_connection() as connection, connection.cursor() as cursor:
+        connection = await self.create_connection()
+        async with connection.cursor() as cursor:
             create_sql = f"INSERT INTO {self.table_name} ({self.column1}, {self.column2}) " \
                          "VALUES (%s, %s) " \
                          f"ON DUPLICATE KEY UPDATE {self.column1}=%s, {self.column2}=%s"
             await cursor.execute(create_sql, (self.key, value, self.key, value))
+            connection.close()
 
     async def _delete_data(self):
-        async with self.create_connection() as connection, connection.cursor() as cursor:
+        connection = await self.create_connection()
+        async with connection.cursor() as cursor:
             delete_sql = f"DELETE FROM {self.table_name} WHERE {self.column1}=%s"
             await cursor.execute(delete_sql, self.key)
+            connection.close()
 
 
 class ServerTranslation(DBHandler):
