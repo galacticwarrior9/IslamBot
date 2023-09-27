@@ -155,6 +155,7 @@ class HadithSpecifics:
         self.text = self.format_hadith_text(self.text, self.lang)
         
         if self.lang == 'ar' and self.collection == "forty":  # if ahadith and is nawawi collection
+            # see https://github.com/galacticwarrior9/IslamBot/issues/71 for why we need to format ahadith for nawawi
             sunnah_links = []
             for links in self.text.split("،"):
                 url = utils.find_url('sunnah.com/', links)  # find sunnah.com links in hadith text
