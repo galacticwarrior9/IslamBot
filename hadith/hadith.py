@@ -153,6 +153,24 @@ class HadithSpecifics:
                     pass
 
         self.text = self.format_hadith_text(self.text, self.lang)
+        
+        if self.lang == 'ar' and self.collection == "forty":  # if ahadith and is nawawi collection
+            sunnah_links = []
+            for links in self.text.split("،"):
+                url = utils.find_url('sunnah.com/', links)  # find sunnah.com links in hadith text
+                sunnah_links.append(url)
+
+            sunnah_links  = [link.replace(").", "").replace(")", "") for link in sunnah_links if link is not None]
+
+            for link in sunnah_links:
+                self.text = self.text.replace(f"[]({link})", "")  # clean the text from these links and brackets
+
+            for link in sunnah_links:
+                author = link.split("/")[-3]  # author is the 3rd last item i.e ["sunnah.com", "bukhari", "1", "1"]
+                self.text += f"[{arabic_hadith_collections[author]}]({link})، "  # add the sunnah.com links back to the end of the hadith text
+
+            self.text = self.text[:-2]  # remove the extra comma and space from above line from the last word
+
         self.pages = textwrap.wrap(self.text, 1024)
 
         if self.lang == 'en':
