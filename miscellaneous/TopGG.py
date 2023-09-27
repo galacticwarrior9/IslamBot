@@ -13,7 +13,7 @@ class TopGG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.token = config['APIs']['top.gg']
-        # self.dblpy = topgg.DBLClient(self.bot, self.token, autopost=True, post_shard_count=True)
+        self.dblpy = topgg.DBLClient(self.bot, self.token, autopost=True, post_shard_count=True)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):  # when the bot joins a server
