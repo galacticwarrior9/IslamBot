@@ -106,7 +106,7 @@ class MushafNavigator(discord.ui.View):
             self.page -= 1
         else:
             self.page = 604
-        em = Mushaf.get_mushaf_image(self.page)
+        em = Mushaf.get_mushaf_image(self.page, self.show_tajweed)
         await interaction.response.edit_message(embed=em)
 
     @discord.ui.button(label='Next Page', style=discord.ButtonStyle.green, emoji='➡')
@@ -118,7 +118,7 @@ class MushafNavigator(discord.ui.View):
             self.page += 1
         else:
             self.page = 1
-        em = Mushaf.get_mushaf_image(self.page)
+        em = Mushaf.get_mushaf_image(self.page, self.show_tajweed)
         await interaction.response.edit_message(embed=em)
 
 
