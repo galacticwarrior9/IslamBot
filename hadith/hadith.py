@@ -312,6 +312,10 @@ class HadithCommands(commands.Cog):
                     except:
                         ref = Reference(
                             book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
+
+                if collection == "nawawi40":
+                    collection = "forty" # For 40 Hadith Nawawi the URL uses "nawawi40" but the API uses "forty"
+
                 await self.abstract_hadith(interaction, collection, ref, "en")
             except InvalidHadith:
                 await interaction.response.send_message("Could not find a valid `sunnah.com` link in this message.", ephemeral=True)
