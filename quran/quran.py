@@ -22,9 +22,7 @@ TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
 # translatons no longer in quran.com api: 'suhel' (id 82), 'serbian' (id 215), 'georgian' (id 212)
 translation_list = {
     'khattab': TranslationInfo(id=131, fullname="Dr. Mustafa Khattab, the Clear Quran (English)"),  # English
-    'bridges': TranslationInfo(id=149, fullname="Fadel Soliman, Bridges’ translation (English)"),  # English
     'sahih': TranslationInfo(id=20, fullname="Saheeh International (English)"),  # English
-    'maarifulquran': TranslationInfo(id=167, fullname="Maarif-ul-Quran (English)"),  # English
     'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari (Urdu)"),  # Urdu
     'awqaf': TranslationInfo(id=78, fullname="Ministry of Awqaf, Egypt (Russian)"),  # Russian
     'musayev': TranslationInfo(id=75, fullname="Alikhan Musayev (Azeri)"),  # Azeri
@@ -36,14 +34,11 @@ translation_list = {
     'divehi': TranslationInfo(id=86, fullname="Divehi"),  # Maldivian
     'burhan': TranslationInfo(id=81, fullname="Burhan Muhammad-Amin (Kurdish)"),  # Kurdish
     'taqiusmani': TranslationInfo(id=84, fullname="Mufti Taqi Usmani (English)"),  # English
-    'ghali': TranslationInfo(id=17, fullname="Dr. Ghali (English)"),  # English
     'hilali': TranslationInfo(id=203, fullname="Hilali–Khan (English)"),  # English
     'maududi.en': TranslationInfo(id=95, fullname="Tafheem-ul-Quran - Abul Ala Maududi (English)"),  # English
     'transliteration': TranslationInfo(id=57, fullname="Transliteration"),
     'pickthall': TranslationInfo(id=19, fullname="English Translation (Pickthall)"),  # English
     'yusufali': TranslationInfo(id=22, fullname="Yusuf Ali (English)"),  # English
-    'ruwwad': TranslationInfo(id=206, fullname="Ruwwad Center (English)"),  # English
-    'muhammadhijab': TranslationInfo(id=207, fullname="Dr. T. B. Irving (English)"),  # English
     'junagarri': TranslationInfo(id=54, fullname="Maulana Muhammad Junagarhi (Urdu)"),  # Urdu
     'sayyidqutb': TranslationInfo(id=156, fullname="Fe Zilal al-Qur'an (Urdu)"),  # Urdu
     'mahmudhasan': TranslationInfo(id=151, fullname="Shaykh al-Hind Mahmud al-Hasan (with Tafsir-e-Usmani, Urdu)"),  # Urdu
