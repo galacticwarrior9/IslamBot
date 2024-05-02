@@ -136,3 +136,18 @@ def convert_from_arabic_number(number_string) -> str:
         ':': ':'
     }
     return "".join([dic[char] for char in number_string])
+
+def convert_to_superscript_number(number_string) -> str:
+    dic = {
+        '0': '⁰',
+        '1': '¹',
+        '2': '²',
+        '3': '³',
+        '4': '⁴',
+        '5': '⁵',
+        '6': '⁶',
+        '7': '⁷',
+        '8': '⁸',
+        '9': '⁹'
+    }
+    return "".join([dic[char] for char in number_string])

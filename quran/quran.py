@@ -9,13 +9,14 @@ from quran.quran_info import *
 from utils import utils
 from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
-from utils.utils import convert_to_arabic_number, get_site_json
+from utils.utils import convert_to_arabic_number, convert_to_superscript_number, get_site_json
 
 TOO_LONG = "This passage was too long to send."
 
 ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
 
 CLEAN_HTML_REGEX = re.compile('<[^<]+?>\d*')
+FOOTNOTE_REGEX = re.compile('<sup foot_note=(\d+)>(\d+)</sup>')
 
 TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
 
@@ -184,16 +185,37 @@ class QuranRequest:
 
         self.regular_url = 'https://api.quran.com/api/v4/quran/translations/{}?verse_key={}:{}'
         self.arabic_url = 'https://api.quran.com/api/v4/quran/verses/uthmani?verse_key={}'
+        self.footnote_url = 'https://api.qurancdn.com/api/qdc/foot_notes/{}' # unofficial API
         self.verse_ayah_dict = {}
+        self.footnotes = []
+    
+    def clean_text(self, text):
+        text = re.sub(CLEAN_HTML_REGEX, ' ', text)  # remove HTML tags
+        text = text.replace('&quot;', '"')  # replace "&quot;" with quotation marks
+        return text
 
     async def get_verses(self):
         for ayah in self.ref.ayat_list:
             json = await get_site_json(self.regular_url.format(self.translation.id, self.ref.surah, ayah))
             text = json['translations'][0]['text']
 
+            # Process footnotes: replace <sup> tags with superscript numbers
+            footnote_keys = []
+            def replacer(match):
+                footnote_keys.append(match.group(1))
+                footnote_num = len(footnote_keys) + len(self.footnotes)
+                return convert_to_superscript_number(str(footnote_num))
+            text = re.sub(FOOTNOTE_REGEX, replacer, text)
+
+            # Process footnotes: fetch footnote text from API
+            for key in footnote_keys:
+                footnote_json = await get_site_json(self.footnote_url.format(key))
+                footnote_text = footnote_json['foot_note']['text']
+                footnote_text = self.clean_text(footnote_text)
+                self.footnotes.append(footnote_text.strip())
+
             # Clean text
-            text = re.sub(CLEAN_HTML_REGEX, ' ', text)  # remove HTML tags
-            text = text.replace('&quot;', '"')  # replace "&quot;" with quotation marks
+            text = self.clean_text(text)
 
             # Truncate verses longer than 1024 characters
             if len(text) > 1024:
@@ -226,10 +248,16 @@ class QuranRequest:
             em.set_author(name=f"Surah {surah.name} ({surah.translated_name})", icon_url=ICON)
             em.set_footer(text=f"Translation: {self.translation_name} | {surah.revelation_location}")
 
-        if len(self.verse_ayah_dict) > 1:
+        if len(self.verse_ayah_dict) > 1 or len(self.footnotes) > 0:
             for key, text in self.verse_ayah_dict.items():
                 em.add_field(name=key, value=text, inline=False)
 
+            formatted_footnotes = '\n'.join([f"[{num}] {text}" for num, text in enumerate(self.footnotes, 1)])
+            if len(formatted_footnotes) > 1024:
+                # truncate footnote text if longer than 1024 characters
+                formatted_footnotes = formatted_footnotes[:1018] + " [...]"
+
+            em.add_field(name='Footnotes', value=formatted_footnotes, inline=False)
             return em
 
         em.title = list(self.verse_ayah_dict)[0]
