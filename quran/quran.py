@@ -257,7 +257,8 @@ class QuranRequest:
                 # truncate footnote text if longer than 1024 characters
                 formatted_footnotes = formatted_footnotes[:1018] + " [...]"
 
-            em.add_field(name='Footnotes', value=formatted_footnotes, inline=False)
+            if len(formatted_footnotes) > 0:
+                em.add_field(name='Footnotes', value=formatted_footnotes, inline=False)
             return em
 
         em.title = list(self.verse_ayah_dict)[0]
