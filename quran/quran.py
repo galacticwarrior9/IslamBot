@@ -259,7 +259,7 @@ class QuranRequest:
                 formatted_footnotes = formatted_footnotes[:1900] + " [...]"
 
             if len(formatted_footnotes) > 0:
-                em.set_footer(text=f"{em.footer.text}\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n{formatted_footnotes}")
+                em.set_footer(text=f"{em.footer.text}\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n{formatted_footnotes}")
             return em
 
         em.title = list(self.verse_ayah_dict)[0]
