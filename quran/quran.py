@@ -253,12 +253,13 @@ class QuranRequest:
                 em.add_field(name=key, value=text, inline=False)
 
             formatted_footnotes = '\n'.join([f"[{num}] {text}" for num, text in enumerate(self.footnotes, 1)])
-            if len(formatted_footnotes) > 1024:
-                # truncate footnote text if longer than 1024 characters
-                formatted_footnotes = formatted_footnotes[:1018] + " [...]"
+            if len(formatted_footnotes) > 1900:
+                # Truncate footnote text if longer than 1900 characters.
+                # We leave the remaining characters as a buffer for the rest of the footer.
+                formatted_footnotes = formatted_footnotes[:1900] + " [...]"
 
             if len(formatted_footnotes) > 0:
-                em.add_field(name='Footnotes', value=formatted_footnotes, inline=False)
+                em.set_footer(text=f"{em.footer.text}\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n{formatted_footnotes}")
             return em
 
         em.title = list(self.verse_ayah_dict)[0]
