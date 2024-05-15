@@ -42,8 +42,9 @@ class Reload(commands.Cog):
                               guild_id: discord.app_commands.Transform[discord.Object, GuildTransformer] = None):
         app = await self.bot.application_info()
         if interaction.user.id == app.owner.id:
+            await interaction.response.defer(thinking=True)
             await self.bot.tree.sync(guild=guild_id)
-            await interaction.response.send_message(":white_check_mark: Syncing commands.", ephemeral=True)
+            await interaction.followup.send(":white_check_mark: Syncing commands.", ephemeral=True)
         else:
             await interaction.response.send_message("🔒 **You do not have permission to use this command**.", ephemeral=True)
 
