@@ -32,7 +32,8 @@ english_hadith_collections = {
     'shamail': "Shamā'il Muhammadiyyah",
     'mishkat': 'Mishkat al-Masabih',
     'forty': 'Al-Arbaʿīn al-Nawawiyyah',
-    'hisn': 'Fortress of the Muslim'
+    'hisn': 'Fortress of the Muslim',
+    'virtues': "Virtues of the Qurʿān's Chapters and Verses"
 }
 
 arabic_hadith_collections = {
@@ -50,7 +51,8 @@ arabic_hadith_collections = {
     'shamail': 'الشمائل المحمدية',
     'mishkat': 'مشكاة المصابيح',
     'forty': 'الأربعون النووية',
-    'hisn': 'حصن المسلم'
+    'hisn': 'حصن المسلم',
+    'virtues': 'تصر لفضائل الآيات والسور'
 }
 
 HEADERS = {"X-API-Key": API_KEY}
