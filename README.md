@@ -34,4 +34,4 @@ To run the bot, you will need to exclude the TopGG extension from loading. It is
 
 You can use the `/reload` command to reload extensions and commands while the bot is running. If you have made a change to a command, reload its extension first before reloading commands.
 
-If you lack a sunnah.com API key, you may use the demo key provided in the [API documentation]([https://sunnah.api-docs.io/1.0/getting-started/introduction](https://sunnah.stoplight.io/docs/api/)) for testing. Be aware that this key has a low request limit.
+If you lack a sunnah.com API key, you may use the demo key provided in the [API documentation](https://sunnah.stoplight.io/docs/api/) for testing. Be aware that this key has a low request limit.
