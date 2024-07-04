@@ -166,15 +166,15 @@ class PrayerTimes(commands.Cog):
             .add_field(name='**Midnight (منتصف الليل)**', value=f'{response.midnight}', inline=True)
         em2 = discord.Embed(colour=0x558a25, title=response.date)
         em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
-            .add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak_12hr}', inline=True)\
-            .add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr_12hr}', inline=True)\
-            .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{sunrise_12hr}', inline=True)\
-            .add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr_12hr}', inline=True)\
-            .add_field(name='**Asr (صلاة العصر)**', value=f'{asr_12hr}', inline=True)\
-            .add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{asr_hanafi_12hr}', inline=True)\
-            .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{maghrib_12hr}', inline=True)\
-            .add_field(name='**Isha (صلاة العشاء)**', value=f'{isha_12hr}', inline=True)\
-            .add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight_12hr}', inline=True)
+            .add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{sunrise_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Asr (صلاة العصر)**', value=f'{asr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{asr_hanafi_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{maghrib_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Isha (صلاة العشاء)**', value=f'{isha_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight_12hr.strftime("%I:%M %p")}', inline=True)
 
         em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
         if twelve_hour == False:
