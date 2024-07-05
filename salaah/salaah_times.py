@@ -154,7 +154,7 @@ class PrayerTimes(commands.Cog):
             return await interaction.followup.send(":warning: **Location not found**.")
 
         em = discord.Embed(colour=0x558a25, title=response.date)
-        em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
+        em2.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
             .add_field(name='**Imsak (إِمْسَاك)**', value=f'{response.imsak}', inline=True)\
             .add_field(name='**Fajr (صلاة الفجر)**', value=f'{response.fajr}', inline=True)\
             .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{response.sunrise}', inline=True)\
@@ -194,7 +194,7 @@ class PrayerTimes(commands.Cog):
     async def prayer_times(self, interaction: discord.Interaction, location: str,
                            calculation_method: int = None, hidden: bool = False, twelve_hour: bool = False):
         await interaction.response.defer(thinking=True, ephemeral=hidden)
-        await self._prayer_times(interaction, location, calculation_method)
+        await self._prayer_times(interaction, location, calculation_method, twelve_hour)
 
     async def _set_calculation_method(self, interaction: discord.Interaction, method_num: int):
         if method_num not in self.calculation_methods.keys():
