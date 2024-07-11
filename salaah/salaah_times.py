@@ -134,17 +134,27 @@ class PrayerTimes(commands.Cog):
         return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date)
 
     async def _prayer_times(self, interaction: discord.Interaction, location: str,
-                            calculation_method: int = None, hidden: bool = False):
+                            calculation_method: int = None, hidden: bool = False, twelve_hour: bool = False):
         if calculation_method is None:
             calculation_method = await UserPrayerCalculationMethod(interaction.user.id).get()
 
         try:
             response = await self.get_prayertimes(location, calculation_method)
+            imsak_12hr = dt.strptime(response.imsak, "%H: %M")
+            fajr_12hr = dt.strptime(response.fajr, "%H: %M")
+            sunrise_12hr = dt.strptime(response.sunrise, "%H: %M")
+            dhuhr_12hr = dt.strptime(response.dhuhr, "%H: %M")
+            asr_12hr = dt.strptime(response.asr, "%H: %M")
+            asr_hanafi_12hr = dt.strptime(response.asr_hanafi, "%H: %M")
+            maghrib_12hr = dt.strptime(response.maghrib, "%H: %M")
+            isha_12hr = dt.strptime(response.isha, "%H: %M")
+            midnight_12hr = dt.strptime(response.midnight, "%H: %M")
+
         except:
             return await interaction.followup.send(":warning: **Location not found**.")
 
         em = discord.Embed(colour=0x558a25, title=response.date)
-        em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
+        em2.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
             .add_field(name='**Imsak (إِمْسَاك)**', value=f'{response.imsak}', inline=True)\
             .add_field(name='**Fajr (صلاة الفجر)**', value=f'{response.fajr}', inline=True)\
             .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{response.sunrise}', inline=True)\
@@ -154,9 +164,23 @@ class PrayerTimes(commands.Cog):
             .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{response.maghrib}', inline=True)\
             .add_field(name='**Isha (صلاة العشاء)**', value=f'{response.isha}', inline=True)\
             .add_field(name='**Midnight (منتصف الليل)**', value=f'{response.midnight}', inline=True)
+        em2 = discord.Embed(colour=0x558a25, title=response.date)
+        em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)\
+            .add_field(name='**Imsak (إِمْسَاك)**', value=f'{imsak_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Fajr (صلاة الفجر)**', value=f'{fajr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Sunrise (طلوع الشمس)**', value=f'{sunrise_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Ẓuhr (صلاة الظهر)**', value=f'{dhuhr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Asr (صلاة العصر)**', value=f'{asr_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Asr - Ḥanafī School (صلاة العصر - حنفي)**', value=f'{asr_hanafi_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Maghrib (صلاة المغرب)**', value=f'{maghrib_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Isha (صلاة العشاء)**', value=f'{isha_12hr.strftime("%I:%M %p")}', inline=True)\
+            .add_field(name='**Midnight (منتصف الليل)**', value=f'{midnight_12hr.strftime("%I:%M %p")}', inline=True)
 
         em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
-        await interaction.followup.send(embed=em, ephemeral=hidden)
+        if twelve_hour == False:
+            await interaction.followup.send(embed=em, ephemeral=hidden)
+        else:
+            await interaction.followup.send(embed=em2, ephemeral=hidden)
 
     group = discord.app_commands.Group(name="prayertimes", description="Commands related to prayer times.")
 
@@ -164,12 +188,13 @@ class PrayerTimes(commands.Cog):
     @discord.app_commands.describe(
         location="The location to get prayer times for.",
         calculation_method="The method to use when calculating the prayer times.",
-        hidden="Whether to hide the response from other users."
+        hidden="Whether to hide the response from other users.",
+        twelve_hour="Returns the prayer times in a 12 hour format."
     )
     async def prayer_times(self, interaction: discord.Interaction, location: str,
-                           calculation_method: int = None, hidden: bool = False):
+                           calculation_method: int = None, hidden: bool = False, twelve_hour: bool = False):
         await interaction.response.defer(thinking=True, ephemeral=hidden)
-        await self._prayer_times(interaction, location, calculation_method)
+        await self._prayer_times(interaction, location, calculation_method, twelve_hour)
 
     async def _set_calculation_method(self, interaction: discord.Interaction, method_num: int):
         if method_num not in self.calculation_methods.keys():
