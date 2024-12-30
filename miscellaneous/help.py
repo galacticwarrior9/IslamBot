@@ -187,6 +187,8 @@ class Help(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="help", description="Get the list of commands and links for IslamBot.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def help(self, interaction: discord.Interaction):
         em = discord.Embed(title='IslamBot Help / أمر المساعدة', colour=0xdeb949)
         em.description = "**IslamBot** is a Discord bot that allows you to browse the Qur'an, fetch hadith, look up" \

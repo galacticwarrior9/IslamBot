@@ -238,7 +238,9 @@ class HadithCommands(commands.Cog):
         self.bot = bot
         self.ctx_menu = discord.app_commands.ContextMenu(
             name='Get Hadith from URL',
-            callback=self.get_hadith_text
+            callback=self.get_hadith_text,
+            allowed_installs=discord.app_commands.AppInstallationType(guild=True, user=True),
+            allowed_contexts=discord.app_commands.AppCommandContext(guild=True, dm_channel=True, private_channel=True)
         )
         self.bot.tree.add_command(self.ctx_menu)
 
@@ -266,6 +268,8 @@ class HadithCommands(commands.Cog):
         await self.abstract_hadith(interaction, 'riyadussalihin', Reference(str(random.randint(1, 1896))), 'ar')
 
     @discord.app_commands.command(name="hadith", description="Send a hadith in English from sunnah.com.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.choices(hadith_collection=generate_choices_from_dict(english_hadith_collections))
     @discord.app_commands.describe(
         hadith_collection="The name of the hadith collection.",
@@ -275,6 +279,8 @@ class HadithCommands(commands.Cog):
         await self.abstract_hadith(interaction, hadith_collection, Reference(hadith_number), 'en')
 
     @discord.app_commands.command(name="ahadith", description="Send a hadith in Arabic from sunnah.com.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.choices(hadith_collection=generate_choices_from_dict(arabic_hadith_collections))
     @discord.app_commands.describe(
         hadith_collection="The name of the hadith collection.",
@@ -284,10 +290,14 @@ class HadithCommands(commands.Cog):
         await self.abstract_hadith(interaction, hadith_collection, Reference(hadith_number), 'ar')
 
     @discord.app_commands.command(name="rhadith", description="Send a random hadith in English from sunnah.com.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def rhadith(self, interaction: discord.Interaction):
         await self._rhadith(interaction)
 
     @discord.app_commands.command(name="rahadith", description="Send a random hadith in Arabic from sunnah.com.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def slash_rahadith(self, interaction: discord.Interaction):
         await self._rahadith(interaction)
 
@@ -316,7 +326,7 @@ class HadithCommands(commands.Cog):
                             book)  # For hadith collections which are a single 'book' long (e.g. 40 Hadith Nawawi)
 
                 if collection == "nawawi40":
-                    collection = "forty" # For 40 Hadith Nawawi the URL uses "nawawi40" but the API uses "forty"
+                    collection = "forty"  # For 40 Hadith Nawawi the URL uses "nawawi40" but the API uses "forty"
 
                 await self.abstract_hadith(interaction, collection, ref, "en")
             except InvalidHadith:

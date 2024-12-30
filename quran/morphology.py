@@ -73,6 +73,8 @@ class QuranMorphology(commands.Cog):
         await interaction.followup.send(embed=em)
 
     @discord.app_commands.command(name="morphology", description="View the morphology of a word in the Qur'an.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="The name/number of the word's surah, e.g. Al-Ikhlas or 112",
         verse="The verse in the surah that the word appears in, e.g. 100 for the 100th verse",

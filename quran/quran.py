@@ -1,6 +1,5 @@
-from collections import namedtuple
 import random
-import re
+from collections import namedtuple
 
 import discord
 from discord.ext import commands
@@ -249,8 +248,8 @@ class QuranRequest:
             em.set_author(name=f"Surah {surah.name} ({surah.translated_name})", icon_url=ICON)
             em.set_footer(text=f"Translation: {self.translation_name} | {surah.revelation_location}")
 
-        text_as_paragraph = ""
         if len(self.verse_ayah_dict) > 1 or len(self.footnotes) > 0:
+            text_as_paragraph = ""
             for key, text in self.verse_ayah_dict.items():
                 if self.format_paragraph is True:
                     if self.is_arabic:
@@ -300,7 +299,8 @@ class Quran(commands.Cog):
         self.bot = bot
         self.ctx_menu = discord.app_commands.ContextMenu(
             name='Get Ayah from URL',
-            callback=self.get_quran_ayah
+            callback=self.get_quran_ayah,
+            allowed_contexts=discord.app_commands.AppCommandContext(guild=True, dm_channel=True, private_channel=True)
         )
         self.bot.tree.add_command(self.ctx_menu)
 
@@ -308,6 +308,8 @@ class Quran(commands.Cog):
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     @discord.app_commands.command(name="quran", description="Send verses from the Qurʼān.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="The name or number of the surah to fetch, e.g. Al-Ikhlaas, 112 or إخلاص",
         start_verse="The first verse to fetch, e.g. 255.",
@@ -326,6 +328,8 @@ class Quran(commands.Cog):
                            separate_verses=separate_verses).process_request()
 
     @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="اكتب رقم أو اسم السورة",
         start_verse="اكتب رقم أول آية",
@@ -340,6 +344,8 @@ class Quran(commands.Cog):
                            separate_verses=separate_verses).process_request()
 
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(translation="The translation to use.")
     async def rquran(self, interaction: discord.Interaction, translation: str = None) -> None:
         await interaction.response.defer(thinking=True)
@@ -353,6 +359,8 @@ class Quran(commands.Cog):
                            translation_key=translation).process_request()
 
     @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def raquran(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
@@ -365,6 +373,7 @@ class Quran(commands.Cog):
     @discord.app_commands.describe(translation="The translation to use. See /help quran for a list.")
     @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.guild_only()
+    @discord.app_commands.guild_install()
     async def set_translation(self, interaction: discord.Interaction, translation: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
@@ -384,6 +393,7 @@ class Quran(commands.Cog):
         return choices
 
     @discord.app_commands.command(name="surah", description="View information about a surah.")
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="The name or number of the surah, e.g. Al-Baqarah or 2.",
         reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."

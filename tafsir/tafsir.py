@@ -236,9 +236,23 @@ class Tafsir(commands.Cog):
         spec.make_embed()
         return spec
 
-    group = discord.app_commands.Group(name="tafsir", description="Commands related to tafsir.")
+    group = discord.app_commands.Group(
+        name="tafsir",
+        description="Commands related to tafsir.",
+        allowed_contexts=discord.app_commands.AppCommandContext(
+            guild=True,
+            dm_channel=True,
+            private_channel=True,
+        ),
+        allowed_installs=discord.app_commands.AppInstallationType(
+            guild=True,
+            user=True
+        )
+    )
 
     @group.command(name="get", description="Get the tafsir of a Qur'anic verse.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.choices(tafsir_name=generate_choices_from_dict(name_mappings))
     @discord.app_commands.describe(
         surah="The name or number of the verse's surah, e.g. Al-Ikhlaas or 112.",
@@ -260,6 +274,7 @@ class Tafsir(commands.Cog):
     @discord.app_commands.describe(tafsir_name="The name of the tafsir to set")
     @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.guild_only()
+    @discord.app_commands.guild_install()
     async def set_default_tafsir(self, interaction: discord.Interaction, tafsir_name: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 

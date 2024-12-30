@@ -168,9 +168,23 @@ class PrayerTimes(commands.Cog):
 
         await interaction.followup.send(embed=em, ephemeral=hidden)
 
-    group = discord.app_commands.Group(name="prayertimes", description="Commands related to prayer times.")
+    group = discord.app_commands.Group(
+        name="prayertimes",
+        description="Commands related to prayer times.",
+        allowed_contexts=discord.app_commands.AppCommandContext(
+            guild=True,
+            dm_channel=True,
+            private_channel=True,
+        ),
+        allowed_installs=discord.app_commands.AppInstallationType(
+            guild=True,
+            user=True
+        )
+    )
 
     @group.command(name="get", description="Get the prayer times for a location.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         location="The location to get prayer times for.",
         calculation_method="The method to use when calculating the prayer times.",
@@ -190,6 +204,8 @@ class PrayerTimes(commands.Cog):
         return await interaction.followup.send(f':white_check_mark: **Successfully updated user calculation method to `{self.calculation_methods[method_num]}`!**', ephemeral=True)
 
     @group.command(name="set_calculation_method", description="Change your default prayer times calculation method")
+    @discord.app_commands.guild_only()
+    @discord.app_commands.guild_install()
     @discord.app_commands.describe(
         calculation_method="The prayer time calculation method number, from the choices provided or /prayertimes list_calculation_methods."
     )

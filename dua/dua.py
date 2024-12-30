@@ -119,17 +119,23 @@ class Dua(commands.Cog):
         await interaction.response.send_message(embed=em, ephemeral=True)
 
     @discord.app_commands.command(name="dua", description="Send ʾadʿiyah by topic.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(topic="The topic of the dua, from /dualist.")
     async def dua(self, interaction: discord.Interaction, topic: str):
         await interaction.response.defer(thinking=True)
         await self._dua(interaction, topic)
 
     @discord.app_commands.command(name="rdua", description="Sends a random dua.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def rdua(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         await self._dua(interaction, random.choice(list(DUAS.keys())))
 
     @discord.app_commands.command(name="dualist", description="Sends the dua topic list.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def dua_list(self, interaction: discord.Interaction):
         await self._dua_list(interaction)
 

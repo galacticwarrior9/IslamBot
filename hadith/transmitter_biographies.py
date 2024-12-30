@@ -46,6 +46,8 @@ class Biographies(commands.Cog):
             await interaction.followup.send(embed=em, view=biography_ui_view)
 
     @discord.app_commands.command(name="biography", description="View the biography of a hadith transmitter or early Muslim.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(name="The Arabic name of the person, e.g. {}".format("عبد الله بن عباس"))
     async def biography(self, interaction: discord.Interaction, name: str):
         await interaction.response.defer(thinking=True)

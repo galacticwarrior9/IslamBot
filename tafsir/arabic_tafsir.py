@@ -280,6 +280,8 @@ class ArabicTafsir(commands.Cog):
     group = discord.app_commands.Group(name="atafsir", description="Commands related to arabic tafsir.")
 
     @group.command(name="get", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="اكتب رقم أو اسم السورة",
         verse_number="اكتب رقم آية",

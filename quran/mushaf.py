@@ -46,6 +46,8 @@ class Mushaf(commands.Cog):
     group = discord.app_commands.Group(name="mushaf", description="View a specific page of verse on the mushaf.")
 
     @group.command(name="by_ayah", description="Displays an ayah on its page on the mushaf.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         surah="The name or number of the ayah's surah, e.g. Al-Ikhlaas or 112",
         verse="The ayah within the surah to display, e.g. 225. Defaults to the first ayah.",
@@ -59,6 +61,8 @@ class Mushaf(commands.Cog):
                                     reveal_order=reveal_order)
 
     @group.command(name="by_page", description="Displays a page on the mushaf.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(
         page="The page to display on the mushaf. Must be between 1 and 604.",
         show_tajweed="Should the mushaf highlight where tajweed rules apply?",
@@ -70,6 +74,8 @@ class Mushaf(commands.Cog):
         await interaction.followup.send(embed=em, view=mushaf_ui_view)
 
     @discord.app_commands.command(name="rmushaf", description="Sends a random page from the mushaf.")
+    @discord.app_commands.allowed_installs(guilds=True, users=True)
+    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(show_tajweed="Should the mushaf highlight where tajweed rules apply?")
     async def rmushaf(self, interaction: discord.Interaction, show_tajweed: bool = False):
         await interaction.response.defer(thinking=True)
