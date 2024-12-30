@@ -195,10 +195,7 @@ class Help(commands.Cog):
                          " prayer times, read tafsir and more." \
                          "\n\nSuggestions, contributions and bug reports are welcome on the [support server](" \
                          "https://discord.gg/Ud3MHJR) and the [GitHub](https://github.com/galacticwarrior9/islambot)." \
-                         "\n\nIf you benefit from the bot, please consider [donating](https://ko-fi.com/zaify)." \
-                         "\n\n__**Text commands have been removed because of Discord " \
-                         "[changes](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-FAQ).**__" \
-                         "\nYou must use slash commands."
+                         "\n\nIf you benefit from the bot, please consider [donating](https://ko-fi.com/zaify)."
         em.add_field(name="Links", inline=False,
                      value="• [Vote / تصويت](https://top.gg/bot/352815253828141056/vote)\n"
                            "• [Support Server / سيرفر المساعدة](https://discord.gg/Ud3MHJR)\n" 

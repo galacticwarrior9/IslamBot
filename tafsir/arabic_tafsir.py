@@ -277,7 +277,19 @@ class ArabicTafsir(commands.Cog):
         tafsir_ui_view = ArabicTafsirNavigator(tafsir, interaction)
         await interaction.followup.send(embed=em, view=tafsir_ui_view)
 
-    group = discord.app_commands.Group(name="atafsir", description="Commands related to arabic tafsir.")
+    group = discord.app_commands.Group(
+        name="atafsir",
+        description="Commands related to arabic tafsir.",
+        allowed_contexts=discord.app_commands.AppCommandContext(
+            guild=True,
+            dm_channel=True,
+            private_channel=True,
+        ),
+        allowed_installs=discord.app_commands.AppInstallationType(
+            guild=True,
+            user=True
+        )
+    )
 
     @group.command(name="get", description="تبعث تفسير أي آية, يوجد 56 تفسير متاح بالعربية")
     @discord.app_commands.allowed_installs(guilds=True, users=True)
@@ -301,6 +313,7 @@ class ArabicTafsir(commands.Cog):
     @discord.app_commands.describe(tafsir_name="اسم التفسير.")
     @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.guild_only()
+    @discord.app_commands.guild_install()
     async def set_default_atafsir(self, interaction: discord.Interaction, tafsir_name: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
