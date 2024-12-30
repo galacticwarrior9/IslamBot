@@ -176,10 +176,11 @@ class Translation:
 
 
 class QuranRequest:
-    def __init__(self, interaction: discord.Interaction, ref: str, is_arabic: bool, translation_key: str = None, reveal_order: bool = False):
+    def __init__(self, interaction: discord.Interaction, ref: str, is_arabic: bool, translation_key: str = None, separate_verses: bool = False):
         self.webhook = interaction.followup
-        self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=reveal_order)
+        self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=False)
         self.is_arabic = is_arabic
+        self.format_paragraph = separate_verses is True
         if translation_key is not None:
             self.translation = Translation(translation_key)
 
@@ -248,9 +249,18 @@ class QuranRequest:
             em.set_author(name=f"Surah {surah.name} ({surah.translated_name})", icon_url=ICON)
             em.set_footer(text=f"Translation: {self.translation_name} | {surah.revelation_location}")
 
+        text_as_paragraph = ""
         if len(self.verse_ayah_dict) > 1 or len(self.footnotes) > 0:
             for key, text in self.verse_ayah_dict.items():
-                em.add_field(name=key, value=text, inline=False)
+                if self.format_paragraph is True:
+                    if self.is_arabic:
+                        text_as_paragraph += f" (**{key}**) {text}"
+                    else:
+                        text_as_paragraph += f"﴾**{key}**﴿ {text} "
+                    if len(text_as_paragraph) > 4096:
+                        break
+                else:
+                    em.add_field(name=key, value=text, inline=False)
 
             formatted_footnotes = '\n'.join([f"[{num}] {text}" for num, text in enumerate(self.footnotes, 1)])
             if len(formatted_footnotes) > 1900:
@@ -260,11 +270,15 @@ class QuranRequest:
 
             if len(formatted_footnotes) > 0:
                 em.set_footer(text=f"{em.footer.text}\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n{formatted_footnotes}")
+
+            if self.format_paragraph is True:
+                if len(text_as_paragraph) >= 4096:
+                    text_as_paragraph = text_as_paragraph[:4090] + " [...]"
+                em.description = text_as_paragraph
             return em
 
         em.title = list(self.verse_ayah_dict)[0]
         em.description = list(self.verse_ayah_dict.values())[0]
-
         return em
 
     async def process_request(self):
@@ -299,31 +313,31 @@ class Quran(commands.Cog):
         start_verse="The first verse to fetch, e.g. 255.",
         end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
         translation="The translation to use",
-        reveal_order="If you specified a number for the surah, whether the number is the surah's revelation order."
+        separate_verses="Whether to present each verse separately."
     )
     async def quran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                          translation: str = None, reveal_order: bool = False):
+                          translation: str = None, separate_verses: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation is None:
             translation = await Translation.get_guild_translation(interaction.guild_id)
 
         await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{ref}', translation_key=translation,
-                           reveal_order=reveal_order).process_request()
+                           separate_verses=separate_verses).process_request()
 
     @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
     @discord.app_commands.describe(
         surah="اكتب رقم أو اسم السورة",
         start_verse="اكتب رقم أول آية",
         end_verse="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
-        reveal_order="هل السورة تشير إلى رقم أمر الوحي؟"
+        separate_verses="ما إذا كان يجب تقديم كل آية بشكل منفصل"
     )
     async def aquran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                           reveal_order: bool = False):
+                           separate_verses: bool = False):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{ref}',
-                           reveal_order=reveal_order).process_request()
+                           separate_verses=separate_verses).process_request()
 
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
     @discord.app_commands.describe(translation="The translation to use.")
