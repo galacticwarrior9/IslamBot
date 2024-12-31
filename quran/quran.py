@@ -175,11 +175,11 @@ class Translation:
 
 
 class QuranRequest:
-    def __init__(self, interaction: discord.Interaction, ref: str, is_arabic: bool, translation_key: str = None, separate_verses: bool = False):
+    def __init__(self, interaction: discord.Interaction, ref: str, is_arabic: bool, translation_key: str = None, separate_verses: bool = True):
         self.webhook = interaction.followup
         self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=False)
         self.is_arabic = is_arabic
-        self.format_paragraph = separate_verses is True
+        self.format_paragraph = separate_verses is False
         if translation_key is not None:
             self.translation = Translation(translation_key)
 
@@ -318,7 +318,7 @@ class Quran(commands.Cog):
         separate_verses="Whether to present each verse separately."
     )
     async def quran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                          translation: str = None, separate_verses: bool = False):
+                          translation: str = None, separate_verses: bool = True):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         if translation is None:
@@ -337,7 +337,7 @@ class Quran(commands.Cog):
         separate_verses="ما إذا كان يجب تقديم كل آية بشكل منفصل"
     )
     async def aquran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                           separate_verses: bool = False):
+                           separate_verses: bool = True):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
         await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{ref}',
