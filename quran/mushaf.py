@@ -18,9 +18,9 @@ class Mushaf(commands.Cog):
     def get_mushaf_image(page: int, show_tajweed: bool = False) -> discord.Embed:
         formatted_page = str(page).zfill(3)
         if show_tajweed:
-            url = f'https://www.searchtruth.org/quran/images1/{formatted_page}.jpg'
+            url = f'https://www.searchtruth.com/quran/images/images1/{formatted_page}.jpg'
         else:
-            url = f'https://www.searchtruth.org/quran/images2/large/page-{formatted_page}.jpeg'
+            url = f'https://www.searchtruth.com/quran/images/images2/large/page-{formatted_page}.jpeg'
 
         arabic_page_number = convert_to_arabic_number(str(page))
         em = discord.Embed(title=f'Page {page}'
