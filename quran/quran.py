@@ -12,7 +12,7 @@ from utils.utils import convert_to_arabic_number, convert_to_superscript_number,
 
 TOO_LONG = "This passage was too long to send."
 
-ICON = 'https://cdn6.aptoide.com/imgs/6/a/6/6a6336c9503e6bd4bdf98fda89381195_icon.png'
+ICON = 'https://i.imgur.com/cIhpv80.png'
 
 CLEAN_HTML_REGEX = re.compile('<[^<]+?>\d*')
 FOOTNOTE_REGEX = re.compile('<sup foot_note=(\d+)>(\d+)</sup>')
