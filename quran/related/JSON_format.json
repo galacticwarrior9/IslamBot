@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "id": "khattab",
+    "name": "The Example Quran",
+    "translator": "Dr. Mustafa Khattab – The Example Qur’an",
+    "language": "en",
+    "publication_year": 2016,
+    "source": "https://example.org/clear-quran-public-domain",
+    "license": "CC0-1.0",
+    "revision": "2025-01-15",
+    "generator": "custom‑script v1.0",
+    "generated_at": "2025-01-15T12:34:56Z",
+    "notes": "Any additional remarks."
+  },
+  "verses": {
+    "1": {
+      "name": "الفاتحة",
+      "translated_name": "Al-Fātihah",
+	  "note", "sample note",
+      "verses": {
+        "1": {
+          "text": "In the Name of Allah—the Most Compassionate, Most Merciful.",
+          "footnotes": []
+        },
+        "2": {
+          "text": "All praise is for Allah—Lord of all worlds,",
+          "footnotes": []
+        },
+        "3": {
+          "text": "the Most Compassionate, Most Merciful,",
+          "footnotes": [
+            {
+              "marker": 1,
+              "text": "Ar-Raḥmân and Ar-Raḥîm are two names of Allah derived from the word 'mercy'."
+            }
+          ]
+        }
+      }
+    },
+    "2": {
+      "name": "البقرة",
+      "translated_name": "Al-Baqarah",
+	  "note", "sample note",
+      "verses": {
+        "1": {
+          "text": "Alif-Lãm-Mĩm.",
+          "footnotes": [
+            {
+              "marker": 1,
+              "text": "Arabic letters whose meaning is only known to Allah."
+            }
+          ]
+        },
+        "2": {
+          "text": "This is the Book! There is no doubt about it—a guide for those mindful of Allah,",
+          "footnotes": []
+        }
+      }
+    }
+  }
+}

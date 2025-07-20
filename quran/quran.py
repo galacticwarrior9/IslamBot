@@ -10,6 +10,8 @@ from utils.database_utils import ServerTranslation
 from utils.errors import InvalidTranslation, respond_to_interaction_error
 from utils.utils import convert_to_arabic_number, convert_to_superscript_number, get_site_json
 
+from quran.quran_local_translations import LocalTranslations
+
 TOO_LONG = "This passage was too long to send."
 
 ICON = 'https://i.imgur.com/cIhpv80.png'
@@ -138,20 +140,42 @@ translation_list = {
     'mukhtasar_vietnamese': TranslationInfo(id=177, fullname="Al-Mukhtasar (Vietnamese)"),  # Vietnamese
 }
 
+# ---------------------------------------------------------------------------
+# Optional ALIASES for the keys in `translation_list`.
+# The *left‑hand side* is what the user may type; the *right‑hand side*
+# **must** be an existing key in `translation_list`.
+# ---------------------------------------------------------------------------
+translation_aliases: dict[str, str] = {
+    'clear':        'khattab',           # "clear" ➜ Dr Mustafa Khattab, Clear Qur’an
+    'saheeh':       'sahih',
+    'sablukov':     'sablukov_vt'        # default 'sablukov' translation is the modern language one
+}
 
 class Translation:
-    def __init__(self, key):
-        self.id = self.get_translation_id(key)
+    def __init__(self, key: str):
+        # keep the canonical identifier so other code can rely on it
+        self.key = translation_aliases.get(key.lower().strip(), key.lower().strip())
+        self.id  = self.get_translation_id(self.key)
 
     @staticmethod
-    def get_translation_id(key):
-        if key in translation_list:
-            return translation_list[key].id
+    def get_translation_id(key: str) -> int | None:
+        key = key.lower().strip()                     # normalise
+        key = translation_aliases.get(key, key)       # alias → canonical
 
+        # 1/3 remote translations that use the Qur’an‑com API
+        if key in translation_list:
+            return translation_list[key].id      # normal path
+
+        # 2/3 local JSON translations that live in ./quran_local_translations
+        local_ids = LocalTranslations().get_all_ids()
+        if key in local_ids:
+            # local files don’t need an external numeric ID
+            return None
+
+        # 3/3 fall back: try to treat the user string as a *full name*
         translation_id = Translation.get_id_from_fullname(key)
         if translation_id is None:
             raise InvalidTranslation
-
         return translation_id
 
     @staticmethod
@@ -180,23 +204,54 @@ class QuranRequest:
         self.ref = QuranReference(ref=ref, allow_multiple_verses=True, reveal_order=False)
         self.is_arabic = is_arabic
         self.format_paragraph = separate_verses is False
+
+        self.local_translations = LocalTranslations()
+
         if translation_key is not None:
-            self.translation = Translation(translation_key)
+            self.translation     = Translation(translation_key)
+            self.translation_key = self.translation.key
 
         self.regular_url = 'https://api.quran.com/api/v4/quran/translations/{}?verse_key={}:{}'
         self.arabic_url = 'https://api.quran.com/api/v4/quran/verses/uthmani?verse_key={}'
         self.footnote_url = 'https://api.qurancdn.com/api/qdc/foot_notes/{}' # unofficial API
         self.verse_ayah_dict = {}
         self.footnotes = []
-    
+
     def clean_text(self, text):
         text = re.sub(CLEAN_HTML_REGEX, ' ', text)  # remove HTML tags
         text = text.replace('&quot;', '"')  # replace "&quot;" with quotation marks
         return text
 
     async def get_verses(self):
+        use_local_only = self.translation_key in self.local_translations.get_all_ids()
+
         for ayah in self.ref.ayat_list:
-            json = await get_site_json(self.regular_url.format(self.translation.id, self.ref.surah, ayah))
+            # --- 1/3 try the local JSON first ---
+            local_text = self.local_translations.get_verse(
+                self.translation_key, self.ref.surah, ayah
+            )
+            if local_text:
+                self.verse_ayah_dict[f'{self.ref.surah}:{ayah}'] = local_text
+                if not hasattr(self, 'translation_name'):
+                    self.translation_name = (
+                        self.local_translations.get_translation_name(self.translation_key)
+                        or self.translation_key
+                    )
+                continue
+
+            # --- 2/3 if it’s a local translation and verse is missing, just skip ---
+            if use_local_only:
+                continue        #   or: raise an error / fall back — your choice
+
+            # --- 3/3 fall back to the Qurʼan.com API for remote translations ---
+            if self.translation.id is None:          # defensive guard
+                raise InvalidTranslation(
+                    f"No numeric id for translation '{self.translation_key}'"
+                )
+
+            json = await get_site_json(
+                self.regular_url.format(self.translation.id, self.ref.surah, ayah)
+            )
             text = json['translations'][0]['text']
 
             # Process footnotes: replace <sup> tags with superscript numbers
@@ -377,6 +432,9 @@ class Quran(commands.Cog):
     async def set_translation(self, interaction: discord.Interaction, translation: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
+        # accept an alias in /settranslation
+        translation = translation_aliases.get(translation.lower(), translation.lower())
+
         translation_id = Translation.get_translation_id(translation)
         # this is so when giving success message, it says it sets it to the actual translation instead of user's typos
         # e.g user gives `khatab` but it will set it to `khattab` and tell the user the bot set it to `khattab`
@@ -387,8 +445,18 @@ class Quran(commands.Cog):
     @quran.autocomplete('translation')
     @rquran.autocomplete('translation')
     @set_translation.autocomplete('translation')
-    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: int):
-        closest_matches = [match[0] for match in process.extract(current, [v.fullname for v in translation_list.values()], scorer=fuzz.partial_ratio, limit=5)]
+    async def translation_autocomplete_callback(self, interaction: discord.Interaction, current: str):
+        local_trans = LocalTranslations()
+        all_local = local_trans.get_all_ids()
+
+        all_aliases  = list(translation_aliases.keys())
+
+        # Extract names for both online and local translations
+        online_names = [trans.fullname for trans in translation_list.values()]
+        local_names = [local_trans.get_translation_name(tid) for tid in all_local]
+        all_names = online_names + local_names + all_aliases
+
+        closest_matches = [match[0] for match in process.extract(current, all_names, scorer=fuzz.partial_ratio, limit=5)]
         choices = [discord.app_commands.Choice(name=match, value=match) for match in closest_matches]
         return choices
 
@@ -444,4 +512,3 @@ class Quran(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Quran(bot))
-
