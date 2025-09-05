@@ -433,7 +433,6 @@ class Quran(commands.Cog):
     @quran.error
     @aquran.error
     @rquran.error
-    @raquran.error
     @surah.error
     @set_translation.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
