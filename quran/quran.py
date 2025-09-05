@@ -253,9 +253,9 @@ class QuranRequest:
             for key, text in self.verse_ayah_dict.items():
                 if self.format_paragraph is True:
                     if self.is_arabic:
-                        text_as_paragraph += f" (**{key}**) {text}"
+                        text_as_paragraph += f"(**{key}**) {text}"
                     else:
-                        text_as_paragraph += f"﴾**{key}**﴿ {text} "
+                        text_as_paragraph += f"﴾**{key}**﴿ {text}"
                     if len(text_as_paragraph) > 4096:
                         break
                 else:
@@ -347,26 +347,24 @@ class Quran(commands.Cog):
     @discord.app_commands.allowed_installs(guilds=True, users=True)
     @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     @discord.app_commands.describe(translation="The translation to use.")
-    async def rquran(self, interaction: discord.Interaction, translation: str = None) -> None:
+    @discord.app_commands.describe(isarabic="Enables Arabic text. Translation overrides Arabic.")
+    async def rquran(self, interaction: discord.Interaction, translation: str = None, isarabic : bool = False) -> None:
         await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
         if translation is None:
-            translation = await Translation.get_guild_translation(interaction.guild_id)
-
-        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
-                           translation_key=translation).process_request()
-
-    @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
-    @discord.app_commands.allowed_installs(guilds=True, users=True)
-    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    async def raquran(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-        surah = random.randint(1, 114)
-        verse = random.randint(1, quranInfo['surah'][surah][1])
-
-        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{verse}').process_request()
+            if isarabic == False:
+                translation = await Translation.get_guild_translation(interaction.guild_id)
+                await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{verse}',
+                                    translation_key=translation).process_request()
+            else:
+                await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{verse}').process_request()
+        else:
+            isarabic = False
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{verse}',
+                                translation_key=translation).process_request()
+        
 
     @discord.app_commands.command(name="settranslation",
                                   description="Changes the default Qur'an translation for this server.")
