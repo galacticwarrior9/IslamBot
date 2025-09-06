@@ -345,7 +345,7 @@ class Quran(commands.Cog):
         isarabic="Enables Arabic text. Translation overrides this option.",
         separate_verses="Print each verse vertically apart."
     )
-    async def rquran(self, interaction: discord.Interaction, translation: str = None, isarabic: bool = False, separate_verses: bool = False) -> None:
+    async def rquran(self, interaction: discord.Interaction, translation: str = None, isarabic: bool = False) -> None:
         await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
@@ -353,15 +353,15 @@ class Quran(commands.Cog):
         if translation is None and isarabic == False:
             translation = await Translation.get_guild_translation(interaction.guild_id)
             await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", 
-                               translation_key=translation, separate_verses=separate_verses).process_request()
+                               translation_key=translation).process_request()
 
         if translation is None and isarabic == True:
-            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", separate_verses=separate_verses).process_request()
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}").process_request()
 
         else:
             isarabic = False
             await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", 
-                               translation_key=translation, separate_verses=separate_verses).process_request()
+                               translation_key=translation).process_request()
             
     @discord.app_commands.command(name="settranslation",
                                   description="Changes the default Qur'an translation for this server.")
