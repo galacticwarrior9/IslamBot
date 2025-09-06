@@ -315,59 +315,54 @@ class Quran(commands.Cog):
         start_verse="The first verse to fetch, e.g. 255.",
         end_verse="The last verse to fetch if you want to send multiple verses, e.g. 260",
         translation="The translation to use",
+        isarabic="Enables Arabic text. Translation overrides this option.",
         separate_verses="Whether to present each verse separately."
     )
     async def quran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                          translation: str = None, separate_verses: bool = True):
+                          translation: str = None, isarabic: bool = False, separate_verses: bool = True):
         await interaction.response.defer(thinking=True)
         ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
-        if translation is None:
+        
+        if translation is None and isarabic == False:
             translation = await Translation.get_guild_translation(interaction.guild_id)
-
-        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{ref}', translation_key=translation,
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{ref}', translation_key=translation,
+                               separate_verses=separate_verses).process_request()
+            
+        if translation is None and isarabic == True:
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{ref}', 
+                               separate_verses=separate_verses).process_request()
+            
+        else:
+            isarabic = False
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f'{surah}:{ref}', translation_key=translation,
                            separate_verses=separate_verses).process_request()
-
-    @discord.app_commands.command(name="aquran", description="تبعث آيات قرآنية في الشات")
-    @discord.app_commands.allowed_installs(guilds=True, users=True)
-    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    @discord.app_commands.describe(
-        surah="اكتب رقم أو اسم السورة",
-        start_verse="اكتب رقم أول آية",
-        end_verse="اذا اردت ان تبعث اكثر من اية اكتب رقم اخر آية",
-        separate_verses="ما إذا كان يجب تقديم كل آية بشكل منفصل"
-    )
-    async def aquran(self, interaction: discord.Interaction, surah: discord.app_commands.Transform[int, SurahNameTransformer], start_verse: int, end_verse: int = None,
-                           separate_verses: bool = True):
-        await interaction.response.defer(thinking=True)
-        ref = start_verse if end_verse is None else f'{start_verse}-{end_verse}'
-        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{ref}',
-                           separate_verses=separate_verses).process_request()
-
+            
     @discord.app_commands.command(name="rquran", description="Retrieve a random verse from the Qur'ān.")
     @discord.app_commands.allowed_installs(guilds=True, users=True)
     @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    @discord.app_commands.describe(translation="The translation to use.")
-    async def rquran(self, interaction: discord.Interaction, translation: str = None) -> None:
+    @discord.app_commands.describe(
+        translation="The translation to use.", 
+        isarabic="Enables Arabic text. Translation overrides this option.",
+        separate_verses="Print each verse vertically apart."
+    )
+    async def rquran(self, interaction: discord.Interaction, translation: str = None, isarabic: bool = False, separate_verses: bool = False) -> None:
         await interaction.response.defer(thinking=True)
         surah = random.randint(1, 114)
         verse = random.randint(1, quranInfo['surah'][surah][1])
 
-        if translation is None:
+        if translation is None and isarabic == False:
             translation = await Translation.get_guild_translation(interaction.guild_id)
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", 
+                               translation_key=translation, separate_verses=separate_verses).process_request()
 
-        await QuranRequest(interaction=interaction, is_arabic=False, ref=f'{surah}:{verse}',
-                           translation_key=translation).process_request()
+        if translation is None and isarabic == True:
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", separate_verses=separate_verses).process_request()
 
-    @discord.app_commands.command(name="raquran", description="Retrieve a random verse from the Qur'ān.")
-    @discord.app_commands.allowed_installs(guilds=True, users=True)
-    @discord.app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    async def raquran(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-        surah = random.randint(1, 114)
-        verse = random.randint(1, quranInfo['surah'][surah][1])
-
-        await QuranRequest(interaction=interaction, is_arabic=True, ref=f'{surah}:{verse}').process_request()
-
+        else:
+            isarabic = False
+            await QuranRequest(interaction=interaction, is_arabic=isarabic, ref=f"{surah}:{verse}", 
+                               translation_key=translation, separate_verses=separate_verses).process_request()
+            
     @discord.app_commands.command(name="settranslation",
                                   description="Changes the default Qur'an translation for this server.")
     @discord.app_commands.describe(translation="The translation to use. See /help quran for a list.")
@@ -433,9 +428,7 @@ class Quran(commands.Cog):
             return await interaction.followup.send("Could not find a valid `quran.com` link in this message.")
 
     @quran.error
-    @aquran.error
     @rquran.error
-    @raquran.error
     @surah.error
     @set_translation.error
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
