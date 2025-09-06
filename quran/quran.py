@@ -343,7 +343,6 @@ class Quran(commands.Cog):
     @discord.app_commands.describe(
         translation="The translation to use.", 
         isarabic="Enables Arabic text. Translation overrides this option.",
-        separate_verses="Print each verse vertically apart."
     )
     async def rquran(self, interaction: discord.Interaction, translation: str = None, isarabic: bool = False) -> None:
         await interaction.response.defer(thinking=True)
