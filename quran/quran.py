@@ -19,9 +19,8 @@ FOOTNOTE_REGEX = re.compile('<sup foot_note=(\d+)>(\d+)</sup>')
 
 TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
 
-# translatons no longer in quran.com api: 'suhel' (id 82), 'serbian' (id 215), 'georgian' (id 212)
+# Translations removed from quran.com: 'suhel' (ID 82), 'serbian' (ID 215), 'georgian' (ID 212), 'khattab' (ID 131)
 translation_list = {
-    'khattab': TranslationInfo(id=131, fullname="Dr. Mustafa Khattab, the Clear Quran (English)"),  # English
     'sahih': TranslationInfo(id=20, fullname="Saheeh International (English)"),  # English
     'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari (Urdu)"),  # Urdu
     'awqaf': TranslationInfo(id=78, fullname="Ministry of Awqaf, Egypt (Russian)"),  # Russian
