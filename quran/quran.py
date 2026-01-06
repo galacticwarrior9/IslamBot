@@ -19,7 +19,8 @@ FOOTNOTE_REGEX = re.compile('<sup foot_note=(\d+)>(\d+)</sup>')
 
 TranslationInfo = namedtuple('TranslationKey', ['id', 'fullname'])
 
-# Translations removed from quran.com: 'suhel' (ID 82), 'serbian' (ID 215), 'georgian' (ID 212), 'khattab' (ID 131)
+# Translations removed from quran.com: 'suhel' (ID 82), 'serbian' (ID 215), 'georgian' (ID 212), 'khattab' (ID 131), 'cortes' (ID 28),
+# 'mukhtasar_khmer' (ID 792), 'mukhtasar_vietnamese' (ID 177)
 translation_list = {
     'sahih': TranslationInfo(id=20, fullname="Saheeh International (English)"),  # English
     'jalandhari': TranslationInfo(id=234, fullname="Fatah Muhammad Jalandhari (Urdu)"),  # Urdu
@@ -102,7 +103,6 @@ translation_list = {
     'nepali': TranslationInfo(id=108, fullname="Ahl Al-Hadith Central Society of Nepal (Nepali)"),  # Nepali
     'hameed': TranslationInfo(id=37, fullname="Abdul Hameed and Kunhi (Malay)"),  # Malayalam
     'elhayek': TranslationInfo(id=43, fullname="Samir (Portuguese)"),  # Portuguese
-    'cortes': TranslationInfo(id=28, fullname="Cortes (Spanish)"),  # Spanish
     'oromo': TranslationInfo(id=111, fullname="Ghali Apapur Apaghuna (Oromo)"),  # Oromo
     'french': TranslationInfo(id=31, fullname="French"),  # French
     'hamidullah': TranslationInfo(id=31, fullname="Muhammad Hamidullah (French)"),  # French
@@ -132,9 +132,7 @@ translation_list = {
     'mamady': TranslationInfo(id=796, fullname="Baba Mamady Jani (Bambara)"),  # Bambara
     'rashid': TranslationInfo(id=779, fullname="Rashid Maash (French)"),  # French
     'silika': TranslationInfo(id=798, fullname="Abdul Hamid Silika (Yao)"),  # Yao
-    'mukhtasar_khmer': TranslationInfo(id=792, fullname="Al-Mukhtasar (Central Khmer)"),  # Central Khmer
     'abdulkarim': TranslationInfo(id=221, fullname="Hasan Abdul-Karim (Vietnamese)"),  # Vietnamese
-    'mukhtasar_vietnamese': TranslationInfo(id=177, fullname="Al-Mukhtasar (Vietnamese)"),  # Vietnamese
 }
 
 
