@@ -12,6 +12,13 @@ from utils.database_utils import UserPrayerCalculationMethod
 ICON = 'https://images-na.ssl-images-amazon.com/images/I/51q8CGXOltL.png'
 METHODS_URL = 'https://api.aladhan.com/v1/methods'
 PRAYER_TIMES_URL = 'http://api.aladhan.com/v1/timingsByAddress?address={}&method={}&school={}'
+PRAYER_TIMES_AUTO_METHOD_URL = 'http://api.aladhan.com/v1/timingsByAddress?address={}&school={}'
+
+def make_prayer_times_url(location: str, method: int | None, school: str):
+    if method is None:
+        return PRAYER_TIMES_AUTO_METHOD_URL.format(location, school)
+    else:
+        return PRAYER_TIMES_URL.format(location, method, school)
 
 headers = {'content-type': 'application/json'}
 
@@ -28,6 +35,7 @@ class PrayerTimesResponse:
     imsak: str
     midnight: str
     date: str
+    method_name: str
 
 
 class PrayerTimes(commands.Cog):
@@ -51,7 +59,7 @@ class PrayerTimes(commands.Cog):
             self.calculation_methods = {method['id']: method['name'] for method in data if int(method['id']) != 99}
 
     async def get_prayertimes(self, location, calculation_method) -> PrayerTimesResponse:
-        url = PRAYER_TIMES_URL.format(location, calculation_method, '0')
+        url = make_prayer_times_url(location, calculation_method, '0')
 
         async with self.bot.session.get(url, headers=headers) as resp:
             data = await resp.json()
@@ -64,14 +72,15 @@ class PrayerTimes(commands.Cog):
             imsak = data['data']['timings']['Imsak']
             midnight = data['data']['timings']['Midnight']
             date = data['data']['date']['readable']
+            method_name = data['data']['meta']['method']['name']
 
-        url = PRAYER_TIMES_URL.format(location, calculation_method, '1')
+        url = make_prayer_times_url(location, calculation_method, '1')
 
         async with self.bot.session.get(url, headers=headers) as resp:
             data = await resp.json()
             asr_hanafi = data['data']['timings']['Asr']
 
-        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, asr_hanafi, maghrib, isha, imsak, midnight, date)
+        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, asr_hanafi, maghrib, isha, imsak, midnight, date, method_name)
 
     async def get_prayertimes_local(self, location, calculation_method) -> PrayerTimesResponse:
         async def get_information(location):
@@ -131,10 +140,10 @@ class PrayerTimes(commands.Cog):
         sunrise = times['sunrise']
         readable_date = time.strftime('%d %B, %Y')
 
-        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date)
+        return PrayerTimesResponse(fajr, sunrise, dhuhr, asr, hanafi_asr, maghrib, isha, imsak, midnight, readable_date, method_name)
 
     async def _prayer_times(self, interaction: discord.Interaction, location: str,
-                            calculation_method: int = None, hidden: bool = False, twelve_hour: bool = False):
+                            calculation_method: int | None = None, hidden: bool = False, twelve_hour: bool = False):
         if calculation_method is None:
             calculation_method = await UserPrayerCalculationMethod(interaction.user.id).get()
 
@@ -144,7 +153,7 @@ class PrayerTimes(commands.Cog):
             return await interaction.followup.send_message(f":warning: **Location not found** {e}.", ephemeral=hidden)
 
         em = discord.Embed(colour=0x558a25, title=response.date)
-        em.set_footer(text=f'Calculation Method: {self.calculation_methods[calculation_method]}')
+        em.set_footer(text=f'Calculation Method: {response.method_name}')
         em.set_author(name=f'Prayer Times for {location.title()}', icon_url=ICON)
 
         prayer_times = {
@@ -203,7 +212,11 @@ class PrayerTimes(commands.Cog):
         await UserPrayerCalculationMethod(interaction.user.id).update(method_num)
         return await interaction.followup.send(f':white_check_mark: **Successfully updated user calculation method to `{self.calculation_methods[method_num]}`!**', ephemeral=True)
 
-    @group.command(name="set_calculation_method", description="Change your default prayer times calculation method")
+    async def _auto_calculation_method(self, interaction: discord.Interaction):
+        await UserPrayerCalculationMethod(interaction.user.id).delete()
+        return await interaction.followup.send(':white_check_mark: **Automatic calculation method enabled!**\n', ephemeral=True)
+
+    @group.command(name="set_calculation_method", description="Choose your preferred prayer times calculation method")
     @discord.app_commands.guild_only()
     @discord.app_commands.guild_install()
     @discord.app_commands.describe(
@@ -212,6 +225,13 @@ class PrayerTimes(commands.Cog):
     async def set_calculation_method(self, interaction: discord.Interaction, calculation_method: int):
         await interaction.response.defer(thinking=True, ephemeral=True)
         await self._set_calculation_method(interaction, calculation_method)
+
+    @group.command(name="auto_calculation_method", description="Automatically choose calculation method based on location")
+    @discord.app_commands.guild_only()
+    @discord.app_commands.guild_install()
+    async def auto_calculation_method(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        await self._auto_calculation_method(interaction)
 
     @prayer_times.autocomplete('calculation_method')
     @set_calculation_method.autocomplete('calculation_method')

@@ -133,12 +133,13 @@ class UserPrayerCalculationMethod(DBHandler):
             table_name=config['MySQL']['user_prayer_times_table_name'],
             column1='user_id',
             column2='calculation_method_id',
-            default_value=4,
+            default_value=None,
             key=user_id,
         )
 
-    async def get(self) -> int:
-        return int(await self._get_data())
+    async def get(self) -> int | None:
+        data = await self._get_data()
+        return int(data) if data else None
 
     async def update(self, calculation_method):
         return await self._update_data(calculation_method)
