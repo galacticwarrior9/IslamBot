@@ -207,7 +207,7 @@ class PrayerTimes(commands.Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.guild_install()
     @discord.app_commands.describe(
-        calculation_method="The prayer time calculation method number, from the choices provided or /prayertimes list_calculation_methods."
+        calculation_method="The prayer time calculation method name, from the choices provided or /prayertimes list_calculation_methods."
     )
     async def set_calculation_method(self, interaction: discord.Interaction, calculation_method: int):
         await interaction.response.defer(thinking=True, ephemeral=True)
@@ -225,7 +225,7 @@ class PrayerTimes(commands.Cog):
         em = discord.Embed(colour=0x558a25, description='')
         em.set_author(name='Calculation Methods', icon_url=ICON)
         for method, name in self.calculation_methods.items():
-            em.description = f'{em.description}**{method}** - {name}\n'
+            em.description = f'{em.description}- {name}\n'
         return await interaction.followup.send(embed=em, ephemeral=True)
 
     @group.command(name="list_calculation_methods", description="Sends the list of calculation methods.")
