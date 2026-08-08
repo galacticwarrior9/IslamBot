@@ -1,4 +1,5 @@
 import configparser
+import os
 
 import aiohttp
 import discord
@@ -6,10 +7,7 @@ from discord.ext import commands, tasks
 
 from hijri_calendar.hijri_calendar import HijriCalendar
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-token = config['IslamBot']['token']
+token = os.environ.get('ISLAMBOT_TOKEN')
 
 description = "A Discord bot with Islamic utilities. View Qur'an, hadith, prayer times and more."
 

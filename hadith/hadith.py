@@ -1,4 +1,4 @@
-import configparser
+import os
 import random
 import re
 import textwrap
@@ -11,9 +11,7 @@ from discord.ext import commands
 from utils import utils
 from utils.slash_utils import generate_choices_from_dict
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-API_KEY = config['APIs']['sunnah.com']
+API_KEY = os.environ.get('SUNNAH_API_KEY')
 
 ICON = 'https://sunnah.com/images/hadith_icon2_huge.png'
 

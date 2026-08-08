@@ -6,8 +6,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./config.ini:/app/config.ini
+    env_file:
+      - .env
 
   db:
     image: mysql:8.0

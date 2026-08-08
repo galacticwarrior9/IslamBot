@@ -1,18 +1,14 @@
-import configparser
+import os
 
 import topgg
 from discord.ext import commands
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
 
 class TopGG(commands.Cog):
     """Handles interactions with the top.gg API"""
 
     def __init__(self, bot):
         self.bot = bot
-        self.token = config['APIs']['top.gg']
+        self.token = os.environ.get('TOPGG_TOKEN')
         self.dblpy = topgg.DBLClient(self.bot, self.token, autopost=True, post_shard_count=True)
 
     @commands.Cog.listener()

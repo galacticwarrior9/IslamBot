@@ -1,12 +1,7 @@
-import configparser
-
 import aiohttp
 from bs4 import BeautifulSoup
 from discord import Embed
 import re
-
-config = configparser.ConfigParser()
-config.read('config.ini')
 
 
 def make_embed(**kwargs):
