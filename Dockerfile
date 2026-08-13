@@ -4,6 +4,8 @@ WORKDIR /app
 
 # Ensure we have essential tools if any python package requires compilation
 RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libopus0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
