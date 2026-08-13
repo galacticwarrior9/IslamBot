@@ -40,6 +40,7 @@ class IslamBot(commands.AutoShardedBot):
             "hadith.transmitter_biographies",
             "tafsir.arabic_tafsir",
             "tafsir.tafsir",
+            "idaaa.idaa",
             "miscellaneous.reload",
             "miscellaneous.help",
             "miscellaneous.TopGG" # Remove if using the bot locally
