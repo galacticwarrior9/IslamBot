@@ -11,7 +11,7 @@ token = os.environ.get('ISLAMBOT_TOKEN')
 
 description = "A Discord bot with Islamic utilities. View Qur'an, hadith, prayer times and more."
 
-intents = discord.Intents(messages=True, guilds=True)
+intents = discord.Intents(messages=True, guilds=True, voice_states=True)
 
 
 @tasks.loop(hours=1)
