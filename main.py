@@ -1,4 +1,5 @@
 import configparser
+import os
 
 import aiohttp
 import discord
@@ -6,14 +7,11 @@ from discord.ext import commands, tasks
 
 from hijri_calendar.hijri_calendar import HijriCalendar
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-token = config['IslamBot']['token']
+token = os.environ.get('ISLAMBOT_TOKEN')
 
 description = "A Discord bot with Islamic utilities. View Qur'an, hadith, prayer times and more."
 
-intents = discord.Intents(messages=True, guilds=True)
+intents = discord.Intents(messages=True, guilds=True, voice_states=True)
 
 
 @tasks.loop(hours=1)
@@ -42,6 +40,7 @@ class IslamBot(commands.AutoShardedBot):
             "hadith.transmitter_biographies",
             "tafsir.arabic_tafsir",
             "tafsir.tafsir",
+            "idaaa.idaa",
             "miscellaneous.reload",
             "miscellaneous.help",
             "miscellaneous.TopGG" # Remove if using the bot locally

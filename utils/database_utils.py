@@ -1,15 +1,17 @@
 import asyncio
-import configparser
+import os
 
 import aiomysql
 
-config = configparser.ConfigParser()
-config.read('config.ini')
+host = os.environ.get('MYSQL_HOST', 'db')
+user = os.environ.get('MYSQL_USER', 'islambot_user')
+password = os.environ.get('MYSQL_PASSWORD', 'islambot_password')
+database = os.environ.get('MYSQL_DATABASE', 'islambot')
 
-host = config['MySQL']['host']
-user = config['MySQL']['user']
-password = config['MySQL']['password']
-database = config['MySQL']['database']
+SERVER_TRANSLATIONS_TABLE = os.environ.get('MYSQL_SERVER_TRANSLATIONS_TABLE', 'server_translations')
+SERVER_TAFSIR_TABLE = os.environ.get('MYSQL_SERVER_TAFSIR_TABLE', 'server_tafsir')
+SERVER_ATAFSIR_TABLE = os.environ.get('MYSQL_SERVER_ATAFSIR_TABLE', 'server_atafsir')
+USER_PRAYER_TIMES_TABLE = os.environ.get('MYSQL_USER_PRAYER_TIMES_TABLE', 'user_prayer')
 
 loop = asyncio.get_event_loop()
 
@@ -70,7 +72,7 @@ class DBHandler:
 class ServerTranslation(DBHandler):
     def __init__(self, guild_id: int):
         super().__init__(
-            table_name=config['MySQL']['server_translations_table_name'],
+            table_name=SERVER_TRANSLATIONS_TABLE,
             column1='server',
             column2='translation',
             default_value='haleem',
@@ -90,7 +92,7 @@ class ServerTranslation(DBHandler):
 class ServerTafsir(DBHandler):
     def __init__(self, guild_id: int):
         super().__init__(
-            table_name=config['MySQL']['server_tafsir_table_name'],
+            table_name=SERVER_TAFSIR_TABLE,
             column1='server',
             column2='tafsir',
             default_value='maarifulquran',
@@ -110,7 +112,7 @@ class ServerTafsir(DBHandler):
 class ServerArabicTafsir(DBHandler):
     def __init__(self, guild_id: int):
         super().__init__(
-            table_name=config['MySQL']['server_atafsir_table_name'],
+            table_name=SERVER_ATAFSIR_TABLE,
             column1='server',
             column2='atafsir',
             default_value='tabari',
@@ -130,7 +132,7 @@ class ServerArabicTafsir(DBHandler):
 class UserPrayerCalculationMethod(DBHandler):
     def __init__(self, user_id):
         super().__init__(
-            table_name=config['MySQL']['user_prayer_times_table_name'],
+            table_name=USER_PRAYER_TIMES_TABLE,
             column1='user_id',
             column2='calculation_method_id',
             default_value=4,
